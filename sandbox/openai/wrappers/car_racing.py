@@ -3,25 +3,35 @@ import numpy as np
 import cv2
 
 
-class CarRacingWrapper:
+class CarRacingWrapper(gym.Wrapper):
     def __init__(self):
-        self.env = gym.make('CarRacing-v1')
+        self.env = gym.make('CarRacing-v0')
         self.env.reset()
-
-    @property 
+        self.action_space_mapping = {
+            0: [-1, 0, 0],
+            1: [0, 0, 0],
+            2: [1, 0, 0],
+            3: [0, 1, 0],
+            4: [0, 0, 1],
+        }
+        self.action_space_mapping = {
+            key: np.array(val, dtype=np.uint8) 
+            for key, val in self.action_space_mapping.items()
+        }
+    
+    @property
     def action_space(self):
-        return self.env.action_space 
+        return gym.spaces.discrete.Discrete(5)
 
     def step(self, action):
-        self.env.step(action)
+        action = int(action)
+        action_box = self.action_space_mapping[action]
+        obs, *data = self.env.step(action_box)
+        return obs, *data
 
-    def render(self) -> np.ndarray:   
-        state = self.env.render(mode="state_pixels")
+    def process_state(self, state: np.ndarray):
         clipped = np.array(state, dtype=np.uint8)[:-15, :]
         gray = cv2.cvtColor(clipped, cv2.COLOR_RGB2GRAY)
         return gray
-
-    def close(self):
-        self.env.close()
 
     
