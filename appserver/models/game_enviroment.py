@@ -7,6 +7,7 @@ from models.game_system_configuration import GameSystemConfiguration
 
 class GameEnviroment(BaseModel):
     id: UUID
-    name: str
+    full_name: str = "Trackmania Nations Forever"
+    endpoint_name: str = "trackmania"
     global_configuration: GameGlobalConfiguration
     system_configuration: GameSystemConfiguration

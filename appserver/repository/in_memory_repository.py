@@ -14,16 +14,11 @@ class InMemoryRepository(AbstractRepository, ABC):
         self.games = [
             GameEnviroment(
                 id = uuid4(),
-                name = "Trackmania Nations Forever",
+                full_name = "Trackmania Nations Forever",
+                endpoint_name = "trackmania",
                 global_configuration = GameGlobalConfiguration(),
                 system_configuration = GameSystemConfiguration()
-            ),
-            GameEnviroment(
-                id = uuid4(),
-                name = "Forza Horizon 5",
-                global_configuration = GameGlobalConfiguration(),
-                system_configuration = GameSystemConfiguration()
-            ),
+            )
         ]
 
     def _load_system_configurations(self):
@@ -34,12 +29,14 @@ class InMemoryRepository(AbstractRepository, ABC):
             self._trainings.append(Training(
                 id = uuid4(),
                 game_id = game.id,
-                name = game.name + ": first traning"
+                full_name = game.full_name + ": first traning",
+                endpoint_name = "first"
             ))
             self._trainings.append(Training(
                 id = uuid4(),
                 game_id = game.id,
-                name = game.name + ": second traning"
+                full_name = game.full_name + ": second traning",
+                endpoint_name = "second",
             ))
 
     def _load_agents(self):
@@ -47,10 +44,6 @@ class InMemoryRepository(AbstractRepository, ABC):
             self._agents.append(Agent(
                 id = uuid4(),
                 game_id = game.id,
-                name = game.name + ": first agent"
+                full_name = game.full_name + ": first agent",
+                endpoint_name = "first"
             ))
-            self._agents.append(Agent(
-                id = uuid4(),
-                game_id = game.id,
-                name = game.name + ": second agent"
-            )) 
