@@ -51,6 +51,11 @@ async def delete_training(game_name: str, training_name: str):
     repo.delete_training(game_name, training_name)
 
 
+@app.put("/games/{game_name}/trainings/{training_name}")
+async def update_training(game_name: str, training_name: str, training_parameters: TrainingParameters) -> Training:
+    return repo.update_training(game_name, training_name, training_parameters)
+
+
 @app.get("/games/{game_name}/trainings/{training_name}/run", status_code=status.HTTP_204_NO_CONTENT)
 async def run_training(game_name: str, training_name: str, response: Response):
     repo.run_training(game_name, training_name)
@@ -59,8 +64,3 @@ async def run_training(game_name: str, training_name: str, response: Response):
 @app.get("/games/{game_name}/trainings/{training_name}/stop", status_code=status.HTTP_204_NO_CONTENT)
 async def stop_training(game_name: str, training_name: str, response: Response):
     repo.stop_training(game_name, training_name)
-
-
-@app.post("/games/{game_name}/trainings/{training_name}")
-async def update_training(game_name: str, training_name: str, training_parameters: TrainingParameters) -> Training:
-    return repo.update_training(game_name, training_name, training_parameters)

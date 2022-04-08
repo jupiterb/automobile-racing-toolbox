@@ -1,9 +1,14 @@
 from abc import ABC, abstractclassmethod
 from typing import List, Tuple
+
 from schemas import GameEnviromentBase, TrainingBase, Training, TrainingParameters
+from training import TrainingManager
 
 
 class AbstractRepository(ABC):
+
+    def __init__(self):
+        self.training_manager = TrainingManager()
 
     @abstractclassmethod
     def view_games(self) -> List[GameEnviromentBase]:
@@ -26,13 +31,15 @@ class AbstractRepository(ABC):
         pass
 
     @abstractclassmethod
+    def update_training(self, game_name: str, training_name: str, training_parameters: TrainingParameters) -> Training:
+        pass
+
+    @abstractclassmethod
+    def _get_full_training_configuration(self, game_name: str, training_name: str):
+        pass
+
     def run_training(self, game_name: str, training_name: str):
         pass
 
-    @abstractclassmethod
     def stop_training(self, game_name: str, training_name: str):
-        pass
-
-    @abstractclassmethod
-    def update_training(self, game_name: str, training_name: str, training_parameters: TrainingParameters) -> Training:
         pass
