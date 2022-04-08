@@ -1,4 +1,5 @@
 from schemas.game_enviroment import GameEnviroment, GameEnviromentBase
 from schemas.game_global_configuration import GameGlobalConfiguration
 from schemas.game_system_configuration import GameSystemConfiguration
-from schemas.training import Training, TrainingBase, TrainingParameters
+from schemas.training import Training, TrainingBase
+from schemas.training_parameters import TrainingParameters

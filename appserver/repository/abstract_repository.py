@@ -14,19 +14,23 @@ class AbstractRepository(ABC):
         pass
 
     @abstractclassmethod
+    def view_training(self, game_name: str, training_name: str) -> Training:
+        pass
+
+    @abstractclassmethod
     def create_training(self, game_name: str, training_base: TrainingBase) -> Tuple[bool, Training]:
         pass
 
     @abstractclassmethod
-    def delete_training(self, game_name: str, training_name):
+    def delete_training(self, game_name: str, training_name: str):
         pass
 
     @abstractclassmethod
-    def run_training(self, game_name: str, training_name) -> bool:
+    def run_training(self, game_name: str, training_name: str):
         pass
 
     @abstractclassmethod
-    def stop_training(self, game_name: str, training_name) -> bool:
+    def stop_training(self, game_name: str, training_name: str):
         pass
 
     @abstractclassmethod
