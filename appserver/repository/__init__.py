@@ -1,1 +1,2 @@
-from appserver.repository.abstract_repository import AbstractRepository
+from repository.abstract_repository import AbstractRepository
+from repository.in_memory_repository import InMemoryRepository
