@@ -12,7 +12,7 @@ from stable_baselines3.common.env_checker import check_env
 
 LOG_DIR = "./logs/policy_grayscale"
 TB_DIR = LOG_DIR + "/tensorboard"
-TB_LOG_NAME = "v0"
+TB_LOG_NAME = "v1"
 os.makedirs(LOG_DIR, exist_ok=True)
 os.makedirs(TB_DIR, exist_ok=True)
 
@@ -23,9 +23,9 @@ def main():
     print(check_env(env))
     now = datetime.now().strftime("%H_%M_$S")
     save_path = LOG_DIR + "/cnn_carracing_gray_v1" 
-    load_path = LOG_DIR + "/best_model" 
+    load_path = LOG_DIR + "/cnn_carracing_gray_v0" 
 
-    train(env, save_path)
+    train(env, save_path, load_path)
 
     print("TRAINING FINISHED")
 
