@@ -1,8 +1,7 @@
 from fastapi import FastAPI, status, Response
-from fastapi.responses import PlainTextResponse
 from typing import List
 
-from schemas import Game, Training, TrainingParameters
+from schemas import Game, Training
 from repository import AbstractRepository, InMemoryRepository
 
 
@@ -16,14 +15,25 @@ async def root():
     return {"Hello": "World"}
 
 
-@app.exception_handler(Exception)
-async def exception_handler(request, exc):
-    return PlainTextResponse('Resource not found', status_code=status.HTTP_404_NOT_FOUND)
+# API for games
 
 
 @app.get("/games")
 async def get_games() -> List[Game]:
     return repo.view_games()
+
+
+@app.post("/games/{game_id}", status_code=status.HTTP_201_CREATED)
+async def add_game(game_id: str, description: str, response: Response) -> Game:
+    created, game = repo.add_game(game_id, description)
+    if not created:
+        response.status_code = status.HTTP_200_OK
+    return game
+
+
+@app.delete("/games/{game_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_game(game_id: str):
+    repo.delete_game(game_id)
 
 
 # API for trainings
