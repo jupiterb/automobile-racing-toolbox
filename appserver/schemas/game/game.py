@@ -8,7 +8,7 @@ from schemas.training import Training
 
 class Game(BaseModel):
     id: str
-    description: str
+    description: Optional[str] = None
     global_configuration: Optional[GameGlobalConfiguration] = None
     system_configuration: Optional[GameSystemConfiguration] = None
     trainings: List[Training] = []

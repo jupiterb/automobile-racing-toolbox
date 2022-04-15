@@ -1,49 +1,37 @@
 from abc import ABC, abstractmethod
-from typing import List, Tuple
-
-from schemas import Game, Training, TrainingParameters, \
-                    GameGlobalConfiguration, GameSystemConfiguration
+from typing import List, Tuple, TypeVar, Generic, Callable
 
 
-class AbstractRepository(ABC):
+RepositoryId = TypeVar("RepositoryId")
+RepositoryItem = TypeVar("RepositoryItem")
+
+
+class AbstractRepository(Generic[RepositoryId, RepositoryItem], ABC):
 
     @abstractmethod
-    def view_games(self) -> List[Game]:
+    def get_all(self) -> List[RepositoryItem]:
         pass
 
     @abstractmethod
-    def view_trainings(self, game_id: str) -> List[Training]:
+    def get_item(self, id: RepositoryId) -> RepositoryItem:
         pass
 
     @abstractmethod
-    def add_game(self, game_id: str, description: str) -> Tuple[bool, Game]:
+    def add_item(self, id: RepositoryId, item: RepositoryItem) -> Tuple[bool, RepositoryItem]:
         pass
 
     @abstractmethod
-    def delete_game(self, game_id: str):
+    def delete_item(self, id: RepositoryId):
+        pass
+
+    @abstractmethod
+    def delete_when(self, predicate: Callable[[RepositoryId], bool]):
         pass
 
     @abstractmethod 
-    def setup_game(self, game_id: str, system_configuration: GameSystemConfiguration) -> Game:
+    def update_item(self, id: RepositoryId, **kwargs) -> RepositoryItem:
         pass
 
     @abstractmethod
-    def view_training(self, game_id: str, training_id: str) -> Training:
-        pass
-
-    @abstractmethod
-    def create_training(self, game_id: str, training_id: str, description: str) -> Tuple[bool, Training]:
-        pass
-
-    @abstractmethod
-    def delete_training(self, game_id: str, training_id: str):
-        pass
-
-    @abstractmethod
-    def setup_training(self, game_id: str, training_id: str, training_parameters: TrainingParameters) -> Training:
-        pass
-
-    @abstractmethod
-    def get_full_training_configuration(self, game_id: str, training_id: str) -> \
-        Tuple[GameSystemConfiguration, GameGlobalConfiguration, TrainingParameters]:
+    def contains(self, id: RepositoryId) -> bool:
         pass
