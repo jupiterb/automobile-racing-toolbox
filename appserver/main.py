@@ -73,7 +73,7 @@ async def delete_training(game_id: str, training_id: str):
 @app.get("/games/{game_id}/trainings/{training_id}/run", status_code=status.HTTP_204_NO_CONTENT)
 async def run_training(game_id: str, training_id: str):
     system_configuration, global_configuration, parameters = repo.get_full_training_configuration(game_id, training_id)
-    training_manager.run_training(system_configuration, global_configuration, )
+    training_manager.run_training(system_configuration, global_configuration, parameters)
 
 
 @app.get("/games/{game_id}/trainings/{training_id}/stop", status_code=status.HTTP_204_NO_CONTENT)
