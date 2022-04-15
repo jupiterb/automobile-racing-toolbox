@@ -1,13 +1,21 @@
-from fastapi import FastAPI, status, Response
+from fastapi import FastAPI, status, Response, Request
+from fastapi.responses import PlainTextResponse
 from typing import List
 
 from schemas import Game, Training
 from repository import AbstractRepository, InMemoryRepository
+from training import TrainingManager
+from utils.custom_exceptions import ItemNotFound
 
 
 app = FastAPI()
-
 repo: AbstractRepository = InMemoryRepository()
+training_manager: TrainingManager = TrainingManager(repo)
+
+
+@app.exception_handler(ItemNotFound)
+async def handle_item_not_found(request: Request, exception: ItemNotFound):
+    return PlainTextResponse(f"Resource {exception.item_name} not found", status_code=status.HTTP_404_NOT_FOUND)
 
 
 @app.get("/")
@@ -64,9 +72,9 @@ async def delete_training(game_id: str, training_id: str):
 
 @app.get("/games/{game_id}/trainings/{training_id}/run", status_code=status.HTTP_204_NO_CONTENT)
 async def run_training(game_id: str, training_id: str):
-    pass
+    training_manager.run_training()
 
 
 @app.get("/games/{game_id}/trainings/{training_id}/stop", status_code=status.HTTP_204_NO_CONTENT)
 async def stop_training(game_id: str, training_id: str, response: Response):
-    pass
+    training_manager.stop_training()
