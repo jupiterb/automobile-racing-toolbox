@@ -1,5 +1,7 @@
-from schemas.game_enviroment import GameEnviroment, GameEnviromentBase
-from schemas.game_global_configuration import GameGlobalConfiguration
-from schemas.game_system_configuration import GameSystemConfiguration
-from schemas.training import Training, TrainingBase
-from schemas.training_parameters import TrainingParameters
+from sympy import im
+from schemas.game import Game
+from schemas.game import GameGlobalConfiguration
+from schemas.game import GameSystemConfiguration
+from schemas.training import Training
+from schemas.training import TrainingParameters
+from schemas.utils import ScreenFrame

@@ -2,12 +2,13 @@ from fastapi import FastAPI, status, Response
 from fastapi.responses import PlainTextResponse
 from typing import List
 
-from schemas import GameEnviromentBase, TrainingBase, Training, TrainingParameters
-from repository import InMemoryRepository
+from schemas import Game, Training, TrainingParameters
+from repository import AbstractRepository, InMemoryRepository
 
 
 app = FastAPI()
-repo = InMemoryRepository()
+
+repo: AbstractRepository = InMemoryRepository()
 
 
 @app.get("/")
@@ -21,46 +22,41 @@ async def exception_handler(request, exc):
 
 
 @app.get("/games")
-async def get_games() -> List[GameEnviromentBase]:
+async def get_games() -> List[Game]:
     return repo.view_games()
 
 
 # API for trainings
 
 
-@app.get("/games/{game_name}/trainings")
-async def get_trainings(game_name: str) -> List[TrainingBase]:
-    return repo.view_trainings(game_name)
+@app.get("/games/{game_id}/trainings")
+async def get_trainings(game_id: str) -> List[Training]:
+    return repo.view_trainings(game_id)
 
 
-@app.get("/games/{game_name}/trainings/{training_name}")
-async def get_training(game_name: str, training_name: str):
-    return repo.view_training(game_name, training_name)
+@app.get("/games/{game_id}/trainings/{training_id}")
+async def get_training(game_id: str, training_id: str):
+    return repo.view_training(game_id, training_id)
 
 
-@app.post("/games/{game_name}/trainings/{training_name}", status_code=status.HTTP_201_CREATED)
-async def add_training(game_name: str, training_name: str, full_training_name: str, response: Response) -> Training:
-    created, training = repo.create_training(game_name, TrainingBase(endpoint_name = training_name, full_name = full_training_name))
+@app.post("/games/{game_id}/trainings/{training_id}", status_code=status.HTTP_201_CREATED)
+async def add_training(game_id: str, training_id: str, description: str, response: Response) -> Training:
+    created, training = repo.create_training(game_id, training_id, description)
     if not created:
         response.status_code = status.HTTP_200_OK
     return training
     
 
-@app.delete("/games/{game_name}/trainings/{training_name}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_training(game_name: str, training_name: str):
-    repo.delete_training(game_name, training_name)
+@app.delete("/games/{game_id}/trainings/{training_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_training(game_id: str, training_id: str):
+    repo.delete_training(game_id, training_id)
 
 
-@app.put("/games/{game_name}/trainings/{training_name}")
-async def update_training(game_name: str, training_name: str, training_parameters: TrainingParameters) -> Training:
-    return repo.update_training(game_name, training_name, training_parameters)
+@app.get("/games/{game_id}/trainings/{training_id}/run", status_code=status.HTTP_204_NO_CONTENT)
+async def run_training(game_id: str, training_id: str):
+    pass
 
 
-@app.get("/games/{game_name}/trainings/{training_name}/run", status_code=status.HTTP_204_NO_CONTENT)
-async def run_training(game_name: str, training_name: str, response: Response):
-    repo.run_training(game_name, training_name)
-
-
-@app.get("/games/{game_name}/trainings/{training_name}/stop", status_code=status.HTTP_204_NO_CONTENT)
-async def stop_training(game_name: str, training_name: str, response: Response):
-    repo.stop_training(game_name, training_name)
+@app.get("/games/{game_id}/trainings/{training_id}/stop", status_code=status.HTTP_204_NO_CONTENT)
+async def stop_training(game_id: str, training_id: str, response: Response):
+    pass
