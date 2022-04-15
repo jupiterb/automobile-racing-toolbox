@@ -1,12 +1,13 @@
-from repository import AbstractRepository
+from schemas import GameSystemConfiguration, GameGlobalConfiguration, TrainingParameters
 
 
 class TrainingManager():
 
-    def __init__(self, repository: AbstractRepository):
-        self._repository = repository
-
-    def run_training(slef):
+    def run_training(slef, 
+            system_configuration: GameSystemConfiguration,
+            global_configuration: GameGlobalConfiguration,
+            training_parameters: TrainingParameters
+        ):
         pass
 
     def stop_training(self):
