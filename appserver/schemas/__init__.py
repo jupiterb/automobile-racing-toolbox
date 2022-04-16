@@ -1,4 +1,3 @@
-from sympy import im
 from schemas.game import Game
 from schemas.game import GameGlobalConfiguration
 from schemas.game import GameSystemConfiguration

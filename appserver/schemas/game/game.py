@@ -1,9 +1,8 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import Optional
 
 from schemas.game.game_global_configuration import GameGlobalConfiguration
 from schemas.game.game_system_configuration import GameSystemConfiguration
-from schemas.training import Training
 
 
 class Game(BaseModel):

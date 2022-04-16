@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Tuple, TypeVar, Generic, Callable
+from typing import TypeVar, Generic, Callable
 
 
 RepositoryId = TypeVar("RepositoryId")
@@ -9,7 +9,7 @@ RepositoryItem = TypeVar("RepositoryItem")
 class AbstractRepository(Generic[RepositoryId, RepositoryItem], ABC):
 
     @abstractmethod
-    def get_all(self, predicate: Callable[[RepositoryId], bool] = lambda id: True) -> List[RepositoryItem]:
+    def get_all(self, predicate: Callable[[RepositoryId], bool] = lambda id: True) -> list[RepositoryItem]:
         pass
 
     @abstractmethod
@@ -17,7 +17,7 @@ class AbstractRepository(Generic[RepositoryId, RepositoryItem], ABC):
         pass
 
     @abstractmethod
-    def add_item(self, id: RepositoryId, item: RepositoryItem) -> Tuple[bool, RepositoryItem]:
+    def add_item(self, id: RepositoryId, item: RepositoryItem) -> tuple[bool, RepositoryItem]:
         pass
 
     @abstractmethod
@@ -33,5 +33,5 @@ class AbstractRepository(Generic[RepositoryId, RepositoryItem], ABC):
         pass
 
     @abstractmethod
-    def contains(self, id: RepositoryId) -> bool:
+    def __contains__(self, id: RepositoryId) -> bool:
         pass

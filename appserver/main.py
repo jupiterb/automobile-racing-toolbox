@@ -1,6 +1,5 @@
 from fastapi import FastAPI, status, Response, Request
 from fastapi.responses import PlainTextResponse
-from typing import List, Tuple
 
 from schemas import Game, Training
 from repository import InMemoryRepository, GuardRepository
@@ -12,8 +11,8 @@ app = FastAPI()
 
 games = InMemoryRepository[str, Game]()
 
-trainings = GuardRepository[str, Tuple[str, str], Training](
-    InMemoryRepository[Tuple[str, str], Training](),
+trainings = GuardRepository[str, tuple[str, str], Training](
+    InMemoryRepository[tuple[str, str], Training](),
     games,
     lambda game_training_id: game_training_id[0]
 )
@@ -35,7 +34,7 @@ async def root():
 
 
 @app.get("/games")
-async def get_games() -> List[Game]:
+async def get_games() -> list[Game]:
     return games.get_all()
 
 
@@ -62,7 +61,7 @@ async def delete_game(game_id: str):
 
 
 @app.get("/games/{game_id}/trainings")
-async def get_trainings(game_id: str) -> List[Training]:
+async def get_trainings(game_id: str) -> list[Training]:
     return trainings.get_all(lambda game_training_id: game_training_id[0] == game_id)
 
 
