@@ -11,8 +11,8 @@ class InMemoryRepository(AbstractRepository, Generic[RepositoryId, RepositoryIte
         super().__init__()
         self._data: Dict[RepositoryId, RepositoryItem] = {}
 
-    def get_all(self) -> List[RepositoryItem]:
-        return [value for value in self._data.values()]
+    def get_all(self, predicate: Callable[[RepositoryId], bool] = lambda id: True) -> List[RepositoryItem]:
+        return [value for id, value in self._data.items() if predicate(id)]
 
     def get_item(self, id: RepositoryId) -> RepositoryItem:
         if self.contains(id):

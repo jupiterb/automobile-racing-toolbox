@@ -9,7 +9,7 @@ RepositoryItem = TypeVar("RepositoryItem")
 class AbstractRepository(Generic[RepositoryId, RepositoryItem], ABC):
 
     @abstractmethod
-    def get_all(self) -> List[RepositoryItem]:
+    def get_all(self, predicate: Callable[[RepositoryId], bool] = lambda id: True) -> List[RepositoryItem]:
         pass
 
     @abstractmethod
