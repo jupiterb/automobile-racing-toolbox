@@ -95,7 +95,7 @@ async def run_training(game_id: str, training_id: str):
     )
 
 
-@app.get("/games/{game_id}/trainings/{training_id}/stop", status_code=status.HTTP_204_NO_CONTENT)
-async def stop_training(game_id: str, training_id: str):
-    _ = trainings.get_item((game_id, training_id))
-    training_manager.stop_training()
+@app.get("/games/{game_id}/trainings/{training_id}/stop")
+async def stop_training(game_id: str, training_id: str) -> Training:
+    result = training_manager.stop_training()
+    return trainings.update_item((game_id, training_id), result=result)

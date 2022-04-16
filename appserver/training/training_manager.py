@@ -1,4 +1,4 @@
-from schemas import GameSystemConfiguration, GameGlobalConfiguration, TrainingParameters
+from schemas import GameSystemConfiguration, GameGlobalConfiguration, TrainingParameters, TrainingResult
 
 
 class TrainingManager():
@@ -10,5 +10,5 @@ class TrainingManager():
         ):
         pass
 
-    def stop_training(self):
+    def stop_training(self) -> TrainingResult:
         pass

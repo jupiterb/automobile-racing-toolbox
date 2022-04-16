@@ -1,6 +1,3 @@
-from schemas.game import Game
-from schemas.game import GameGlobalConfiguration
-from schemas.game import GameSystemConfiguration
-from schemas.training import Training
-from schemas.training import TrainingParameters
+from schemas.game import Game, GameGlobalConfiguration, GameSystemConfiguration
+from schemas.training import Training, TrainingParameters, TrainingResult
 from schemas.utils import ScreenFrame

@@ -1,1 +1,1 @@
-from schemas.training.training import Training, TrainingParameters
+from schemas.training.training import Training, TrainingParameters, TrainingResult
