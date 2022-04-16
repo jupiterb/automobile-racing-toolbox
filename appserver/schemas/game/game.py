@@ -11,4 +11,3 @@ class Game(BaseModel):
     description: Optional[str] = None
     global_configuration: Optional[GameGlobalConfiguration] = None
     system_configuration: Optional[GameSystemConfiguration] = None
-    trainings: List[Training] = []
