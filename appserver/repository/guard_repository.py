@@ -18,32 +18,32 @@ class GuardRepository(AbstractRepository, Generic[RepositoryParentId, Repository
         self._get_parnet_id = get_parnet_id
 
     def get_all(self, predicate: Callable[[RepositoryId], bool] = lambda id: True) -> list[RepositoryItem]:
-        return self._child_repository.get_all(lambda id: predicate(id) and self._access(id))
+        return self._child_repository.get_all(lambda id: predicate(id))
 
     def get_item(self, id: RepositoryId) -> RepositoryItem:
-        if self._access(id):
-            return self._child_repository.get_item(id)
+        return self._with_checking_access(id).get_item(id)
 
     def add_item(self, id: RepositoryId, item: RepositoryItem) -> tuple[bool, RepositoryItem]:
-        if self._access(id):
-            return self._child_repository.add_item(id, item)
+        return self._with_checking_access(id).add_item(id, item)
 
     def delete_item(self, id: RepositoryId):
-        self._child_repository.delete_item(id)
+        try:
+            self._with_checking_access(id).delete_item(id)
+        except (ItemNotFound):
+            pass
 
     def delete_when(self, predicate: Callable[[RepositoryId], bool]):
         self._child_repository.delete_when(predicate)
 
     def update_item(self, id: RepositoryId, **kwargs) -> RepositoryItem:
-        if self._access(id):
-            self._child_repository.update_item(id, kwargs)
+        return self._with_checking_access(id).update_item(id, **kwargs)
 
     def __contains__(self, id: RepositoryId) -> bool:
         return id in self._child_repository
 
-    def _access(self, id: RepositoryParentId) -> bool:
+    def _with_checking_access(self, id: RepositoryId) -> AbstractRepository:
         parent_id = self._get_parnet_id(id)
         if parent_id in self._parent_repository:
-            return True
+            return self._child_repository
         else:
             raise ItemNotFound(str(parent_id))

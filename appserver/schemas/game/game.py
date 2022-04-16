@@ -8,5 +8,5 @@ from schemas.game.game_system_configuration import GameSystemConfiguration
 class Game(BaseModel):
     id: str
     description: Optional[str] = None
-    global_configuration: Optional[GameGlobalConfiguration] = None
-    system_configuration: Optional[GameSystemConfiguration] = None
+    global_configuration: GameGlobalConfiguration = GameGlobalConfiguration()
+    system_configuration: GameSystemConfiguration = GameSystemConfiguration()

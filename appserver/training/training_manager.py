@@ -11,4 +11,4 @@ class TrainingManager():
         pass
 
     def stop_training(self) -> TrainingResult:
-        pass
+        return TrainingResult()
