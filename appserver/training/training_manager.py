@@ -3,7 +3,7 @@ from schemas import GameSystemConfiguration, GameGlobalConfiguration, TrainingPa
 
 class TrainingManager():
 
-    def run_training(slef, 
+    def run_training(self, 
             system_configuration: GameSystemConfiguration,
             global_configuration: GameGlobalConfiguration,
             training_parameters: TrainingParameters

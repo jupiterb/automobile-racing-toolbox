@@ -1,10 +1,10 @@
 from typing import Generic, Callable
 
-from repository.abstract_repository import AbstractRepository, RepositoryId, RepositoryItem
+from repository.common import GenericRepository, RepositoryId, RepositoryItem
 from utils.custom_exceptions import ItemNotFound
 
 
-class InMemoryRepository(AbstractRepository, Generic[RepositoryId, RepositoryItem]):
+class InMemoryRepository(GenericRepository, Generic[RepositoryId, RepositoryItem]):
 
     def __init__(self) -> None:
         self._data: dict[RepositoryId, RepositoryItem] = {}
