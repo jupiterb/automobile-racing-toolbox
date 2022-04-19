@@ -32,7 +32,7 @@ async def add_game(game_id: str, description: str, response: Response) -> Game:
     return game
 
 
-@games_router.delete("/games/{game_id}", status_code=status.HTTP_204_NO_CONTENT)
+@games_router.delete("/{game_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_game(game_id: str):
     trainings.delete_when(lambda game_training_id: game_training_id[0] == game_id)
     games.delete_item(game_id)
