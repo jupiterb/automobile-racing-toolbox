@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Response, status
-from routers.common import Repositories
 
 from schemas import Training
 from training import TrainingManager

@@ -1,7 +1,7 @@
 from fastapi import FastAPI, status, Request
 from fastapi.responses import PlainTextResponse
 
-from routers import games_router, trainings_router
+from routers import games_router, trainings_router, episodes_router
 from utils.custom_exceptions import ItemNotFound
 
 
@@ -9,6 +9,7 @@ app = FastAPI()
 
 app.include_router(games_router)
 app.include_router(trainings_router)
+app.include_router(episodes_router)
 
 
 @app.exception_handler(ItemNotFound)
