@@ -5,6 +5,7 @@ import numpy as np
 from PIL import ImageGrab
 
 from schemas import State, ScreenFrame
+from utils.custom_exceptions import WindowNotFound
 
 
 class ScreenCapturing():
@@ -23,6 +24,9 @@ class ScreenCapturing():
             raise NotImplementedError
 
         hwnd = win32gui.FindWindow(None, self._process_name)
+        if hwnd == 0:
+            raise WindowNotFound(self._process_name)
+
         if win32gui.IsIconic(hwnd):
             win32gui.ShowWindow(hwnd, win32con.SW_MAXIMIZE)
 
