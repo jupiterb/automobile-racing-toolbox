@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Response, status
 from routers.common import Repositories
 
-from schemas import Game, GameSystemConfiguration
+from schemas import Game, GameSystemConfiguration, GameGlobalConfiguration
 from routers.common import Repositories
 
 
@@ -25,8 +25,10 @@ async def get_game(game_id: str) -> Game:
 
 
 @games_router.post("/{game_id}", status_code=status.HTTP_201_CREATED)
-async def add_game(game_id: str, description: str, response: Response) -> Game:
-    created, game = games.add_item(game_id, Game(id=game_id, description=description))
+async def add_game(game_id: str, description: str, process_name: str, response: Response) -> Game:
+    global_configuration = GameGlobalConfiguration(process_name=process_name)
+    new_game = Game(id=game_id, description=description, global_configuration=global_configuration)
+    created, game = games.add_item(game_id, new_game)
     if not created:
         response.status_code = status.HTTP_200_OK
     return game

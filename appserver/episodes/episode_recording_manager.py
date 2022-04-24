@@ -1,13 +1,13 @@
 from schemas import GameSystemConfiguration, GameGlobalConfiguration, EpisodeRecording
+from enviroments import RealTimeWrapper, RealGameWrapper
 
 
 class EpisodeRecordingManager():
 
-    def start_recording(self, 
+    def record(self, 
             system_configuration: GameSystemConfiguration,
             global_configuration: GameGlobalConfiguration
-        ):
-        pass
-
-    def stop_recording(self) -> EpisodeRecording:
+        ) -> EpisodeRecording:
+        enviroment_warpper = RealGameWrapper(global_configuration, system_configuration)
+        state = enviroment_warpper.read_state()
         return EpisodeRecording()

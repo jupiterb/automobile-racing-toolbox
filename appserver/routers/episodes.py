@@ -39,16 +39,12 @@ async def delete_episode(game_id: str, episode_id: str):
     episodes.delete_item((game_id, episode_id))
 
 
-@episodes_router.get("/{episode_id}/run", status_code=status.HTTP_204_NO_CONTENT)
-async def run_episode_recording(game_id: str):
+@episodes_router.get("/{episode_id}/record")
+async def run_episode_recording(game_id: str, episode_id: str) -> Episode:
     game = games.get_item(game_id)
-    episodes_recording_manager.start_recording(
+    recording = episodes_recording_manager.record(
         game.system_configuration, 
         game.global_configuration
     )
-
-
-@episodes_router.get("/{episode_id}/stop")
-async def stop_episode_recording(game_id: str, episode_id: str) -> Episode:
-    recording = episodes_recording_manager.stop_recording()
     return episodes.update_item((game_id, episode_id), recording=recording)
+    
