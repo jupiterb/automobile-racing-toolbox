@@ -15,12 +15,12 @@ class ScreenCapturing():
 
     def grab_image(self, screen_frame: ScreenFrame) -> np.ndarray:
         (left, top, right, bottom) = self._get_window_rect()
-        x, y = right - left, bottom - top
+        width, height = right - left, bottom - top
         box = (
-            int(left + x * screen_frame.left), 
-            int(top + y * screen_frame.top), 
-            int(left + x * screen_frame.right), 
-            int(top + y * screen_frame.bottom), 
+            int(left + width * screen_frame.left), 
+            int(top + height * screen_frame.top), 
+            int(left + width * screen_frame.right), 
+            int(top + height * screen_frame.bottom), 
         )
         image = np.array(ImageGrab.grab(box))
         return image
