@@ -27,10 +27,7 @@ class GuardRepository(GenericRepository, Generic[RepositoryParentId, RepositoryI
         return self._with_checking_access(id).add_item(id, item)
 
     def delete_item(self, id: RepositoryId):
-        try:
-            self._with_checking_access(id).delete_item(id)
-        except (ItemNotFound):
-            pass
+        self._with_checking_access(id).delete_item(id)
 
     def delete_when(self, predicate: Callable[[RepositoryId], bool]):
         self._child_repository.delete_when(predicate)

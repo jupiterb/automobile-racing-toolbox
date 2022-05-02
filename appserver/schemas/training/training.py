@@ -8,5 +8,5 @@ class Training(BaseModel):
     id: str
     description: Optional[str] = None
     parameters: TrainingParameters = TrainingParameters()
-    resylt: TrainingResult = TrainingResult()
+    result: TrainingResult = TrainingResult()
    

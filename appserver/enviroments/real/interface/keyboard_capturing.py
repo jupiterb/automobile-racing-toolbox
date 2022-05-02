@@ -1,0 +1,3 @@
+class KeyboardCapturing():
+
+    pass
