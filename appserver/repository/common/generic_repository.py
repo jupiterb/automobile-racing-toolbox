@@ -6,7 +6,7 @@ RepositoryId = TypeVar("RepositoryId")
 RepositoryItem = TypeVar("RepositoryItem")
 
 
-class AbstractRepository(Generic[RepositoryId, RepositoryItem], ABC):
+class GenericRepository(Generic[RepositoryId, RepositoryItem], ABC):
 
     @abstractmethod
     def get_all(self, predicate: Callable[[RepositoryId], bool] = lambda id: True) -> list[RepositoryItem]:

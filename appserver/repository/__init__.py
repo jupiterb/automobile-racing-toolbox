@@ -1,3 +1,2 @@
-from repository.abstract_repository import AbstractRepository, RepositoryId, RepositoryItem
+from repository.common import GenericRepository, GuardRepository, RepositoryId, RepositoryItem
 from repository.in_memory_repository import InMemoryRepository
-from repository.guard_repository import GuardRepository

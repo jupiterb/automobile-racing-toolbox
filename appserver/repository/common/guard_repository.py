@@ -1,16 +1,16 @@
 from typing import Generic, TypeVar, Any, Callable
-from repository.abstract_repository import RepositoryId, RepositoryItem, AbstractRepository
+from repository.common.generic_repository import RepositoryId, RepositoryItem, GenericRepository
 from utils.custom_exceptions import ItemNotFound
 
 
 RepositoryParentId = TypeVar("RepositoryParentId")
 
 
-class GuardRepository(AbstractRepository, Generic[RepositoryParentId, RepositoryId, RepositoryItem]):
+class GuardRepository(GenericRepository, Generic[RepositoryParentId, RepositoryId, RepositoryItem]):
 
     def __init__(self, 
-            child_repository: AbstractRepository[RepositoryId, RepositoryItem], 
-            parent_repository: AbstractRepository[RepositoryParentId, Any],
+            child_repository: GenericRepository[RepositoryId, RepositoryItem], 
+            parent_repository: GenericRepository[RepositoryParentId, Any],
             get_parnet_id: Callable[[RepositoryId], RepositoryParentId]
         ) -> None:
         self._child_repository = child_repository
@@ -27,10 +27,7 @@ class GuardRepository(AbstractRepository, Generic[RepositoryParentId, Repository
         return self._with_checking_access(id).add_item(id, item)
 
     def delete_item(self, id: RepositoryId):
-        try:
-            self._with_checking_access(id).delete_item(id)
-        except (ItemNotFound):
-            pass
+        self._with_checking_access(id).delete_item(id)
 
     def delete_when(self, predicate: Callable[[RepositoryId], bool]):
         self._child_repository.delete_when(predicate)
@@ -41,7 +38,7 @@ class GuardRepository(AbstractRepository, Generic[RepositoryParentId, Repository
     def __contains__(self, id: RepositoryId) -> bool:
         return id in self._child_repository
 
-    def _with_checking_access(self, id: RepositoryId) -> AbstractRepository:
+    def _with_checking_access(self, id: RepositoryId) -> GenericRepository:
         parent_id = self._get_parnet_id(id)
         if parent_id in self._parent_repository:
             return self._child_repository
