@@ -6,7 +6,7 @@ import numpy as np
 
 class Runner:
     def __init__(self):
-        self._env = gym.make("CarRacing-v0")
+        self._env = gym.make("CarRacing-v0").unwrapped
         self.__action_input = np.array([0.0, 0.0, 0.0], dtype=np.float32)
         self._last_tick = timer()
 
