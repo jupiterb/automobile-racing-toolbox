@@ -40,11 +40,16 @@ async def delete_episode(game_id: str, episode_id: str):
 
 
 @episodes_router.get("/{episode_id}/record")
-async def run_episode_recording(game_id: str, episode_id: str) -> Episode:
+async def run_episode_recording(
+        game_id: str, 
+        episode_id: str, 
+        fps: int = EpisodeRecordingManager.default_fps()
+    ) -> Episode:
     game = games.get_item(game_id)
-    recording = episodes_recording_manager.record(
+    recording = episodes_recording_manager.__record(
         game.system_configuration, 
-        game.global_configuration
+        game.global_configuration,
+        fps
     )
     return episodes.update_item((game_id, episode_id), recording=recording)
     
