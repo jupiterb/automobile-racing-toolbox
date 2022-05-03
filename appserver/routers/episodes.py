@@ -26,7 +26,13 @@ async def get_episode(game_id: str, episode_id: str) -> Episode:
 
 
 @episodes_router.post("/{episode_id}", status_code=status.HTTP_201_CREATED)
-async def add_episode(game_id: str, episode_id: str, description: str, response: Response) -> Episode:
+async def add_episode(
+        game_id: str,
+        episode_id: str, 
+        description: str, 
+        response: Response,
+        fps: int = EpisodeRecordingManager.default_fps()
+    ) -> Episode:
     new_episode = Episode(id=episode_id, description=description)
     created, returned_episode = episodes.add_item((game_id, episode_id), new_episode)
     if not created:
@@ -39,17 +45,37 @@ async def delete_episode(game_id: str, episode_id: str):
     episodes.delete_item((game_id, episode_id))
 
 
-@episodes_router.get("/{episode_id}/record")
-async def run_episode_recording(
+@episodes_router.get("/{episode_id}/start")
+async def start_episode_recording(
         game_id: str, 
         episode_id: str, 
         fps: int = EpisodeRecordingManager.default_fps()
     ) -> Episode:
+    episode = episodes.get_item((game_id, episode_id))
     game = games.get_item(game_id)
-    recording = episodes_recording_manager.__record(
+    episodes_recording_manager.start(
         game.system_configuration, 
         game.global_configuration,
         fps
     )
-    return episodes.update_item((game_id, episode_id), recording=recording)
-    
+    return episode
+
+
+@episodes_router.get("/{episode_id}/stop")
+async def stop_episode_recording(game_id: str, episode_id: str) -> Episode:
+    episode = episodes.get_item((game_id, episode_id))
+    episodes_recording_manager.stop()
+    return episode    
+
+
+@episodes_router.get("/{episode_id}/resume")
+async def resume_episode_recording(game_id: str, episode_id: str) -> Episode:
+    episode = episodes.get_item((game_id, episode_id))
+    episodes_recording_manager.resume()
+    return episode   
+
+
+@episodes_router.get("/{episode_id}/release")
+async def reelase_episode_recording(game_id: str, episode_id: str) -> Episode:
+    recording = episodes_recording_manager.release()
+    return episodes.update_item((game_id, episode_id), recording=recording)  
