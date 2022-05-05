@@ -15,7 +15,7 @@ class Runner:
         return self.__action_input.copy()
 
     @action_input.setter
-    def action_input(self, action: np.array):
+    def action_input(self, action: np.ndarray):
         if not self._env.action_space.contains(action):
             raise ValueError(
                 f"invalid action input for {type(self).__name__}: {action}"
