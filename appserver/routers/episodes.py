@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Response, status
 
-from episodes.episode_recording_manager import EpisodeRecordingManager
+from episode import EpisodeRecordingManager, EpisodeRecordingTransformer
 from schemas import Episode
 from routers.common import Repositories
 
@@ -31,7 +31,6 @@ async def add_episode(
         episode_id: str, 
         description: str, 
         response: Response,
-        fps: int = EpisodeRecordingManager.default_fps()
     ) -> Episode:
     new_episode = Episode(id=episode_id, description=description)
     created, returned_episode = episodes.add_item((game_id, episode_id), new_episode)
@@ -78,4 +77,5 @@ async def resume_episode_recording(game_id: str, episode_id: str) -> Episode:
 @episodes_router.get("/{episode_id}/release")
 async def reelase_episode_recording(game_id: str, episode_id: str) -> Episode:
     recording = episodes_recording_manager.release()
-    return episodes.update_item((game_id, episode_id), recording=recording)  
+    episode = episodes.update_item((game_id, episode_id), recording=recording)  
+    return EpisodeRecordingTransformer.only_screenshot_shapes(episode)

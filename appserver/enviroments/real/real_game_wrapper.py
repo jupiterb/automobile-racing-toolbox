@@ -24,7 +24,6 @@ class RealGameWrapper(RealTimeWrapper):
     def read_state(self) -> State:
         driving_screenshot = self._screen_capturing.grab_image(self._system_configuration.driving_screen_frame)
         velocity_screenshot = self._screen_capturing.grab_image(self._system_configuration.velocity_screen_frame)
-        print(driving_screenshot.shape)
         self._state_builder.reset()
         self._state_builder.add_features_from_screenshot(driving_screenshot)
         self._state_builder.add_velocity_with_ocr(velocity_screenshot)

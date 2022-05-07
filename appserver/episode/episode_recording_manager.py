@@ -1,5 +1,6 @@
 import threading
 from typing import Optional
+import time
 
 from schemas import GameSystemConfiguration, GameGlobalConfiguration, EpisodeRecording
 from enviroments import RealTimeWrapper, RealGameWrapper
@@ -35,6 +36,8 @@ class EpisodeRecordingManager():
                     state = enviroment_warpper.read_state()
                     action = enviroment_warpper.read_action()
                     self.__current_recording.recording.append((state, action))
+                    print(len(self.__current_recording.recording))
+            time.sleep(1 / fps)
         except WindowNotFound as e:
             self.__current_recording.error=f"Process {e.process_name} do not exist"
         return self.__current_recording
@@ -45,9 +48,9 @@ class EpisodeRecordingManager():
             fps: int
         ):
         self.__recording_thread = threading.Thread(
-                target=self.__record,
-                args=(system_configuration, global_configuration, fps)
-            )
+            target=self.__record,
+            args=(system_configuration, global_configuration, fps)
+        )
         self.__capturing = True
         self.__running = True
         self.__recording_thread.start()

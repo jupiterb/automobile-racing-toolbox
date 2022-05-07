@@ -11,7 +11,7 @@ class RealStateBuilder():
         self._state = State()
 
     def add_features_from_screenshot(self, screenshot: np.ndarray):
-        pass
+        self._state.screenshot_numpy_array = screenshot
 
     def add_velocity_with_ocr(self, screenshot: np.ndarray):
         pass
