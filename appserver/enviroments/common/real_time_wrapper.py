@@ -13,6 +13,10 @@ class RealTimeWrapper(ABC):
         self._system_configuration = system_configuration
 
     @abstractmethod
+    def run(self):
+        pass
+
+    @abstractmethod
     def step(self, action: Action) -> State:
         pass
 

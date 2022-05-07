@@ -19,6 +19,9 @@ class RealGameWrapper(RealTimeWrapper):
         self._keyboard_listener = Listener(on_press=self._callback)
         self._last_keys: set[str] = set()
 
+    def run(self):
+        super().run()
+
     def step(self, action: Action) -> State:
         return super().step(action)
 
