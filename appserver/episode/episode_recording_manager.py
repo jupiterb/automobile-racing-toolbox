@@ -9,7 +9,7 @@ from utils.custom_exceptions import WindowNotFound
 
 class EpisodeRecordingManager():
 
-    __default_fps: int = 30
+    __default_fps: int = 10
 
     @staticmethod
     def default_fps():
@@ -29,6 +29,7 @@ class EpisodeRecordingManager():
             fps: int
         ) -> EpisodeRecording:
         enviroment_warpper = RealGameWrapper(global_configuration, system_configuration)
+        _ = enviroment_warpper.reset()
         self.__current_recording = EpisodeRecording(fps=fps)
         try:
             while self.__running:

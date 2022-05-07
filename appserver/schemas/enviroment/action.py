@@ -4,4 +4,4 @@ from typing import Optional
 
 
 class Action(BaseModel):
-    key: Optional[str] = None
+    keys: Optional[set[str]] = None
