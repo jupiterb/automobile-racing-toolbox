@@ -1,8 +1,6 @@
-from pynput.keyboard import Listener
-
 from enviroments.common import RealTimeWrapper
 from schemas import GameGlobalConfiguration, GameSystemConfiguration, Action, State
-from enviroments.real.interface import ScreenCapturing
+from enviroments.real.interface import ScreenCapturing, KeyboardCapturing
 from enviroments.real.state import RealStateBuilder
 
 
@@ -13,11 +11,9 @@ class RealGameWrapper(RealTimeWrapper):
         system_configuration: GameSystemConfiguration
     ) -> None:
         super().__init__(global_configuration, system_configuration)
-        self._available_keys: set[str] = self._global_configuration.control_actions
         self._screen_capturing: ScreenCapturing = ScreenCapturing(global_configuration.process_name)
+        self._keyboard_capturing: KeyboardCapturing = KeyboardCapturing(global_configuration.control_actions)
         self._state_builder =  RealStateBuilder()
-        self._keyboard_listener = Listener(on_press=self._callback)
-        self._last_keys: set[str] = set()
 
     def run(self):
         super().run()
@@ -26,8 +22,7 @@ class RealGameWrapper(RealTimeWrapper):
         return super().step(action)
 
     def reset(self) -> State:
-        self._last_keys = set()
-        self._keyboard_listener.start()
+        self._keyboard_capturing.reset()
         return super().reset()
 
     def read_state(self) -> State:
@@ -42,15 +37,4 @@ class RealGameWrapper(RealTimeWrapper):
         return super().apply_action(action)
 
     def read_action(self) -> Action:
-        print(self._last_keys)
-        action = Action(keys=self._last_keys)
-        self._last_keys = set()
-        return action
-
-    def _callback(self, key):
-        try:
-            key_name = key.name
-            if key_name in self._available_keys:
-                self._last_keys.add(str(key_name))
-        except AttributeError:
-            pass
+        return Action(keys=self._keyboard_capturing.get_captured_keys())
