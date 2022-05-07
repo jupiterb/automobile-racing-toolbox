@@ -1,5 +1,7 @@
+from numpy import character
 from pydantic import BaseModel
+from typing import Optional
 
 
 class Action(BaseModel):
-    pass
+    keys: Optional[set[str]] = None
