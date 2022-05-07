@@ -11,9 +11,9 @@ class RealGameWrapper(RealTimeWrapper):
         system_configuration: GameSystemConfiguration
     ) -> None:
         super().__init__(global_configuration, system_configuration)
-        self._screen_capturing: ScreenCapturing = ScreenCapturing(global_configuration.process_name)
+        self._screen_capturing: ScreenCapturing = ScreenCapturing(global_configuration.process_name, (0, 0, 1920, 1080))
         self._keyboard_capturing: KeyboardCapturing = KeyboardCapturing(global_configuration.control_actions)
-        self._state_builder =  RealStateBuilder()
+        self._state_builder = RealStateBuilder()
 
     def run(self):
         super().run()

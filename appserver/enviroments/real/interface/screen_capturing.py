@@ -1,7 +1,6 @@
-import sys
-import win32gui
-import win32con
+import pygetwindow
 import numpy as np
+from typing import Optional
 from PIL import ImageGrab
 
 from schemas import ScreenFrame
@@ -10,12 +9,19 @@ from utils.custom_exceptions import WindowNotFound
 
 class ScreenCapturing():
 
-    def __init__(self, process_name: str) -> None:
+    def __init__(self, 
+        process_name: str, 
+        specified_window_rect: Optional[tuple[int, int, int, int]] = None
+    ) -> None:
         self._process_name: str = process_name
+        self._specified_window_rect: Optional[tuple[int, int, int, int]] = specified_window_rect
 
     def grab_image(self, screen_frame: ScreenFrame) -> np.ndarray:
-        (left, top, right, bottom) = self._get_window_rect()
-        width, height = right - left, bottom - top
+        window = self._maximize_window()
+        if self._specified_window_rect:
+            left, top, width, height = self._specified_window_rect
+        else:
+            left, top, width, height = window.left, window.top, window.width, window.height
         box = (
             int(left + width * screen_frame.left), 
             int(top + height * screen_frame.top), 
@@ -25,15 +31,11 @@ class ScreenCapturing():
         image = np.array(ImageGrab.grab(box))
         return image
 
-    def _get_window_rect(self) -> tuple[int, int, int, int]:
-        if not sys.platform in ['Windows', 'win32', 'cygwin']:
-            raise NotImplementedError
-
-        hwnd = win32gui.FindWindow(None, self._process_name)
-        if hwnd == 0:
+    def _maximize_window(self) -> pygetwindow.Window:
+        same_name_windows = pygetwindow.getWindowsWithTitle(self._process_name)
+        if not any(same_name_windows):
             raise WindowNotFound(self._process_name)
-
-        if win32gui.IsIconic(hwnd):
-            win32gui.ShowWindow(hwnd, win32con.SW_MAXIMIZE)
-
-        return win32gui.GetWindowRect(hwnd)
+        window = same_name_windows[0]
+        if not window.isMaximized:
+            window.maximize()
+        return window
