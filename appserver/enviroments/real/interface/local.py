@@ -1,9 +1,10 @@
-from pynput.keyboard import Listener
+from pynput.keyboard import Listener, Key, Controller
 
 from enviroments.real.interface.abstract import RealGameInterface
 from schemas import GameGlobalConfiguration, GameSystemConfiguration, Action, State
 from enviroments.real.capturing import ScreenCapturing
 from enviroments.real.state import RealStateBuilder
+
 
 
 class LocalInterface(RealGameInterface):
@@ -18,6 +19,7 @@ class LocalInterface(RealGameInterface):
         self._state_builder = RealStateBuilder()
         self._keyboard_listener = Listener(on_press=self._callback)
         self._last_keys: set[str] = set()
+        self._keayboard = Controller()
 
     def run(self):
         super().run()
@@ -42,8 +44,10 @@ class LocalInterface(RealGameInterface):
         self._state_builder.add_velocity_with_ocr(velocity_screenshot)
         return self._state_builder.get_result()
 
-    def apply_action(self, action: Action):
-        return super().apply_action(action)
+    def apply_action(self, action: list[Key]):
+        for key in action:
+            self._keayboard.press(key)
+        
 
     def read_action(self) -> Action:
         print(self._last_keys)
