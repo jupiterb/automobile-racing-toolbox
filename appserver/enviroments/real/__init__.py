@@ -1,1 +1,1 @@
-from enviroments.real.real_game_wrapper import RealGameWrapper
+from enviroments.real.interface.local import RealGameInterface

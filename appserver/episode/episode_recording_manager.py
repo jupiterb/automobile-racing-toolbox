@@ -3,18 +3,18 @@ from typing import Optional
 import time
 
 from schemas import GameSystemConfiguration, GameGlobalConfiguration, EpisodeRecording
-from enviroments import RealTimeWrapper, RealGameWrapper
+from enviroments import RealGameInterface, RealGameInterface
 from utils.custom_exceptions import WindowNotFound
 
 
-class EpisodeRecordingManager():
+class EpisodeRecordingManager:
 
     __default_fps: int = 10
 
     @staticmethod
     def default_fps():
         return EpisodeRecordingManager.__default_fps
-    
+
     def __init__(self) -> None:
         self.__current_recording: EpisodeRecording = EpisodeRecording(
             fps=EpisodeRecordingManager.default_fps()
@@ -23,12 +23,13 @@ class EpisodeRecordingManager():
         self.__capturing: bool = False
         self.__running: bool = True
 
-    def __record(self, 
-            system_configuration: GameSystemConfiguration,
-            global_configuration: GameGlobalConfiguration,
-            fps: int
-        ) -> EpisodeRecording:
-        enviroment_warpper = RealGameWrapper(global_configuration, system_configuration)
+    def __record(
+        self,
+        system_configuration: GameSystemConfiguration,
+        global_configuration: GameGlobalConfiguration,
+        fps: int,
+    ) -> EpisodeRecording:
+        enviroment_warpper = RealGameInterface(global_configuration, system_configuration)
         _ = enviroment_warpper.reset()
         self.__current_recording = EpisodeRecording(fps=fps)
         try:
@@ -40,17 +41,17 @@ class EpisodeRecordingManager():
                     print(len(self.__current_recording.recording))
             time.sleep(1 / fps)
         except WindowNotFound as e:
-            self.__current_recording.error=f"Process {e.process_name} do not exist"
+            self.__current_recording.error = f"Process {e.process_name} do not exist"
         return self.__current_recording
 
-    def start(self, 
-            system_configuration: GameSystemConfiguration,
-            global_configuration: GameGlobalConfiguration,
-            fps: int
-        ):
+    def start(
+        self,
+        system_configuration: GameSystemConfiguration,
+        global_configuration: GameGlobalConfiguration,
+        fps: int,
+    ):
         self.__recording_thread = threading.Thread(
-            target=self.__record,
-            args=(system_configuration, global_configuration, fps)
+            target=self.__record, args=(system_configuration, global_configuration, fps)
         )
         self.__capturing = True
         self.__running = True
@@ -68,4 +69,3 @@ class EpisodeRecordingManager():
         if self.__recording_thread is not None:
             self.__recording_thread.join()
         return self.__current_recording
-        

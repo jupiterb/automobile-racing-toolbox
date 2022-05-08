@@ -1,2 +1,2 @@
-from enviroments.common import RealTimeWrapper
-from enviroments.real import RealGameWrapper
+from enviroments.common import RealGameInterface
+from enviroments.real import RealGameInterface
