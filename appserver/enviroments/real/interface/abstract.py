@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-
+from pynput.keyboard import Key
 from schemas import GameGlobalConfiguration, GameSystemConfiguration, Action, State
 
 
@@ -17,19 +17,15 @@ class RealGameInterface(ABC):
         pass
 
     @abstractmethod
-    def step(self, action: Action) -> State:
-        pass
-
-    @abstractmethod
     def reset(self) -> State:
         pass
 
     @abstractmethod
-    def read_state(self) -> State:
+    def read_frame(self) -> State:
         pass
 
     @abstractmethod
-    def apply_action(self, action: Action):
+    def apply_keyboard_action(self, action: list[Key]):
         pass
 
     @abstractmethod

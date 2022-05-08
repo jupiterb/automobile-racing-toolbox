@@ -3,7 +3,7 @@ from typing import Optional
 import time
 
 from schemas import GameSystemConfiguration, GameGlobalConfiguration, EpisodeRecording
-from enviroments import RealGameInterface, RealGameInterface
+from enviroments.real import RealGameInterface, RealGameInterface
 from utils.custom_exceptions import WindowNotFound
 
 
@@ -35,7 +35,7 @@ class EpisodeRecordingManager:
         try:
             while self.__running:
                 if self.__capturing:
-                    state = enviroment_warpper.read_state()
+                    state = enviroment_warpper.read_frame()
                     action = enviroment_warpper.read_action()
                     self.__current_recording.recording.append((state, action))
                     print(len(self.__current_recording.recording))
