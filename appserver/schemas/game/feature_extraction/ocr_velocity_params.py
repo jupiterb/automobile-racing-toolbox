@@ -18,4 +18,4 @@ class OcrVelocityParams(BaseModel):
     shape_width: int = 40
     shape_height: int = 50
     ocr_type: OcrType = OcrType.SEGMENT_DETECTION
-    segement_detection_params: Optional[SegmentDetectionParams] = SegmentDetectionParams()
+    segment_detection_params: Optional[SegmentDetectionParams] = SegmentDetectionParams()

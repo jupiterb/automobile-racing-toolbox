@@ -10,8 +10,8 @@ class RealStateBuilder():
     def __init__(self, global_configuration: GameGlobalConfiguration) -> None:
         self._state = State()
         ocr_velocity_params = global_configuration.ocr_velocity_params
-        if ocr_velocity_params.ocr_type is OcrType.SEGMENT_DETECTION and ocr_velocity_params.segement_detection_params:
-            self._ocr: AbstractOcr = SegmentDetectionOcr(global_configuration, ocr_velocity_params.segement_detection_params)
+        if ocr_velocity_params.ocr_type is OcrType.SEGMENT_DETECTION and ocr_velocity_params.segment_detection_params:
+            self._ocr: AbstractOcr = SegmentDetectionOcr(global_configuration, ocr_velocity_params.segment_detection_params)
         else:
              self._ocr: AbstractOcr = SegmentDetectionOcr(global_configuration, SegmentDetectionParams())
 
