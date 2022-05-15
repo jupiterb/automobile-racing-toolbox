@@ -37,7 +37,6 @@ class EpisodeRecordingManager():
                     state = enviroment_warpper.read_state()
                     action = enviroment_warpper.read_action()
                     self.__current_recording.recording.append((state, action))
-                    print(len(self.__current_recording.recording))
             time.sleep(1 / fps)
         except WindowNotFound as e:
             self.__current_recording.error=f"Process {e.process_name} do not exist"
