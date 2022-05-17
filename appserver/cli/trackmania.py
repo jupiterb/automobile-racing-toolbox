@@ -3,7 +3,6 @@ from enviroments.real.interface.local import LocalInterface
 from schemas.game.game_global_configuration import GameGlobalConfiguration
 from schemas.game.game_system_configuration import GameSystemConfiguration
 from stable_baselines3 import A2C
-from gym.wrappers import GrayScaleObservation
 from stable_baselines3.common.env_checker import check_env 
 
 

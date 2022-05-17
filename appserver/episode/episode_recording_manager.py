@@ -2,8 +2,8 @@ import threading
 from typing import Optional
 import time
 
+from enviroments.real.interface.local import LocalInterface
 from schemas import GameSystemConfiguration, GameGlobalConfiguration, EpisodeRecording
-from enviroments.real import RealGameInterface, RealGameInterface
 from utils.custom_exceptions import WindowNotFound
 
 
@@ -29,7 +29,7 @@ class EpisodeRecordingManager:
         global_configuration: GameGlobalConfiguration,
         fps: int,
     ) -> EpisodeRecording:
-        enviroment_warpper = RealGameInterface(global_configuration, system_configuration)
+        enviroment_warpper = LocalInterface(global_configuration, system_configuration)
         _ = enviroment_warpper.reset()
         self.__current_recording = EpisodeRecording(fps=fps)
         try:

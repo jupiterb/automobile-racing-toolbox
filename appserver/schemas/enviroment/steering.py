@@ -5,4 +5,4 @@ class SteeringAction(Enum):
     FORWARD = auto()
     LEFT = auto()
     RIGHT = auto()
-    STOP = auto()
+    BREAK = auto()

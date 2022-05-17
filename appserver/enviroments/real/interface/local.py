@@ -17,13 +17,13 @@ class LocalInterface(RealGameInterface):
         system_configuration: GameSystemConfiguration,
     ) -> None:
         super().__init__(global_configuration, system_configuration)
-        self._available_keys: set[str] = self._global_configuration.action_key_mapping.keys()
+        self._available_keys: set[SteeringAction] = set(self._global_configuration.action_key_mapping.keys())
         self._screen_capturing: ScreenCapturing = ScreenCapturing(global_configuration.process_name)
         self._keyboard_listener = Listener(on_press=self._callback)
         self._last_keys: set[str] = set()
         self._keayboard = Controller()
 
-    def run(self):
+    def run(self) -> None:
         super().run()
 
     def reset(self) -> State:
@@ -31,7 +31,7 @@ class LocalInterface(RealGameInterface):
         # self._keyboard_listener.start()
         return super().reset()
 
-    def read_frame(self) -> State:
+    def read_frame(self) -> Frame:
         driving_screenshot = self._screen_capturing.grab_image(
             self._system_configuration.driving_screen_frame
         )
@@ -40,11 +40,11 @@ class LocalInterface(RealGameInterface):
         )
         return driving_screenshot
 
-    def apply_keyboard_action(self, action: list[Key]):
-        for key in action:
-            self._keayboard.press(self._global_configuration.action_key_mapping[key])
-        for key in set(SteeringAction) - set(action):
-            self._keayboard.release(self._global_configuration.action_key_mapping[key])
+    def apply_keyboard_action(self, action: list[SteeringAction]) -> None:
+        for a in action:
+            self._keayboard.press(self._global_configuration.action_key_mapping[a])
+        for a in set(SteeringAction) - set(action):
+            self._keayboard.release(self._global_configuration.action_key_mapping[a])
         
 
     def read_action(self) -> Action:
@@ -53,7 +53,7 @@ class LocalInterface(RealGameInterface):
         self._last_keys = set()
         return action
 
-    def _callback(self, key):
+    def _callback(self, key) -> None:
         try:
             if key in self._available_keys:
                 self._last_keys.add(str(key))

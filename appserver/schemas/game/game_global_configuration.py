@@ -9,6 +9,6 @@ class GameGlobalConfiguration(BaseModel):
         SteeringAction.FORWARD: Key.up,
         SteeringAction.LEFT: Key.left,
         SteeringAction.RIGHT: Key.right,
-        SteeringAction.STOP: Key.down,
+        SteeringAction.BREAK: Key.down,
     }
     # TODO: Add validator to make sure all SteeringAction were translated to the keys
