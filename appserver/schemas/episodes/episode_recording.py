@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from schemas import State, Action
+from schemas import  Action, State
 
 
 class EpisodeRecording(BaseModel):

@@ -3,7 +3,7 @@ from fastapi.responses import PlainTextResponse
 
 from routers import games_router, trainings_router, episodes_router, runner_router
 from utils.custom_exceptions import ItemNotFound
-
+import cli.trackmania
 
 app = FastAPI()
 
@@ -24,3 +24,7 @@ async def handle_item_not_found(request: Request, exception: ItemNotFound):
 @app.get("/")
 async def root():
     return {"Hello": "World"}
+
+
+if __name__ == "__main__":
+    cli.trackmania.main()
