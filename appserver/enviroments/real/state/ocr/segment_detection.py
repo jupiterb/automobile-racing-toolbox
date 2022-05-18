@@ -1,4 +1,6 @@
 import numpy as np
+from PIL import Image
+import random
 
 from enviroments.real.state.ocr.abstract import AbstractOcr
 from schemas.game.feature_extraction.segment_detection_params import SegmentDetectionParams

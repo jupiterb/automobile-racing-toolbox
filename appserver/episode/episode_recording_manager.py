@@ -29,14 +29,14 @@ class EpisodeRecordingManager:
         global_configuration: GameGlobalConfiguration,
         fps: int,
     ) -> EpisodeRecording:
-        enviroment_warpper = LocalInterface(global_configuration, system_configuration)
-        _ = enviroment_warpper.reset()
+        enviroment_interface = LocalInterface(global_configuration, system_configuration)
+        _ = enviroment_interface.reset()
         self.__current_recording = EpisodeRecording(fps=fps)
         try:
             while self.__running:
                 if self.__capturing:
-                    state = enviroment_warpper.read_state()
-                    action = enviroment_warpper.read_action()
+                    state = enviroment_interface.read_state()
+                    action = enviroment_interface.read_action()
                     self.__current_recording.recording.append((state, action))
             time.sleep(1 / fps)
         except WindowNotFound as e:

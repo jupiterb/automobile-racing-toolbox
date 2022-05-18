@@ -17,18 +17,21 @@ class LocalInterface(RealGameInterface):
         system_configuration: GameSystemConfiguration
     ) -> None:
         super().__init__(global_configuration, system_configuration)
-        self._available_keys: set[SteeringAction] = set(self._global_configuration.action_key_mapping.keys())
         self._state_builder = RealStateBuilder(global_configuration)
-        self._screen_capturing: ScreenCapturing = ScreenCapturing(global_configuration.process_name)
-        self._keyboard_capturing: KeyboardCapturing = KeyboardCapturing(set(global_configuration.action_key_mapping.values()))
+        self._screen_capturing: ScreenCapturing = ScreenCapturing(
+            global_configuration.process_name, 
+            system_configuration.specified_window_rect
+        )
+        self._keyboard_capturing: KeyboardCapturing = KeyboardCapturing(
+            set(global_configuration.action_key_mapping.values())
+        )
         self._keayboard = Controller()
 
     def run(self) -> None:
         super().run()
 
     def reset(self) -> State:
-        self._last_keys = set()
-        # self._keyboard_listener.start()
+        self._keyboard_capturing.reset()
         return super().reset()
 
     def read_state(self) -> State:
