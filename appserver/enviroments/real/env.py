@@ -1,18 +1,23 @@
 import gym
 from enviroments.real.interface.abstract import RealGameInterface
-from enviroments.real.state.real_state_builder import RealStateBuilder
+from enviroments.real.state import RealStateBuilder
 import numpy as np
 from schemas.enviroment.steering import SteeringAction
-from schemas import State, GameSystemConfiguration, GameGlobalConfiguration
+from schemas import State, GameGlobalConfiguration
+from typing import Optional
 
 
-Frame = np.ndarray | None
+Frame = Optional[np.ndarray]
 
 
 class RealTimeEnv(gym.Env):
-    def __init__(self, game_interface: RealGameInterface):
+    def __init__(
+        self,
+        game_interface: RealGameInterface,
+        global_configuration: GameGlobalConfiguration,
+    ):
         self._interface = game_interface
-
+        self._state_builder = RealStateBuilder(global_configuration)
         self.obs_shape = (100, 100, 1)
         self._reward_system = ...
         self.__last_frame = None
@@ -22,7 +27,10 @@ class RealTimeEnv(gym.Env):
         ]  # None means no action
         self.action_space = gym.spaces.Discrete(len(self.available_actions))
         self.observation_space = gym.spaces.Box(
-            low=0, high=255, shape=self.obs_shape, dtype=np.uint8
+            low=0,
+            high=255,
+            shape=global_configuration.observation_shape,
+            dtype=np.uint8,
         )
 
     def reset(self) -> Frame:
@@ -43,13 +51,17 @@ class RealTimeEnv(gym.Env):
         return self.__last_frame
 
     def _fetch_state(self) -> State:
-        return self._interface.read_state()
+        self._state_builder.add_features_from_screenshot(
+            self._interface.get_image_input()
+        )
+        self._state_builder.add_velocity(self._interface.get_velocity_input())
+        return self._state_builder.build()
 
     def _aplly_action(self, action: int) -> None:
         steering_input = self.available_actions[action]
         if steering_input:  # action == None -> do nothing
             self._interface.apply_keyboard_action(steering_input)
-            
+
     def _get_reward(self, state: State) -> float:
         # TODO: add reward system
         return -1

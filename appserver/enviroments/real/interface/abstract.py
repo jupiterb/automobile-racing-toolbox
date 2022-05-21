@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import numpy as np
 from pynput.keyboard import Key
 from schemas import GameGlobalConfiguration, GameSystemConfiguration, Action, State
 
@@ -17,11 +18,15 @@ class RealGameInterface(ABC):
         pass
 
     @abstractmethod
-    def reset(self) -> State:
+    def reset(self):
         pass
 
     @abstractmethod
-    def read_state(self) -> State:
+    def get_image_input(self) -> np.ndarray:
+        pass
+
+    @abstractmethod
+    def get_velocity_input(self) -> int:
         pass
 
     @abstractmethod

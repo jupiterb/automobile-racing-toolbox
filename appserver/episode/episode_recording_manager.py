@@ -35,9 +35,9 @@ class EpisodeRecordingManager:
         try:
             while self.__running:
                 if self.__capturing:
-                    state = enviroment_interface.read_state()
+                    image = enviroment_interface.get_image_input().tolist()
                     action = enviroment_interface.read_action()
-                    self.__current_recording.recording.append((state, action))
+                    self.__current_recording.recording.append((image, action))
             time.sleep(1 / fps)
         except WindowNotFound as e:
             self.__current_recording.error = f"Process {e.process_name} do not exist"
