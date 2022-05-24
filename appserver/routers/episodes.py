@@ -71,4 +71,4 @@ async def resume_episode_recording(game_id: str, episode_id: str) -> Episode:
 async def reelase_episode_recording(game_id: str, episode_id: str) -> str:
     recording = episodes_recording_manager.release()
     episodes.update_item((game_id, episode_id), recording=recording)
-    return "Your recording ws successfully saved"
+    return "Your recording was successfully saved"

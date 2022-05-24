@@ -3,6 +3,7 @@ import numpy as np
 import cv2
 
 from schemas import GameGlobalConfiguration
+from schemas.game.feature_extraction import MorphologyOperationType
 
 
 class AbstractOcr:
@@ -18,18 +19,18 @@ class AbstractOcr:
         binary = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
 
         dilated_eroded = binary
-        for iterations, kernel in self._ocr_velocity_params.dilate_erode_combination:
-            if iterations > 0:
+        for operation in self._ocr_velocity_params.morphology_operations_combination:
+            if operation.type == MorphologyOperationType.DILATING:
                 dilated_eroded = cv2.dilate(
                     dilated_eroded,
-                    kernel=np.array(kernel, np.uint8),
-                    iterations=iterations,
+                    kernel=np.array(operation.kernel, np.uint8),
+                    iterations=operation.iterations,
                 )
-            elif iterations < 0:
+            elif operation.type == MorphologyOperationType.EROSION:
                 dilated_eroded = cv2.erode(
                     dilated_eroded,
-                    kernel=np.array(kernel, np.uint8),
-                    iterations=-iterations,
+                    kernel=np.array(operation.kernel, np.uint8),
+                    iterations=operation.iterations,
                 )
 
         return dilated_eroded

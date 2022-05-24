@@ -1,9 +1,9 @@
 import numpy as np
+from PIL import Image
+import random
 
 from enviroments.real.state.ocr.abstract import AbstractOcr
-from schemas.game.feature_extraction.segment_detection_params import (
-    SegmentDetectionParams,
-)
+from schemas.game.feature_extraction import SegmentDetectionParams
 from schemas import GameGlobalConfiguration, ScreenFrame
 
 
@@ -17,10 +17,13 @@ class SegmentDetectionOcr(AbstractOcr):
         self._params: SegmentDetectionParams = segment_detection_params
 
     def read_number(self, image: np.ndarray) -> int:
+        Image.fromarray(image).save(f"image_{random.randint(100, 990)}.jpeg")
+        print(image.shape)
         digits_captured = self._separated_digits(self._prepare_image(image))
         velocity = 0
         for digit in digits_captured:
             velocity = velocity * 10 + self.__read_digit(digit)
+        print(velocity)
         return velocity
 
     @staticmethod
@@ -43,12 +46,12 @@ class SegmentDetectionOcr(AbstractOcr):
     def __read_digit(self, image: np.ndarray) -> int:
         segments_coveraged: list[int] = [
             segment
-            for segment, definition in self._params.segments_definitions.items()
+            for segment, definition in enumerate(self._params.segments_definitions)
             if self.__is_segment_coveraged(self.__get_segment(image, definition))
         ]
         potentail_digitis = [
             digit
-            for digit, definition in self._params.digits_definitions.items()
+            for digit, definition in enumerate(self._params.digits_definitions)
             if set(definition) == set(segments_coveraged)
         ]
         if any(potentail_digitis):

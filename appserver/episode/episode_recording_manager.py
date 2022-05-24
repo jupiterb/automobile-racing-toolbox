@@ -29,13 +29,16 @@ class EpisodeRecordingManager:
         global_configuration: GameGlobalConfiguration,
         fps: int,
     ) -> EpisodeRecording:
-        enviroment_interface = LocalInterface(global_configuration, system_configuration)
+        enviroment_interface = LocalInterface(
+            global_configuration, system_configuration
+        )
         _ = enviroment_interface.reset()
         self.__current_recording = EpisodeRecording(fps=fps)
         try:
             while self.__running:
                 if self.__capturing:
                     image = enviroment_interface.get_image_input().tolist()
+                    _ = enviroment_interface.get_velocity_input()
                     action = enviroment_interface.read_action()
                     self.__current_recording.recording.append((image, action))
             time.sleep(1 / fps)

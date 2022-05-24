@@ -1,15 +1,13 @@
 from pynput.keyboard import Controller
+import numpy as np
 
 from enviroments.real.interface.abstract import RealGameInterface
-from schemas import GameGlobalConfiguration, GameSystemConfiguration, Action, State
+from schemas import GameGlobalConfiguration, GameSystemConfiguration, Action
 from enviroments.real.capturing import ScreenCapturing, KeyboardCapturing
 from enviroments.real.state.ocr import AbstractOcr, SegmentDetectionOcr
 from schemas.game.feature_extraction import SegmentDetectionParams, OcrType
-
-import numpy as np
-import cv2
-
 from schemas.enviroment.steering import SteeringAction
+
 
 Frame = np.ndarray
 
@@ -52,7 +50,7 @@ class LocalInterface(RealGameInterface):
         image = self._screen_capturing.grab_image(
             self._system_configuration.driving_screen_frame
         )
-        return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        return image
 
     def get_velocity_input(self) -> int:
         velocity_screenshot = self._screen_capturing.grab_image(
@@ -68,5 +66,5 @@ class LocalInterface(RealGameInterface):
 
     def read_action(self) -> Action:
         return Action(
-            keys=set([key.name for key in self._keyboard_capturing.get_captured_keys()])
+            keys={key.name for key in self._keyboard_capturing.get_captured_keys()}
         )

@@ -1,8 +1,9 @@
 from pydantic import BaseModel
-from schemas import  Action
+from schemas import Action
+from typing import Union
 
 
-ImageMatrix = list[list[int]]
+ImageMatrix = Union[list[list[int]], list[list[list[int]]]]
 
 
 class EpisodeRecording(BaseModel):

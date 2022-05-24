@@ -1,7 +1,8 @@
 import pygetwindow
 import numpy as np
-from typing import Optional
+from typing import Any, Optional
 from PIL import ImageGrab
+import sys
 
 from schemas import ScreenFrame
 from utils.custom_exceptions import WindowNotFound
@@ -19,16 +20,7 @@ class ScreenCapturing:
         ] = specified_window_rect
 
     def grab_image(self, screen_frame: ScreenFrame) -> np.ndarray:
-        window = self._maximize_window()
-        if self._specified_window_rect:
-            left, top, width, height = self._specified_window_rect
-        else:
-            left, top, width, height = (
-                window.left,
-                window.top,
-                window.width,
-                window.height,
-            )
+        left, top, width, height = self._get_window_rect()
         box = (
             int(left + width * screen_frame.left),
             int(top + height * screen_frame.top),
@@ -38,11 +30,19 @@ class ScreenCapturing:
         image = np.array(ImageGrab.grab(box))
         return image
 
-    def _maximize_window(self) -> pygetwindow.Window:
+    def _get_window_rect(self) -> tuple[int, int, int, int]:
+        if self._specified_window_rect:
+            return self._specified_window_rect
+
+        if not sys.platform in ["Windows", "win32", "cygwin"]:
+            raise NotImplementedError
+
+        window = self.__windows_activate_window()
+        return window.left, window.top, window.width, window.height
+
+    def __windows_activate_window(self) -> pygetwindow.Window:
         same_name_windows = pygetwindow.getWindowsWithTitle(self._process_name)
         if not same_name_windows:
             raise WindowNotFound(self._process_name)
         window = same_name_windows[0]
-        if not window.isMaximized:
-            window.maximize()
         return window
