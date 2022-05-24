@@ -38,7 +38,6 @@ class EpisodeRecordingManager:
             while self.__running:
                 if self.__capturing:
                     image = enviroment_interface.get_image_input().tolist()
-                    _ = enviroment_interface.get_velocity_input()
                     action = enviroment_interface.read_action()
                     self.__current_recording.recording.append((image, action))
             time.sleep(1 / fps)
