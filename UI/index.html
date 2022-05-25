@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<title>W3.CSS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+
+<body>
+    <div class="w3-container">
+
+        <h2>Accordions</h2>
+        <p>An accordion is used to show (and hide) HTML content:</p>
+
+        <button onclick="expandSection('SelectGame')" class="w3-btn w3-block w3-black w3-left-align">Open Section 1</button>
+        <div id="SelectGame" class="w3-container w3-hide">
+
+            <form class="w3-container">
+
+                <label class="w3-text-blue"><b>Process Name</b></label>
+                <input class="w3-input w3-border" type="text">
+                 
+                
+                <button class="w3-btn w3-blue">Register</button>
+                 
+                </form>
+        </div>
+
+    </div>
+    <script>
+        var HOST = "127.0.0.1"
+        var PORT = 8000
+
+        function expandSection(id) {
+            var x = document.getElementById(id);
+            if (x.className.indexOf("w3-show") == -1) {
+                x.className += " w3-show";
+            } else {
+                x.className = x.className.replace(" w3-show", "");
+            }
+        }
+
+        // show available resources to the user 
+        function updateGames() {
+
+        }
+
+        function updateAlgorithms() {
+
+        }
+
+        function updateModels() {
+
+        }
+
+        function updateRecordings() {
+
+        }
+
+// onclick 
+    </script>
+
+</body>
+
+</html>
