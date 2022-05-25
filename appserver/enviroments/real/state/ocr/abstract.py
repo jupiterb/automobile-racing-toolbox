@@ -18,22 +18,22 @@ class AbstractOcr:
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) if image.ndim > 2 else image
         binary = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
 
-        dilated_eroded = binary
+        with_morphology_transform = binary
         for operation in self._ocr_velocity_params.morphology_operations_combination:
             if operation.type == MorphologyOperationType.DILATING:
-                dilated_eroded = cv2.dilate(
-                    dilated_eroded,
+                with_morphology_transform = cv2.dilate(
+                    with_morphology_transform,
                     kernel=np.array(operation.kernel, np.uint8),
                     iterations=operation.iterations,
                 )
             elif operation.type == MorphologyOperationType.EROSION:
-                dilated_eroded = cv2.erode(
-                    dilated_eroded,
+                with_morphology_transform = cv2.erode(
+                    with_morphology_transform,
                     kernel=np.array(operation.kernel, np.uint8),
                     iterations=operation.iterations,
                 )
 
-        return dilated_eroded
+        return with_morphology_transform
 
     def _separated_digits(self, image: np.ndarray) -> list[np.ndarray]:
         img_height, img_width = image.shape
