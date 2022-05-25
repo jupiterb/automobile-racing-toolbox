@@ -9,4 +9,13 @@ class Training(BaseModel):
     description: Optional[str] = None
     parameters: TrainingParameters = TrainingParameters()
     result: TrainingResult = TrainingResult()
-   
+    __version: int = 0  # every time training is continued, version is incremented
+
+    @property
+    def version(self):
+        return self.__version
+
+    def update_result(self):
+        self.__version += 1
+        self.result = ...
+        self.result.dump()

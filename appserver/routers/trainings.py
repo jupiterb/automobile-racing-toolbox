@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Response, status
+from schemas.training.training_parameters import TrainingParameters
 
 from schemas import Training
 from training import TrainingManager
@@ -26,8 +27,8 @@ async def get_training(game_id: str, training_id: str) -> Training:
 
 
 @trainings_router.post("/{training_id}", status_code=status.HTTP_201_CREATED)
-async def add_training(game_id: str, training_id: str, description: str, response: Response) -> Training:
-    new_training = Training(id=game_id, description=description)
+async def add_training(game_id: str, training_id: str, description: str, params: TrainingParameters, response: Response) -> Training:
+    new_training = Training(id=game_id, description=description, training_parameters=params)
     created, returned_training = trainings.add_item((game_id, training_id), new_training)
     if not created:
         response.status_code = status.HTTP_200_OK
@@ -46,7 +47,7 @@ async def run_training(game_id: str, training_id: str):
     training_manager.run_training(
         game.system_configuration,
         game.global_configuration,
-        training.parameters
+        training
     )
 
 

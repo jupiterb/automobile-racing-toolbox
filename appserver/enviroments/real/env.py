@@ -18,9 +18,14 @@ class RealTimeEnv(gym.Env):
         self._reward_system = ...
         self.__last_frame = None
 
-        self.available_actions = [[a] for a in SteeringAction] + [
-            None
-        ]  # None means no action
+        self.available_actions = [
+            [SteeringAction.FORWARD],
+            [SteeringAction.FORWARD, SteeringAction.LEFT],
+            [SteeringAction.FORWARD, SteeringAction.RIGHT],
+            [SteeringAction.LEFT],
+            [SteeringAction.RIGHT],
+            [SteeringAction.BREAK]
+        ] # None means no action
         self.action_space = gym.spaces.Discrete(len(self.available_actions))
         self.observation_space = gym.spaces.Box(
             low=0, high=255, shape=self.obs_shape, dtype=np.uint8

@@ -2,7 +2,7 @@ from enviroments.real.env import RealTimeEnv
 from enviroments.real.interface.local import LocalInterface
 from schemas.game.game_global_configuration import GameGlobalConfiguration
 from schemas.game.game_system_configuration import GameSystemConfiguration
-from stable_baselines3 import A2C
+from stable_baselines3 import A2C, DQN
 from stable_baselines3.common.env_checker import check_env 
 
 
@@ -14,7 +14,7 @@ def main():
     env = RealTimeEnv(interface)
     check_env(env)
    
-    model = A2C('CnnPolicy', env, verbose=1)
+    model = DQN('CnnPolicy', env, verbose=1)
     model.learn(total_timesteps=100)
 
     obs = env.reset()
