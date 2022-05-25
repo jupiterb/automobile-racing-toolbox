@@ -5,9 +5,10 @@ from pathlib import Path
 
 
 class TrainingParameters(BaseModel):
-    algorithm: str = "Foo"  # it is ignored for now
-    tensorboard_dir_path: Path = Path(__file__) / "demo/tensorboard"
-    log_dir_path: Path = Path(__file__) / "demo/trening"
+    algorithm: str = "DQN"  # it is ignored for now
+    neural_network_architecture: list[int]=[32, 32, 10]
+    tensorboard_dir_path: Path = Path(__file__).parent / "demo/tensorboard"
+    log_dir_path: Path = Path(__file__).parent / "demo/trening"
 
 
 class RLAlgorithm(Enum):

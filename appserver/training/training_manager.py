@@ -14,7 +14,7 @@ from stable_baselines3.common.env_checker import check_env
 from stable_baselines3 import DQN
 from stable_baselines3.dqn.policies import CnnPolicy
 
-import gym
+import gym, os
 
 
 class TrainingManager:
@@ -27,6 +27,8 @@ class TrainingManager:
         global_configuration: GameGlobalConfiguration,
         training: Training,
     ):
+        os.makedirs(training.parameters.tensorboard_dir_path, exist_ok=True)
+        os.makedirs(training.parameters.log_dir_path, exist_ok=True)
 
         interface = LocalInterface(global_configuration, system_configuration)
         env = RealTimeEnv(interface)
@@ -44,7 +46,7 @@ class TrainingManager:
         )
 
         callback = SaveOnBestTrainingRewardCallback(
-            2000, log_dir=training.parameters.log_dir_path
+            2000, training.parameters.log_dir_path, TrainingManager.BEST_MODEL_NAME
         )
         model.learn(
             total_timesteps=5_000,
