@@ -26,12 +26,13 @@ class OcrVelocityParams(BaseModel):
     morphology_operations_combination: list[MorphologyOperation] = [
         MorphologyOperation(
             type=MorphologyOperationType.DILATING,
-            iterations=2,
+            iterations=1,
             kernel=[[1, 1], [1, 1], [1, 1]],
         )
     ]
-    min_width: int = 10
-    min_height: int = 40
+    absolute_min_width: float = 0.075
+    absolute_min_height: float = 0.75
+    min_width: float = 0.15
     shape_width: int = 40
     shape_height: int = 50
     ocr_type: OcrType = OcrType.SEGMENT_DETECTION

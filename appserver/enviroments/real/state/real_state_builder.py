@@ -12,7 +12,7 @@ class RealStateBuilder:
         self._state = State()
 
     def add_features_from_screenshot(self, screenshot: np.ndarray):
-        grayscale = cv2.cvtColor(screenshot, cv2.COLOR_BGR2GRAY)
+        grayscale = cv2.cvtColor(screenshot, cv2.COLOR_BGR2GRAY) if screenshot.ndim > 2 else screenshot
         w, h, *_ = self._observation_shape
         resized = cv2.resize(grayscale, (w, h), cv2.INTER_AREA)
         self._state.screenshot_numpy_array = np.array(resized, dtype=np.uint8)

@@ -15,7 +15,7 @@ class AbstractOcr:
         pass
 
     def _prepare_image(self, image: np.ndarray) -> np.ndarray:
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) if image.ndim > 2 else image
         binary = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
 
         dilated_eroded = binary
@@ -36,22 +36,27 @@ class AbstractOcr:
         return dilated_eroded
 
     def _separated_digits(self, image: np.ndarray) -> list[np.ndarray]:
+        img_height, img_width = image.shape
         contours = cv2.findContours(image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[0]
         rects = [cv2.boundingRect(contour) for contour in contours]
         rects = [
             (left, top, width, height)
             for left, top, width, height in rects
-            if width >= self._ocr_velocity_params.min_width
-            and height >= self._ocr_velocity_params.min_height
+            if width >= self._ocr_velocity_params.absolute_min_width * img_width
+            and height >= self._ocr_velocity_params.absolute_min_height * img_height
         ]
         rects.sort(key=lambda rect: rect[0])
         return [
-            self.__normalize_shape(image[top : top + height, left : left + width])
+            self.__normalize_shape(
+                image[top : top + height, left : left + width], image.shape[1]
+            )
             for left, top, width, height in rects
         ]
 
-    def __normalize_shape(self, image: np.ndarray) -> np.ndarray:
-        if image.shape[1] < self._ocr_velocity_params.shape_width:
+    def __normalize_shape(
+        self, image: np.ndarray, input_image_width: int
+    ) -> np.ndarray:
+        if image.shape[1] < self._ocr_velocity_params.min_width * input_image_width:
             image = cv2.copyMakeBorder(
                 image,
                 0,

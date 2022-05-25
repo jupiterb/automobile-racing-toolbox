@@ -18,7 +18,6 @@ class RealTimeEnv(gym.Env):
     ):
         self._interface = game_interface
         self._state_builder = RealStateBuilder(global_configuration)
-        self.obs_shape = (100, 100, 1)
         self._reward_system = ...
         self.__last_frame = None
 

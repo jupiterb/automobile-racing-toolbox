@@ -17,13 +17,10 @@ class SegmentDetectionOcr(AbstractOcr):
         self._params: SegmentDetectionParams = segment_detection_params
 
     def read_number(self, image: np.ndarray) -> int:
-        Image.fromarray(image).save(f"image_{random.randint(100, 990)}.jpeg")
-        print(image.shape)
         digits_captured = self._separated_digits(self._prepare_image(image))
         velocity = 0
         for digit in digits_captured:
             velocity = velocity * 10 + self.__read_digit(digit)
-        print(velocity)
         return velocity
 
     @staticmethod

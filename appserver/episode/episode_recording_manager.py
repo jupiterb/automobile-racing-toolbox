@@ -1,6 +1,7 @@
 import threading
 from typing import Optional
 import time
+import cv2
 
 from enviroments.real.interface.local import LocalInterface
 from schemas import GameSystemConfiguration, GameGlobalConfiguration, EpisodeRecording

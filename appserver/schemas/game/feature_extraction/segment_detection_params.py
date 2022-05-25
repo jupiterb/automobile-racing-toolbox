@@ -3,7 +3,7 @@ from schemas.utils import ScreenFrame
 
 
 class SegmentDetectionParams(BaseModel):
-    minimal_segment_coverage: float = 0.65
+    minimal_segment_coverage: float = 0.55
     segments_definitions: list[ScreenFrame] = [
         ScreenFrame(top=0, bottom=0.2, left=0.25, right=0.75),
         ScreenFrame(top=0.2, bottom=0.4, left=0, right=0.25),
@@ -11,7 +11,7 @@ class SegmentDetectionParams(BaseModel):
         ScreenFrame(top=0.4, bottom=0.6, left=0.25, right=0.75),
         ScreenFrame(top=0.6, bottom=0.8, left=0, right=0.25),
         ScreenFrame(top=0.6, bottom=0.8, left=0.75, right=1),
-        ScreenFrame(top=0.8, bottom=1, left=0.25, right=0.75)
+        ScreenFrame(top=0.8, bottom=1, left=0.25, right=0.75),
     ]
     digits_definitions: list[list[int]] = [
         [0, 1, 2, 4, 5, 6],
@@ -23,5 +23,5 @@ class SegmentDetectionParams(BaseModel):
         [0, 1, 3, 4, 5, 6],
         [0, 2, 5],
         [0, 1, 2, 3, 4, 5, 6],
-        [0, 1, 2, 3, 5, 6]
+        [0, 1, 2, 3, 5, 6],
     ]

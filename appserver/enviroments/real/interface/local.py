@@ -1,4 +1,4 @@
-from pynput.keyboard import Controller
+from pynput.keyboard import Controller, Key
 import numpy as np
 
 from enviroments.real.interface.abstract import RealGameInterface
@@ -21,6 +21,7 @@ class LocalInterface(RealGameInterface):
         super().__init__(global_configuration, system_configuration)
         self._screen_capturing: ScreenCapturing = ScreenCapturing(
             global_configuration.process_name,
+            global_configuration.apply_grayscale,
             system_configuration.specified_window_rect,
         )
         self._keyboard_capturing: KeyboardCapturing = KeyboardCapturing(
@@ -38,7 +39,7 @@ class LocalInterface(RealGameInterface):
             self._ocr: AbstractOcr = SegmentDetectionOcr(
                 global_configuration, SegmentDetectionParams()
             )
-        self._keayboard = Controller()
+        self._keyboard = Controller()
 
     def run(self) -> None:
         super().run()
@@ -60,9 +61,9 @@ class LocalInterface(RealGameInterface):
 
     def apply_keyboard_action(self, action: list[SteeringAction]) -> None:
         for a in action:
-            self._keayboard.press(self._global_configuration.action_key_mapping[a])
+            self._keyboard.press(self._global_configuration.action_key_mapping[a])
         for a in set(SteeringAction) - set(action):
-            self._keayboard.release(self._global_configuration.action_key_mapping[a])
+            self._keyboard.release(self._global_configuration.action_key_mapping[a])
 
     def read_action(self) -> Action:
         return Action(
