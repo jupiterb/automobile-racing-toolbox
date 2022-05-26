@@ -1,6 +1,8 @@
 from schemas.enviroment.steering import SteeringAction
 from pydantic import BaseModel
-from pynput.keyboard import Listener, Key, Controller
+from pynput.keyboard import Key
+
+from .feature_extraction import OcrVelocityParams
 
 
 class GameGlobalConfiguration(BaseModel):
@@ -12,3 +14,11 @@ class GameGlobalConfiguration(BaseModel):
         SteeringAction.BREAK: Key.down,
     }
     # TODO: Add validator to make sure all SteeringAction were translated to the keys
+    ocr_velocity_params: OcrVelocityParams = OcrVelocityParams()
+    observation_shape: tuple[int, int, int] = (100, 100, 1)
+    apply_grayscale: bool = True
+
+    class Config:
+        json_encoders = {
+            Key: lambda key: key.name
+        }
