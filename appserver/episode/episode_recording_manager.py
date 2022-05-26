@@ -1,6 +1,7 @@
 import threading
 from typing import Optional
 import time
+import cv2
 
 from enviroments.real.interface.local import LocalInterface
 from schemas import GameSystemConfiguration, GameGlobalConfiguration, EpisodeRecording
@@ -29,16 +30,17 @@ class EpisodeRecordingManager:
         global_configuration: GameGlobalConfiguration,
         fps: int,
     ) -> EpisodeRecording:
-        enviroment_warpper = LocalInterface(global_configuration, system_configuration)
-        _ = enviroment_warpper.reset()
+        enviroment_interface = LocalInterface(
+            global_configuration, system_configuration
+        )
+        _ = enviroment_interface.reset()
         self.__current_recording = EpisodeRecording(fps=fps)
         try:
             while self.__running:
                 if self.__capturing:
-                    state = enviroment_warpper.read_frame()
-                    action = enviroment_warpper.read_action()
-                    self.__current_recording.recording.append((state, action))
-                    print(len(self.__current_recording.recording))
+                    image = enviroment_interface.get_image_input().tolist()
+                    action = enviroment_interface.read_action()
+                    self.__current_recording.recording.append((image, action))
             time.sleep(1 / fps)
         except WindowNotFound as e:
             self.__current_recording.error = f"Process {e.process_name} do not exist"

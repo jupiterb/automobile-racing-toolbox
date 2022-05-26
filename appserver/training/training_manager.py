@@ -50,7 +50,7 @@ class TrainingManager:
 
 def _run_new_training(gconfig, lconfig, training: Training):
     interface = LocalInterface(gconfig, lconfig)
-    env = RealTimeEnv(interface)
+    env = RealTimeEnv(interface, gconfig)
 
     model = DQN(
         CnnPolicy,

@@ -1,14 +1,16 @@
-from pynput.keyboard import Listener, Key, Controller
-
-from enviroments.real.interface.abstract import RealGameInterface
-from schemas import GameGlobalConfiguration, GameSystemConfiguration, Action, State
-from enviroments.real.capturing import ScreenCapturing
-from enviroments.real.state import RealStateBuilder
+from pynput.keyboard import Controller, Key
 import numpy as np
 
-from schemas.enviroment.steering import SteeringAction 
+from enviroments.real.interface.abstract import RealGameInterface
+from schemas import GameGlobalConfiguration, GameSystemConfiguration, Action
+from enviroments.real.capturing import ScreenCapturing, KeyboardCapturing
+from enviroments.real.state.ocr import AbstractOcr, SegmentDetectionOcr
+from schemas.game.feature_extraction import SegmentDetectionParams, OcrType
+from schemas.enviroment.steering import SteeringAction
 
-Frame = np.ndarray 
+
+Frame = np.ndarray
+
 
 class LocalInterface(RealGameInterface):
     def __init__(
@@ -17,45 +19,53 @@ class LocalInterface(RealGameInterface):
         system_configuration: GameSystemConfiguration,
     ) -> None:
         super().__init__(global_configuration, system_configuration)
-        self._available_keys: set[SteeringAction] = set(self._global_configuration.action_key_mapping.keys())
-        self._screen_capturing: ScreenCapturing = ScreenCapturing(global_configuration.process_name)
-        self._keyboard_listener = Listener(on_press=self._callback)
-        self._last_keys: set[str] = set()
-        self._keayboard = Controller()
+        self._screen_capturing: ScreenCapturing = ScreenCapturing(
+            global_configuration.process_name,
+            global_configuration.apply_grayscale,
+            system_configuration.specified_window_rect,
+        )
+        self._keyboard_capturing: KeyboardCapturing = KeyboardCapturing(
+            set(global_configuration.action_key_mapping.values())
+        )
+        ocr_velocity_params = global_configuration.ocr_velocity_params
+        if (
+            ocr_velocity_params.ocr_type is OcrType.SEGMENT_DETECTION
+            and ocr_velocity_params.segment_detection_params
+        ):
+            self._ocr: AbstractOcr = SegmentDetectionOcr(
+                global_configuration, ocr_velocity_params.segment_detection_params
+            )
+        else:
+            self._ocr: AbstractOcr = SegmentDetectionOcr(
+                global_configuration, SegmentDetectionParams()
+            )
+        self._keyboard = Controller()
 
     def run(self) -> None:
         super().run()
 
-    def reset(self) -> State:
-        self._last_keys = set()
-        # self._keyboard_listener.start()
-        return super().reset()
+    def reset(self):
+        self._keyboard_capturing.reset()
 
-    def read_frame(self) -> Frame:
-        driving_screenshot = self._screen_capturing.grab_image(
+    def get_image_input(self) -> np.ndarray:
+        image = self._screen_capturing.grab_image(
             self._system_configuration.driving_screen_frame
         )
+        return image
+
+    def get_velocity_input(self) -> int:
         velocity_screenshot = self._screen_capturing.grab_image(
             self._system_configuration.velocity_screen_frame
         )
-        return driving_screenshot
+        return self._ocr.read_number(velocity_screenshot)
 
     def apply_keyboard_action(self, action: list[SteeringAction]) -> None:
         for a in action:
-            self._keayboard.press(self._global_configuration.action_key_mapping[a])
+            self._keyboard.press(self._global_configuration.action_key_mapping[a])
         for a in set(SteeringAction) - set(action):
-            self._keayboard.release(self._global_configuration.action_key_mapping[a])
-        
+            self._keyboard.release(self._global_configuration.action_key_mapping[a])
 
     def read_action(self) -> Action:
-        print(self._last_keys)
-        action = Action(keys=self._last_keys)
-        self._last_keys = set()
-        return action
-
-    def _callback(self, key) -> None:
-        try:
-            if key in self._available_keys:
-                self._last_keys.add(str(key))
-        except AttributeError:
-            pass
+        return Action(
+            keys={key.name for key in self._keyboard_capturing.get_captured_keys()}
+        )

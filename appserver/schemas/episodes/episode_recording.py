@@ -1,9 +1,12 @@
 from pydantic import BaseModel
-# from enviroments.real.interface.local import Frame
-from schemas import State, Action
-import numpy as np 
+from schemas import Action
+from typing import Union
+
+
+ImageMatrix = Union[list[list[int]], list[list[list[int]]]]
+
 
 class EpisodeRecording(BaseModel):
     error: str = ""
     fps: int
-    recording: list[tuple[list[list[int]], Action]] = []
+    recording: list[tuple[ImageMatrix, Action]] = []
