@@ -15,11 +15,13 @@ from stable_baselines3 import DQN
 from stable_baselines3.dqn.policies import CnnPolicy
 
 import gym, os
-
+from multiprocessing import Process
+import time 
 
 class TrainingManager:
     BEST_MODEL_NAME = "best_model"
     LATEST_MODEL_NAME = "latest_model"
+    active_process = None
 
     def run_training(
         self,
@@ -30,32 +32,43 @@ class TrainingManager:
         os.makedirs(training.parameters.tensorboard_dir_path, exist_ok=True)
         os.makedirs(training.parameters.log_dir_path, exist_ok=True)
 
-        interface = LocalInterface(global_configuration, system_configuration)
-        env = RealTimeEnv(interface)
-        self._run_new_training(env, training)
+        if not TrainingManager.active_process:
+            p = Process(target=_run_new_training, args=(global_configuration, system_configuration, training))
+            p.start()
+            self.active_process = p 
+        time.sleep()
+        p.kill()
+        print("finally")
 
-    @staticmethod
-    def _run_new_training(env: gym.Env, training: Training):
-        model = DQN(
-            CnnPolicy,
-            env,
-            verbose=1,
-            optimize_memory_usage=False,
-            buffer_size=10_000,
-            tensorboard_log=training.parameters.tensorboard_dir_path,
-        )
-
-        callback = SaveOnBestTrainingRewardCallback(
-            2000, training.parameters.log_dir_path, TrainingManager.BEST_MODEL_NAME
-        )
-        model.learn(
-            total_timesteps=5_000,
-            callback=callback,
-            tb_log_name=f"v{training.version}",
-            reset_num_timesteps=False,
-        )
-        model.save(training.parameters.log_dir_path / TrainingManager.LATEST_MODEL_NAME)
-        del model
 
     def stop_training(self) -> TrainingResult:
-        return TrainingResult()
+        if not self.active_process:
+            return 
+        self.active_process.kill()
+        self.active_process.join()
+        self.active_process = None
+
+def _run_new_training(gconfig, lconfig, training: Training):
+    interface = LocalInterface(gconfig, lconfig)
+    env = RealTimeEnv(interface)
+
+    model = DQN(
+        CnnPolicy,
+        env,
+        verbose=1,
+        optimize_memory_usage=False,
+        buffer_size=10_000,
+        tensorboard_log=training.parameters.tensorboard_dir_path,
+    )
+
+    callback = SaveOnBestTrainingRewardCallback(
+        2000, training.parameters.log_dir_path, TrainingManager.BEST_MODEL_NAME
+    )
+    model.learn(
+        total_timesteps=5_000,
+        callback=callback,
+        tb_log_name=f"v{training.version}",
+        reset_num_timesteps=False,
+    )
+    model.save(training.parameters.log_dir_path / TrainingManager.LATEST_MODEL_NAME)
+    del model
