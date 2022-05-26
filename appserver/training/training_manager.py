@@ -1,3 +1,4 @@
+from tabnanny import verbose
 from schemas import (
     GameSystemConfiguration,
     GameGlobalConfiguration,
@@ -59,6 +60,7 @@ def _run_new_training(gconfig, lconfig, training: Training):
         optimize_memory_usage=False,
         buffer_size=10_000,
         tensorboard_log=training.parameters.tensorboard_dir_path,
+        learning_starts=500
     )
 
     callback = SaveOnBestTrainingRewardCallback(
@@ -68,7 +70,8 @@ def _run_new_training(gconfig, lconfig, training: Training):
         total_timesteps=5_000,
         callback=callback,
         tb_log_name=f"v{training.version}",
-        reset_num_timesteps=False,
+        reset_num_timesteps=False
     )
+
     model.save(training.parameters.log_dir_path / TrainingManager.LATEST_MODEL_NAME)
     del model

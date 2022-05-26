@@ -5,7 +5,7 @@ import numpy as np
 from schemas.enviroment.steering import SteeringAction
 from schemas import State, GameGlobalConfiguration
 from typing import Optional
-
+from collections import deque
 
 Frame = Optional[np.ndarray]
 
@@ -16,11 +16,6 @@ class RealTimeEnv(gym.Env):
         game_interface: RealGameInterface,
         global_configuration: GameGlobalConfiguration,
     ):
-        self._interface = game_interface
-        self._state_builder = RealStateBuilder(global_configuration)
-        self._reward_system = ...
-        self.__last_frame = None
-
         self.available_actions = [
             [SteeringAction.FORWARD],
             [SteeringAction.FORWARD, SteeringAction.LEFT],
@@ -36,6 +31,12 @@ class RealTimeEnv(gym.Env):
             shape=global_configuration.observation_shape,
             dtype=np.uint8,
         )
+        self._interface = game_interface
+        self._state_builder = RealStateBuilder(global_configuration)
+        self._reward_system = ...
+        self.__last_rewards = deque(maxlen=30)
+        self.__last_frame = None
+
 
     def reset(self) -> Frame:
         self._interface.reset()
@@ -69,8 +70,14 @@ class RealTimeEnv(gym.Env):
     def _get_reward(self, state: State) -> float:
         # TODO: add reward system
         print(state.velocity)
+        self.__last_rewards.append(state.velocity)
         return float(state.velocity)
 
     def _is_final_state(self, state: State) -> bool:
-        # TODO: add end of episode evaluation
+        if len(self.__last_rewards) == self.__last_rewards.maxlen:
+            m = np.mean(self.__last_rewards)
+            std = np.std(self.__last_rewards)
+            if m < 15 and std < 10:
+                print("restart")
+                return True
         return False

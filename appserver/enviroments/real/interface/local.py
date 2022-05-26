@@ -7,7 +7,7 @@ from enviroments.real.capturing import ScreenCapturing, KeyboardCapturing
 from enviroments.real.state.ocr import AbstractOcr, SegmentDetectionOcr
 from schemas.game.feature_extraction import SegmentDetectionParams, OcrType
 from schemas.enviroment.steering import SteeringAction
-
+import time 
 
 Frame = np.ndarray
 
@@ -46,6 +46,10 @@ class LocalInterface(RealGameInterface):
 
     def reset(self):
         self._keyboard_capturing.reset()
+        self._keyboard.press(Key.backspace)
+        self._keyboard.release(Key.backspace)
+        time.sleep(3)
+        print("continue")
 
     def get_image_input(self) -> np.ndarray:
         image = self._screen_capturing.grab_image(
