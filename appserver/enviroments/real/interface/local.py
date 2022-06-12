@@ -22,6 +22,7 @@ class LocalInterface(RealGameInterface):
         self._screen_capturing: ScreenCapturing = ScreenCapturing(
             global_configuration.process_name,
             global_configuration.apply_grayscale,
+            global_configuration.window_size,
             system_configuration.specified_window_rect,
         )
         self._keyboard_capturing: KeyboardCapturing = KeyboardCapturing(
