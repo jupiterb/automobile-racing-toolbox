@@ -12,7 +12,7 @@ from schemas import (
     ScreenFrame,
     Episode,
 )
-from episode import EpisodeRecordingManager, InMemoryEpisodesRecordingsDataService
+from episode import EpisodeRecordingManager, InMemoryRecordingsDataService
 
 
 class RecorderScreen(GridLayout):
@@ -27,7 +27,7 @@ class RecorderScreen(GridLayout):
         self._started = False
         self._is_recorded = False
 
-        self._data_service = InMemoryEpisodesRecordingsDataService()
+        self._data_service = InMemoryRecordingsDataService()
 
         self.add_widget(Label(text="Recording name"))
         self.recording_name = TextInput(multiline=False)
@@ -76,9 +76,8 @@ class RecorderScreen(GridLayout):
         )
         self._data_service.save("trackmania", episode)
         print("Saved")
-        r = self._data_service.get_episode("trackmania", episode.id)
-        print(r.recording.recording[100][2])
-        print(r.recording.recording[100][0].shape)
+        self._started = False
+        self._is_recorded = False
 
 
 class RecorderApp(App):
