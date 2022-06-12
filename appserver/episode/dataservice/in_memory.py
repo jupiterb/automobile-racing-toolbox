@@ -9,7 +9,7 @@ from episode.dataservice.abstract import AbstractEpisodesRecordingsDataService
 from schemas import Episode, EpisodeRecording, Action
 
 
-class InMemoryEpisodesRecordingsDataService(AbstractEpisodesRecordingsDataService):
+class InMemoryRecordingsDataService(AbstractEpisodesRecordingsDataService):
 
     _path_to_data = "/data"
 
@@ -17,9 +17,7 @@ class InMemoryEpisodesRecordingsDataService(AbstractEpisodesRecordingsDataServic
         super().__init__()
 
     def save(self, game_id: str, episode: Episode):
-        fullpath = InMemoryEpisodesRecordingsDataService._get_fullpath(
-            game_id, episode.id
-        )
+        fullpath = InMemoryRecordingsDataService._get_fullpath(game_id, episode.id)
         if not os.path.exists(fullpath):
             os.makedirs(fullpath)
 
@@ -46,17 +44,15 @@ class InMemoryEpisodesRecordingsDataService(AbstractEpisodesRecordingsDataServic
                 data=data, columns=["screenshot_file", "velocity", "keys"]
             )
             data_frame.to_csv(
-                InMemoryEpisodesRecordingsDataService._get_csv_path(game_id, episode.id)
+                InMemoryRecordingsDataService._get_csv_path(game_id, episode.id)
             )
 
     def get_episode(self, game_id: str, episode_id: str) -> Episode:
         data_frame = pd.read_csv(
-            InMemoryEpisodesRecordingsDataService._get_csv_path(game_id, episode_id)
+            InMemoryRecordingsDataService._get_csv_path(game_id, episode_id)
         )
         episode = Episode(id=episode_id, recording=EpisodeRecording())
-        fullpath = InMemoryEpisodesRecordingsDataService._get_fullpath(
-            game_id, episode_id
-        )
+        fullpath = InMemoryRecordingsDataService._get_fullpath(game_id, episode_id)
         assert episode.recording
         for _, row in data_frame.iterrows():
             screenshot_file = row["screenshot_file"]
@@ -70,8 +66,8 @@ class InMemoryEpisodesRecordingsDataService(AbstractEpisodesRecordingsDataServic
 
     @staticmethod
     def _get_fullpath(game_id: str, episode_id: str) -> str:
-        return f"{os.path.dirname(__file__)}/{InMemoryEpisodesRecordingsDataService._path_to_data}/{game_id}/{episode_id}"
+        return f"{os.path.dirname(__file__)}/{InMemoryRecordingsDataService._path_to_data}/{game_id}/{episode_id}"
 
     @staticmethod
     def _get_csv_path(game_id: str, episode_id: str) -> str:
-        return f"{InMemoryEpisodesRecordingsDataService._get_fullpath(game_id, episode_id)}/data.csv"
+        return f"{InMemoryRecordingsDataService._get_fullpath(game_id, episode_id)}/data.csv"
