@@ -1,7 +1,6 @@
 import threading
 from typing import Optional
 import time
-import cv2
 
 from enviroments.real.interface.local import LocalInterface
 from schemas import GameSystemConfiguration, GameGlobalConfiguration, EpisodeRecording
@@ -17,9 +16,7 @@ class EpisodeRecordingManager:
         return EpisodeRecordingManager.__default_fps
 
     def __init__(self) -> None:
-        self.__current_recording: EpisodeRecording = EpisodeRecording(
-            fps=EpisodeRecordingManager.default_fps()
-        )
+        self.__current_recording: EpisodeRecording = EpisodeRecording()
         self.__recording_thread: Optional[threading.Thread] = None
         self.__capturing: bool = False
         self.__running: bool = True
@@ -34,13 +31,14 @@ class EpisodeRecordingManager:
             global_configuration, system_configuration
         )
         _ = enviroment_interface.reset()
-        self.__current_recording = EpisodeRecording(fps=fps)
+        self.reset_recording()
         try:
             while self.__running:
                 if self.__capturing:
-                    image = enviroment_interface.get_image_input().tolist()
+                    image = enviroment_interface.get_image_input()
+                    velocity = enviroment_interface.get_velocity_input()
                     action = enviroment_interface.read_action()
-                    self.__current_recording.recording.append((image, action))
+                    self.__current_recording.recording.append((image, velocity, action))
             time.sleep(1 / fps)
         except WindowNotFound as e:
             self.__current_recording.error = f"Process {e.process_name} do not exist"
@@ -71,3 +69,6 @@ class EpisodeRecordingManager:
         if self.__recording_thread is not None:
             self.__recording_thread.join()
         return self.__current_recording
+
+    def reset_recording(self):
+        self.__current_recording = EpisodeRecording()

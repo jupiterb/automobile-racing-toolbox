@@ -1,12 +1,11 @@
 from pydantic import BaseModel
 from schemas import Action
-from typing import Union
-
-
-ImageMatrix = Union[list[list[int]], list[list[list[int]]]]
+from numpy import ndarray
 
 
 class EpisodeRecording(BaseModel):
     error: str = ""
-    fps: int
-    recording: list[tuple[ImageMatrix, Action]] = []
+    recording: list[tuple[ndarray, int, Action]] = []
+
+    class Config:
+        arbitrary_types_allowed = True

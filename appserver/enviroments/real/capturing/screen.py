@@ -1,4 +1,5 @@
 import win32gui
+import win32com
 from ctypes import windll
 import numpy as np
 from typing import Optional
@@ -15,12 +16,14 @@ class ScreenCapturing:
         self,
         process_name: str,
         apply_grayscale: bool,
+        window_size: tuple[int, int],
         specified_window_rect: Optional[tuple[int, int, int, int]] = None,
     ) -> None:
         self._process_name: str = process_name
         self._specified_window_rect: Optional[
             tuple[int, int, int, int]
         ] = specified_window_rect
+        self._window_size: tuple[int, int] = window_size
         self._apply_grayscale: bool = apply_grayscale
 
         user32 = windll.user32
@@ -49,6 +52,10 @@ class ScreenCapturing:
         window = win32gui.FindWindow(None, self._process_name)
         if window == 0:
             raise WindowNotFound(self._process_name)
+        left, top, _, _ = win32gui.GetWindowRect(window)
+        win32gui.MoveWindow(
+            window, left, top, self._window_size[0], self._window_size[1], True
+        )
         left, top, right, bottom = win32gui.GetWindowRect(window)
 
         return left, top, right - left, bottom - top
