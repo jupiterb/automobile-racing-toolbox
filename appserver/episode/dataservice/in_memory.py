@@ -66,7 +66,7 @@ class InMemoryRecordingsDataService(AbstractEpisodesRecordingsDataService):
 
     @staticmethod
     def _get_fullpath(game_id: str, episode_id: str) -> str:
-        return f"{os.path.dirname(__file__)}/{InMemoryRecordingsDataService._path_to_data}/{game_id}/{episode_id}"
+        return f"{os.path.dirname(__file__)}/../../{InMemoryRecordingsDataService._path_to_data}/{game_id}/{episode_id}"
 
     @staticmethod
     def _get_csv_path(game_id: str, episode_id: str) -> str:

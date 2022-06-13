@@ -31,7 +31,7 @@ class EpisodeRecordingManager:
             global_configuration, system_configuration
         )
         _ = enviroment_interface.reset()
-        self.__current_recording = EpisodeRecording()
+        self.reset_recording()
         try:
             while self.__running:
                 if self.__capturing:
@@ -69,3 +69,6 @@ class EpisodeRecordingManager:
         if self.__recording_thread is not None:
             self.__recording_thread.join()
         return self.__current_recording
+
+    def reset_recording(self):
+        self.__current_recording = EpisodeRecording()
