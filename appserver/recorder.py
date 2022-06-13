@@ -85,7 +85,7 @@ class RecorderScreen(GridLayout):
 
     def _save(self):
         episode = Episode(
-            id=f'{self.recorder_name.text}_{datetime.now().strftime("%Y.%m.%d_%H.%M.%S")}',
+            id=f'{self.recorder_name.text}_{datetime.now().strftime("%Y-%m-%d-%H-%M-%S")}',
             recording=self._recording_manager.release(),
         )
         self._data_service.save("trackmania", episode)
