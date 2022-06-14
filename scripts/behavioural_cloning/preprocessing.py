@@ -8,7 +8,7 @@ from tqdm import tqdm
 import os, logging, cv2, tables
 
 
-CLIP_INDICES = [380, 730, 10, -10]
+CLIP_INDICES = (380, 730, 10, -10)
 N_STACKED = 4
 ACTION_OVERHEAD = 1
 ACTIONS_ORDER = ["left", "right", "up", "down"]
@@ -87,7 +87,7 @@ def process_dir(dir_path: Path, hdf5_path: Path):
     hdf5_file.close()
 
 
-def get_episode(episode_dir: Path, csv_path: Path) -> tuple[np.ndarray, np.ndarray]:
+def get_episode(episode_dir: Path, csv_path: Path) -> tuple[np.ndarray, list[frozenset]]:
     data_frame = pd.read_csv(csv_path)
     X = []
     y = []
