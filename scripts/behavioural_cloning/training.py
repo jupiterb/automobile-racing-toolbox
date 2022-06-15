@@ -20,14 +20,14 @@ class ExpertDataset(Dataset):
     def __init__(self, hdf5_path: Path):
         hdf5_file = tables.open_file(hdf5_path, mode="r")
         self._images = np.moveaxis(hdf5_file.root.images[:], 3, 1)
-        self._actions = hdf5_file.root.actions[:].astype(np.double)
+        self._actions = hdf5_file.root.actions[:]
         hdf5_file.close()
         logger.info(
             f"Read dataset of shape {self._images.shape} and actions {self._actions.shape}"
         )
 
     def __getitem__(self, index):
-        return ((self._images[index] / 255).astype(np.double), self._actions[index])
+        return (th.tensor(self._images[index] / 255, dtype=th.float32), th.tensor(self._actions[index], dtype=th.float32))
 
     def __len__(self):
         return len(self._images)
@@ -54,7 +54,7 @@ def main():
     )
     val_dl = DataLoader(dataset_val, 64, num_workers=4, pin_memory=True)
 
-    model = MultiLabelnNN(4, 4, 53, 150).double()
+    model = MultiLabelnNN(4, 4, 53, 150).float()
 
     fit(1_000, 0.001, model, train_dl, val_dl)
 
@@ -86,6 +86,7 @@ def fit(
         for batch in train_loader:
             loss = training_step(model, batch, loss_fn)
             train_losses.append(loss)
+
             loss.backward()
             optimizer.step()
             optimizer.zero_grad()

@@ -57,6 +57,6 @@ class MultiLabelnNN(nn.Module):
         )
 
     def forward(self, x):
-        x = x.to(device)
+        x = th.tensor(x, dtype=th.float32).to(device)
         x = self.feature_extractor(x)
         return self.classifier(x)
