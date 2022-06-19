@@ -1,7 +1,3 @@
-import tensorflow as tf
-from tensorflow import keras
-
-
 from keras.models import Sequential
 from keras.layers import Dense, Activation, Flatten, Conv2D, MaxPooling2D
 from keras.optimizers import Adam
@@ -62,8 +58,8 @@ def build_model():
 
 def get_data():
     hdf5_file = tables.open_file(PATH, mode="r")
-    images = hdf5_file.root.images[:]
-    actions = hdf5_file.root.actions[:]
+    images = np.array(hdf5_file.root.images[:], dtype=np.float32) / 255
+    actions = np.array(hdf5_file.root.actions[:], np.float32)
     hdf5_file.close()
     return images, actions
 
