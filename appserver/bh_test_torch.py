@@ -26,7 +26,7 @@ class BhScreen(GridLayout):
         self.cols = 2
 
         self.add_widget(Label(text="Path to model"))
-        self._path_to_model = TextInput(multiline=False, text="5-9-acc88")
+        self._path_to_model = TextInput(multiline=False, text="5-9-acc57")
         self.add_widget(self._path_to_model)
 
         self.add_widget(Label(text="Game name"))
@@ -101,20 +101,25 @@ class BhScreen(GridLayout):
             SteeringAction.FORWARD,
             SteeringAction.BREAK,
         ]
+        threshold = 0.5
         while self._driving and self._model:
             time.sleep(1 / 10)
             screenshot = enviroment_interface.get_image_input()
             grayscaled = to_grayscale(screenshot[380:730, 10:-10])
             sample = rescale(grayscaled, 150)
             input_list.append(sample)
+
             if len(input_list) > 4:
-                input_list.pop()
-                input_nn = torch.tensor(np.array([input_list]), dtype=torch.double)
+                input_list.pop(0)
+                input_nn = torch.tensor(np.array([input_list]), dtype=torch.float32)
                 output = self._model(input_nn)
-                print(output)
-                enviroment_interface.apply_keyboard_action(
-                    [action for i, action in enumerate(all_actions) if output[0][i] > 0]
-                )
+                actions = [
+                    action
+                    for i, action in enumerate(all_actions)
+                    if output[0][i] > threshold
+                ]
+                enviroment_interface.apply_keyboard_action(actions)
+                print(actions)
 
 
 class BhApp(App):
