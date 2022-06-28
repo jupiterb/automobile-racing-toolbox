@@ -119,7 +119,6 @@ class BhScreen(GridLayout):
                     if output[0][i] > threshold
                 ]
                 enviroment_interface.apply_keyboard_action(actions)
-                print(actions)
 
 
 class BhApp(App):
