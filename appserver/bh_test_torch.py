@@ -1,3 +1,4 @@
+from pyexpat import model
 from kivy.app import App
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.button import Button
@@ -26,7 +27,7 @@ class BhScreen(GridLayout):
         self.cols = 2
 
         self.add_widget(Label(text="Path to model"))
-        self._path_to_model = TextInput(multiline=False, text="5-9-acc57")
+        self._path_to_model = TextInput(multiline=False, text="47-98-acc68")
         self.add_widget(self._path_to_model)
 
         self.add_widget(Label(text="Game name"))
@@ -45,31 +46,22 @@ class BhScreen(GridLayout):
         self.add_widget(self._load_model_button)
 
     def _load_model_keras(self, instance):
-        layer_1 = "relu"
-        layer_2 = "tanh"
-        layer_3 = "tanh"
 
-        outs_1 = 32
-        outs_2 = 64
-        outs_3 = 64
+        data = torch.load(self._path_to_model.text, map_location=torch.device("cpu"))
 
-        kernel_size_1 = 8
-        kernel_size_2 = 4
-        kernel_size_3 = 3
+        layers = data["activations"]
+        layers_out = data["out_channels"]
+        kernel_sizes = data["kernel_sizes"]
+        strides = [4, 2, 1]
 
-        stride_1 = 4
-        stride_2 = 2
-        stride_3 = 1
+        print(data.keys())
 
-        layers = [layer_1, layer_2, layer_3]
-        layers_out = [outs_1, outs_2, outs_3]
-        kernel_sizes = [kernel_size_1, kernel_size_2, kernel_size_3]
-        strides = [stride_1, stride_2, stride_3]
+        print(
+            f"{self._path_to_model.text}\n{layers}\n{layers_out}\n{kernel_sizes}\n\n#######################\n"
+        )
 
         self._model = NeuralNetwork(layers, layers_out, kernel_sizes, strides)
-        self._model.load_state_dict(
-            torch.load(self._path_to_model.text)["model_state_dict"]
-        )
+        self._model.load_state_dict(data["model_state_dict"])
 
     def _keyboard_callback(self, key):
         if self._model and key == Key.tab:
@@ -101,8 +93,18 @@ class BhScreen(GridLayout):
             SteeringAction.FORWARD,
             SteeringAction.BREAK,
         ]
-        threshold = 0.5
-        while self._driving and self._model:
+        actions_mapping = {
+            0: (0, 0, 0, 0),
+            1: (1, 0, 0, 0),
+            2: (0, 1, 0, 0),
+            3: (0, 0, 1, 0),
+            4: (0, 0, 0, 1),
+            5: (1, 0, 1, 0),
+            6: (0, 1, 1, 0),
+            7: (1, 0, 0, 1),
+            8: (0, 1, 0, 1),
+        }
+        while self._running and self._model:
             time.sleep(1 / 10)
             screenshot = enviroment_interface.get_image_input()
             grayscaled = to_grayscale(screenshot[380:730, 10:-10])
@@ -112,11 +114,10 @@ class BhScreen(GridLayout):
             if len(input_list) > 4:
                 input_list.pop(0)
                 input_nn = torch.tensor(np.array([input_list]), dtype=torch.float32)
-                output = self._model(input_nn)
+                output = self._model(input_nn)[0].detach().numpy()
+                action_ixs = actions_mapping[np.argmax(output)]
                 actions = [
-                    action
-                    for i, action in enumerate(all_actions)
-                    if output[0][i] > threshold
+                    action for i, action in enumerate(all_actions) if action_ixs[i] == 1
                 ]
                 enviroment_interface.apply_keyboard_action(actions)
 
@@ -137,7 +138,7 @@ class NeuralNetwork(nn.Module):
         super(NeuralNetwork, self).__init__()
 
         inputs = 4
-        outputs = 4
+        outputs = 9
         convw, convh = 53, 150
         layers = []
 
