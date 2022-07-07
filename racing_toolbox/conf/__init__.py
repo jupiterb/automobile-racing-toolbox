@@ -1,0 +1,1 @@
+from conf.example_configuration import get_trackmania
