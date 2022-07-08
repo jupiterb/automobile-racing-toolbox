@@ -14,7 +14,7 @@ class GameInterface(ABC):
         pass
 
     @abstractmethod
-    def perform_ocr(self) -> list[int]:
+    def perform_ocr(self, on_last_image: bool = True) -> list[int]:
         pass
 
     @abstractmethod

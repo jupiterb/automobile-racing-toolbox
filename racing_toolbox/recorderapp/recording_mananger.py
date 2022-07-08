@@ -72,6 +72,5 @@ class EpisodeRecordingManager:
                     float(value) for value in enviroment_interface.perform_ocr()
                 ]
                 action = enviroment_interface.read_action()
-                print(image.shape, from_ocr, action)
                 self.__dataservice.put_observation(image, from_ocr, set(action))
                 time.sleep(1 / fps)
