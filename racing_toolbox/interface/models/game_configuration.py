@@ -12,5 +12,5 @@ class GameConfiguration(BaseModel):
     window_size: tuple[int, int]
     obervation_frame: ScreenFrame
     discrete_actions_mapping: dict[SteeringAction, Key]
-    ocrs: list[tuple[ScreenFrame, OcrConfiguration]]
+    ocrs: dict[str, tuple[ScreenFrame, OcrConfiguration]]
     

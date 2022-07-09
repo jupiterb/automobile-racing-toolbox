@@ -10,7 +10,7 @@ class Keyboard:
             on_press=self._on_press, on_release=self._on_release
         )
 
-    def restart(self):
+    def reset(self):
         self._pressed = set()
         try:
             self._listener.join()

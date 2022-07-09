@@ -8,8 +8,8 @@ class RecorderDataService(ABC):
     def put_observation(
         self,
         image: np.ndarray,
-        numerical_data: list[float],
-        discrete_actions: set[SteeringAction]
+        numerical_data: dict[str, float],
+        discrete_actions: set[SteeringAction],
     ) -> None:
         pass
 

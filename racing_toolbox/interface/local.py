@@ -17,23 +17,23 @@ class LocalGameInterface(GameInterface):
             for action, key in self._configuration.discrete_actions_mapping.items()
         }
         self._ocrs = [
-            SevenSegmentsOcr(ocr_configuration)
-            for _, ocr_configuration in configuration.ocrs
+            (name, frame, SevenSegmentsOcr(ocr_configuration))
+            for name, (frame, ocr_configuration) in configuration.ocrs.items()
         ]
         self._last_image: np.ndarray = np.zeros_like(configuration.window_size)
 
-    def restart(self) -> None:
-        self._keyboard.restart()
+    def reset(self) -> None:
+        self._keyboard.reset()
 
     def grab_image(self) -> np.ndarray:
         self._last_image = self._screen.grab_image(self._configuration.obervation_frame)
         return self._last_image
 
-    def perform_ocr(self, on_last_image: bool = True) -> list[int]:
-        return [
-            ocr.read_numer(self._screen.grab_image(frame, on_last_image))
-            for ocr, (frame, _) in zip(self._ocrs, self._configuration.ocrs)
-        ]
+    def perform_ocr(self, on_last_image: bool = True) -> dict[str, int]:
+        return {
+            name: ocr.read_numer(self._screen.grab_image(frame, on_last_image))
+            for name, frame, ocr in self._ocrs
+        }
 
     def apply_action(self, discrete_actions: list[SteeringAction]) -> None:
         keys = [

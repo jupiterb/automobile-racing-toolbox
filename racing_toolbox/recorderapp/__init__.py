@@ -1,1 +1,1 @@
-from recorderapp.recording_mananger import EpisodeRecordingManager
+from recorderapp.recording_manager import EpisodeRecordingManager

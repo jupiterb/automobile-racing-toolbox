@@ -64,13 +64,14 @@ class EpisodeRecordingManager:
         fps: int,
     ) -> None:
         enviroment_interface = LocalGameInterface(configuration)
-        _ = enviroment_interface.restart()
+        _ = enviroment_interface.reset()
         while self.__running:
             if self.__capturing:
                 image = enviroment_interface.grab_image()
-                from_ocr = [
-                    float(value) for value in enviroment_interface.perform_ocr()
-                ]
+                from_ocr = {
+                    name: float(value)
+                    for name, value in enviroment_interface.perform_ocr().items()
+                }
                 action = enviroment_interface.read_action()
                 self.__dataservice.put_observation(image, from_ocr, set(action))
                 time.sleep(1 / fps)

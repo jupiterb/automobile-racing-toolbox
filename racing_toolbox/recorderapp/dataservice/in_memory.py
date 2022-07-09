@@ -35,7 +35,7 @@ class InMemoryDataService(RecorderDataService):
     def put_observation(
         self,
         image: np.ndarray,
-        numerical_data: list[float],
+        numerical_data: dict[str, float],
         discrete_actions: set[SteeringAction],
     ) -> None:
         if self._data_frame is None:
@@ -44,8 +44,8 @@ class InMemoryDataService(RecorderDataService):
         datarow = pd.DataFrame(
             {"id": [self._sequence_number], "screenshot": [image_name]}
         )
-        for i, value in enumerate(numerical_data):
-            datarow[f"val{i}"] = [value]
+        for name, value in numerical_data.items():
+            datarow[name] = [value]
         for action in list(SteeringAction):
             datarow[f"action{action}"] = [action in discrete_actions]
         self._data_frame = pd.concat(
