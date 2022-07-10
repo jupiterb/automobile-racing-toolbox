@@ -22,6 +22,9 @@ class LocalGameInterface(GameInterface):
         ]
         self._last_image: np.ndarray = np.zeros_like(configuration.window_size)
 
+    def name(self) -> str:
+        return self._configuration.game_id
+
     def reset(self) -> None:
         self._keyboard.reset()
 
@@ -29,7 +32,7 @@ class LocalGameInterface(GameInterface):
         self._last_image = self._screen.grab_image(self._configuration.obervation_frame)
         return self._last_image
 
-    def perform_ocr(self, on_last_image: bool = True) -> dict[str, int]:
+    def perform_ocr(self, on_last_image: bool = True) -> dict[str, float]:
         return {
             name: ocr.read_numer(self._screen.grab_image(frame, on_last_image))
             for name, frame, ocr in self._ocrs

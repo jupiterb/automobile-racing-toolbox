@@ -6,6 +6,10 @@ from interface.models import SteeringAction
 
 class GameInterface(ABC):
     @abstractmethod
+    def name(self) -> str:
+        pass
+
+    @abstractmethod
     def reset(self) -> None:
         pass
 
@@ -14,7 +18,7 @@ class GameInterface(ABC):
         pass
 
     @abstractmethod
-    def perform_ocr(self, on_last_image: bool = True) -> dict[str, int]:
+    def perform_ocr(self, on_last_image: bool = True) -> dict[str, float]:
         pass
 
     @abstractmethod

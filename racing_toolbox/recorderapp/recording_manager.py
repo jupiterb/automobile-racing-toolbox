@@ -2,10 +2,11 @@ import threading
 from typing import Optional
 import time
 
-from interface import LocalGameInterface
-from interface.models import GameConfiguration
-
+from interface import GameInterface
 from recorderapp.dataservice import RecorderDataService, InMemoryDataService
+
+from rl.final_state import FinalStateDetector
+from rl.models import FinalValeDetectionConfiguration
 
 
 class EpisodeRecordingManager:
@@ -24,16 +25,14 @@ class EpisodeRecordingManager:
 
     def start(
         self,
-        configuration: GameConfiguration,
+        interface: GameInterface,
         user: str,
         recording_name: str,
         fps: int,
     ):
-        self.__dataservice.start_streaming(
-            configuration.game_id, user, recording_name, fps
-        )
+        self.__dataservice.start_streaming(interface.name(), user, recording_name, fps)
         self.__recording_thread = threading.Thread(
-            target=self.__record, args=(configuration, fps)
+            target=self.__record, args=(interface, fps)
         )
         self.__capturing = True
         self.__running = True
@@ -60,18 +59,15 @@ class EpisodeRecordingManager:
 
     def __record(
         self,
-        configuration: GameConfiguration,
+        game_interface: GameInterface,
         fps: int,
     ) -> None:
-        enviroment_interface = LocalGameInterface(configuration)
-        _ = enviroment_interface.reset()
+        _ = game_interface.reset()
         while self.__running:
             if self.__capturing:
-                image = enviroment_interface.grab_image()
-                from_ocr = {
-                    name: float(value)
-                    for name, value in enviroment_interface.perform_ocr().items()
-                }
-                action = enviroment_interface.read_action()
+                image = game_interface.grab_image()
+                from_ocr = game_interface.perform_ocr()
+                self.__detector.consider(from_ocr)
+                action = game_interface.read_action()
                 self.__dataservice.put_observation(image, from_ocr, set(action))
                 time.sleep(1 / fps)

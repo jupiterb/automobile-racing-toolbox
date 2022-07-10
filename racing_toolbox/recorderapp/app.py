@@ -9,6 +9,7 @@ from os import path
 
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
+from interface import LocalGameInterface
 from recorderapp import EpisodeRecordingManager
 from conf import get_trackmania
 
@@ -41,7 +42,7 @@ class RecorderScreen(GridLayout):
             self._start_save_button.text = "Start recording"
         else:
             self._recording_manager.start(
-                get_trackmania(),
+                LocalGameInterface(get_trackmania()),
                 self._user_name.text,
                 self._recording_name.text,
                 EpisodeRecordingManager.default_fps(),
