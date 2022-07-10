@@ -67,7 +67,6 @@ class EpisodeRecordingManager:
             if self.__capturing:
                 image = game_interface.grab_image()
                 from_ocr = game_interface.perform_ocr()
-                self.__detector.consider(from_ocr)
                 action = game_interface.read_action()
                 self.__dataservice.put_observation(image, from_ocr, set(action))
                 time.sleep(1 / fps)
