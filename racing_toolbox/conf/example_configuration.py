@@ -15,7 +15,7 @@ def get_trackmania() -> GameConfiguration:
             SteeringAction.LEFT: Key.left
         },
         ocrs={
-            "spped" : (
+            "speed" : (
                 ScreenFrame(
                     top = 0.945,
                     bottom = 0.9875,
