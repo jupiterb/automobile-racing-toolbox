@@ -30,11 +30,10 @@ class RealTimeEnviroment(gym.Env):
     def step(self, action: int) -> tuple[Frame, float, bool, dict]:
         self._apply_action(action)
 
-        state, _, values = self._fetch_state()
+        state, _, features = self._fetch_state()
         reward = 0  # TODO: reward system
 
-        self._final_state_detector.consider(values)
-        is_final = self._final_state_detector.get_detection()
+        is_final = self._final_state_detector.is_final(new_features=features)
         self._last_frame = state
 
         return state, reward, is_final, {}
@@ -47,8 +46,8 @@ class RealTimeEnviroment(gym.Env):
 
     def _fetch_state(self) -> tuple[Frame, np.ndarray, dict[str, float]]:
         image = self._game_interface.grab_image()
-        values = self._game_interface.perform_ocr()
-        self._observation_creator.add_to_buffer(image, np.array(values.values()))
+        features = self._game_interface.perform_ocr()
+        self._observation_creator.add_to_buffer(image, np.array(features.values()))
         observation = self._observation_creator.get_observation()
         # TODO: state is image or values vector?
-        return observation[0] if observation else None, image, values
+        return observation[0] if observation else None, image, features

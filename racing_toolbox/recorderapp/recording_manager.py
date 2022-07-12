@@ -4,6 +4,8 @@ import time
 
 from interface import GameInterface
 from recorderapp.dataservice import RecorderDataService, InMemoryDataService
+from rl.models import FinalFeatureValueDetectionParameters
+from rl.final_state import FinalStateDetector
 
 
 class EpisodeRecordingManager:

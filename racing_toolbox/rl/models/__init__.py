@@ -1,1 +1,3 @@
-from rl.models.final_value_detecion_configuration import FinalValeDetectionConfiguration
+from rl.models.final_feature_value_detecion_params import (
+    FinalFeatureValueDetectionParameters,
+)

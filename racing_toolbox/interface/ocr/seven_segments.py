@@ -7,8 +7,8 @@ from interface.models import OcrConfiguration
 
 class SevenSegmentsOcr(AbstractOcr):
 
-    __segment_threshold: float = 0.8
-    __segemnts_to_digits: list[set[int]] = [
+    _segment_threshold: float = 0.8
+    _digits_segments: list[set[int]] = [
         {0, 1, 2, 4, 5, 6},
         {2, 5},
         {0, 2, 3, 4, 6},
@@ -29,14 +29,15 @@ class SevenSegmentsOcr(AbstractOcr):
         digits_img = [
             SevenSegmentsOcr._move_left(digit) for digit in self._split_digits(image)
         ]
-        digits = [
-            SevenSegmentsOcr._segemnts_to_digit(self._get_segments(digit_img))
-            for digit_img in digits_img
-        ]
-        number = 0
-        for digit in digits:
-            number = number * 10 + digit
-        return number
+        try:
+            digits = [
+                SevenSegmentsOcr._digits_segments.index(self._get_segments(digit_img))
+                for digit_img in digits_img
+            ]
+            digits.reverse()
+            return sum([digit * 10**i for i, digit in enumerate(digits)])
+        except ValueError:
+            return 0
 
     def _preprocess_image(self, image: np.ndarray) -> np.ndarray:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) if image.ndim > 2 else image
@@ -54,7 +55,7 @@ class SevenSegmentsOcr(AbstractOcr):
         ]
 
     def _get_segments(self, image: np.ndarray) -> set[int]:
-        threshold = SevenSegmentsOcr.__segment_threshold
+        threshold = SevenSegmentsOcr._segment_threshold
         height, width = image.shape
         segemnts = set()
         if self._config.segemnts_definitions:
@@ -70,20 +71,13 @@ class SevenSegmentsOcr(AbstractOcr):
         return segemnts
 
     @staticmethod
-    def _segemnts_to_digit(segemnts: set[int]) -> int:
-        for i, digit_segemnts in enumerate(SevenSegmentsOcr.__segemnts_to_digits):
-            if segemnts == digit_segemnts:
-                return i
-        return 0
-
-    @staticmethod
     def _move_left(image: np.ndarray) -> np.ndarray:
         width = image.shape[1]
-        shift = 0
-        for i, val in enumerate(image.sum(axis=0)[::-1]):
-            if val > 0:
-                shift = i
-                break
-        result = np.zeros_like(image)
-        result[:, shift:] = image[:, : width - shift]
-        return result
+        try:
+            shift = np.nonzero(image)[1].max()
+            width = image.shape[1]
+            result = np.zeros_like(image)
+            result[:, width - shift :] = image[:, :shift]
+            return result
+        except ValueError:
+            return image
