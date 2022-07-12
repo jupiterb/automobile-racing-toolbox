@@ -30,7 +30,6 @@ def main():
         validation_data=(X_test, y_test),
         verbose=True,
         callbacks=callbacks_list,
-        verbose=1,
     )
 
 
