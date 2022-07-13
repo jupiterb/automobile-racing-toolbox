@@ -1,1 +1,1 @@
-from conf.example_configuration import get_trackmania
+from conf.example_configuration import get_game_config
