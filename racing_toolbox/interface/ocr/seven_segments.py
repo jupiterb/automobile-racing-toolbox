@@ -7,7 +7,7 @@ from interface.models import OcrConfiguration
 
 class SevenSegmentsOcr(AbstractOcr):
 
-    _segment_threshold: float = 0.8
+    _segment_threshold: float = 0.7
     _digits_segments: list[set[int]] = [
         {0, 1, 2, 4, 5, 6},
         {2, 5},
@@ -68,7 +68,7 @@ class SevenSegmentsOcr(AbstractOcr):
                 area = slice_of_image.shape[0] * slice_of_image.shape[1]
                 if covered > threshold * area:
                     segemnts.add(segment_index)
-        return segemnts
+        return segemnts if len(segemnts) > 0 else SevenSegmentsOcr._digits_segments[0]
 
     @staticmethod
     def _move_left(image: np.ndarray) -> np.ndarray:

@@ -28,7 +28,7 @@ class FinalStateDetector:
             self._consider(new_features)
         for parameters in self._all_parameters:
             name = parameters.feature_name
-            if self._repetitions[name] != parameters.required_repetitions_in_row:
+            if self._repetitions[name] < parameters.required_repetitions_in_row:
                 return False
         return True
     

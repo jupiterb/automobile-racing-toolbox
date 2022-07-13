@@ -4,6 +4,11 @@ from interface.local import LocalGameInterface
 from stable_baselines3 import A2C
 from stable_baselines3.common.env_checker import check_env
 
+import sys
+from os import path
+
+sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+
 from rl.final_state.detector import FinalStateDetector
 from rl.models.final_feature_value_detecion_params import (
     FinalFeatureValueDetectionParameters,
