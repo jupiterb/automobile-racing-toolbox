@@ -25,6 +25,9 @@ def test_perform_ocr(monkeypatch) -> None:
         "trackmania_1000x800_4": 163.0,
         "trackmania_1000x800_5": 339.0,
         "trackmania_1000x800_6": 0.0,
+        "trackmania_1000x800_7": 220.0,
+        "trackmania_1000x800_8": 193.0,
+        "trackmania_1000x800_9": 268.0,
     }
     for screenshot, value in test_cases.items():
 

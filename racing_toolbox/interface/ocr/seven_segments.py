@@ -7,7 +7,7 @@ from interface.models import OcrConfiguration
 
 class SevenSegmentsOcr(AbstractOcr):
 
-    _segment_threshold: float = 0.7
+    _segment_threshold: float = 0.8
     _digits_segments: list[set[int]] = [
         {0, 1, 2, 4, 5, 6},
         {2, 5},
