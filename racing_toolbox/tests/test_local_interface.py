@@ -29,7 +29,7 @@ def test_perform_ocr(monkeypatch) -> None:
     for screenshot, value in test_cases.items():
 
         def mock_get_screenshot(*args, **kwargs):
-            return np.array(Image.open(f"assets/screenshots/{screenshot}.jpeg"))
+            return np.array(Image.open(f"assets/screenshots/random/{screenshot}.jpeg"))
 
         monkeypatch.setattr(Screen, "_get_screenshot", mock_get_screenshot)
         ocr_result = interface.perform_ocr()

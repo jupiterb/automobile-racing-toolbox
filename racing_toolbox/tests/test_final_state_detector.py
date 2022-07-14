@@ -1,34 +1,51 @@
 import sys
-from os import path
+from os import path, listdir
 
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
+import pytest
 import numpy as np
 from PIL import Image
 
 from interface import LocalGameInterface
 from interface.components import Screen
 from rl.final_state import FinalStateDetector
-from rl.models import FinalFeatureValueDetectionParameters
+from rl.models import FinalValueDetectionParameters
 from conf import get_game_config
 
 
-def test_final_state_dector() -> None:
+def test_detector_not_accept_unvalid_values_ranges() -> None:
     final_features_values = [
-        FinalFeatureValueDetectionParameters(
-            feature_name="speed",
-            final_value=0.0,
+        FinalValueDetectionParameters(
+            feature_name="test",
+            min_value=10.0,
+            max_value=0.0,
             required_repetitions_in_row=3,
-            other_value_required=True,
-        ),
-        FinalFeatureValueDetectionParameters(
-            feature_name="last_checkpoint_detected",
-            final_value=1.0,
-            required_repetitions_in_row=1,
-            other_value_required=False,
+            not_final_value_required=True,
         ),
     ]
-    detector = FinalStateDetector(final_features_values)
+    with pytest.raises(ValueError):
+        detector = FinalStateDetector(final_features_values)
+
+
+def test_final_state_detection() -> None:
+    final_values_detection_parameters = [
+        FinalValueDetectionParameters(
+            feature_name="speed",
+            min_value=2.0,
+            max_value=None,
+            required_repetitions_in_row=3,
+            not_final_value_required=True,
+        ),
+        FinalValueDetectionParameters(
+            feature_name="last_checkpoint_detected",
+            min_value=None,
+            max_value=0.0,
+            required_repetitions_in_row=1,
+            not_final_value_required=False,
+        ),
+    ]
+    detector = FinalStateDetector(final_values_detection_parameters)
 
     assert not detector.is_final({"speed": 0.0, "last_checkpoint_detected": 0.0})
     assert not detector.is_final({"speed": 0.0, "last_checkpoint_detected": 0.0})
@@ -37,21 +54,22 @@ def test_final_state_dector() -> None:
     assert not detector.is_final({"speed": 10.0, "last_checkpoint_detected": 0.0})
     assert not detector.is_final({"speed": 0.0, "last_checkpoint_detected": 0.0})
     assert not detector.is_final({"speed": 0.0, "last_checkpoint_detected": 0.0})
-    assert not detector.is_final({"speed": 0.0, "last_checkpoint_detected": 0.0})
+    assert detector.is_final({"speed": 0.0, "last_checkpoint_detected": 0.0})
 
-    assert detector.is_final({"speed": 0.0, "last_checkpoint_detected": 1.0})
+    assert detector.is_final({"speed": 5.0, "last_checkpoint_detected": 1.0})
     assert detector.is_final()
 
-    assert not detector.is_final({"speed": 10.0, "last_checkpoint_detected": 1.0})
+    assert not detector.is_final({"speed": 2.0, "last_checkpoint_detected": 0.0})
 
 
 def test_integration_with_ocr(monkeypatch) -> None:
     final_features_values = [
-        FinalFeatureValueDetectionParameters(
+        FinalValueDetectionParameters(
             feature_name="speed",
-            final_value=0.0,
+            min_value=2.0,
+            max_value=None,
             required_repetitions_in_row=5,
-            other_value_required=True,
+            not_final_value_required=True,
         ),
     ]
     detector = FinalStateDetector(final_features_values)
@@ -61,12 +79,11 @@ def test_integration_with_ocr(monkeypatch) -> None:
     end_of_race_detected = False
     interface = LocalGameInterface(get_game_config())
 
-    for screenshot_index in range(447, 460):
+    path_to_images = "assets/screenshots/end_of_race"
+    for image_name in listdir(path_to_images):
 
         def mock_get_screenshot(*args, **kwargs):
-            return np.array(
-                Image.open(f"assets/screenshots/end_of_race/ss{screenshot_index}.jpeg")
-            )
+            return np.array(Image.open(f"{path_to_images}/{image_name}"))
 
         monkeypatch.setattr(Screen, "_get_screenshot", mock_get_screenshot)
         end_of_race_detected = detector.is_final(

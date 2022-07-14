@@ -11,14 +11,16 @@ from interface import LocalGameInterface
 from interface.components import Screen
 from rl import RealTimeEnviroment
 from rl.final_state import FinalStateDetector
-from rl.models import FinalFeatureValueDetectionParameters
+from rl.models import FinalValueDetectionParameters
 from conf import get_game_config
 
 
 def test_gym_implementation(monkeypatch) -> None:
     # take screeshot with speed = 0 and same shape like in configuration
     def mock_get_screenshot(*args, **kwargs):
-        return np.array(Image.open(f"assets/screenshots/trackmania_1000x800_0.jpeg"))
+        return np.array(
+            Image.open(f"assets/screenshots/random/trackmania_1000x800_0.jpeg")
+        )
 
     monkeypatch.setattr(Screen, "_get_screenshot", mock_get_screenshot)
 
@@ -28,11 +30,12 @@ def test_gym_implementation(monkeypatch) -> None:
         LocalGameInterface(get_game_config()),
         FinalStateDetector(
             [
-                FinalFeatureValueDetectionParameters(
+                FinalValueDetectionParameters(
                     feature_name="speed",
-                    final_value=0.0,
+                    min_value=2.0,
+                    max_value=None,
                     required_repetitions_in_row=5,
-                    other_value_required=True,
+                    not_final_value_required=True,
                 )
             ]
         ),

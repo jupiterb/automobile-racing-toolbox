@@ -11,7 +11,7 @@ sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
 from rl.final_state.detector import FinalStateDetector
 from rl.models.final_feature_value_detecion_params import (
-    FinalFeatureValueDetectionParameters,
+    FinalValueDetectionParameters,
 )
 
 
@@ -21,11 +21,12 @@ def main():
     interface = LocalGameInterface(config)
     final_st_det = FinalStateDetector(
         [
-            FinalFeatureValueDetectionParameters(
+            FinalValueDetectionParameters(
                 feature_name="speed",
-                final_value=0,
+                min_value=2.0,
+                max_value=None,
                 required_repetitions_in_row=10,
-                other_value_required=True,
+                not_final_value_required=True,
             )
         ]
     )
