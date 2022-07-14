@@ -54,7 +54,8 @@ class RealTimeEnviroment(gym.Env):
         return self._last_frame
 
     def _apply_action(self, action: int) -> None:
-        pass
+        if self.available_actions[action] != [None]:
+            self._game_interface.apply_action(self.available_actions[action])
 
     def _fetch_state(self) -> tuple[np.ndarray, dict[str, float]]:
         image = self._game_interface.grab_image().astype(np.uint8)
