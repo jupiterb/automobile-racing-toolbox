@@ -1,23 +1,22 @@
-from conf.example_configuration import get_game_config
-from rl.enviroment import RealTimeEnviroment
-from interface.local import LocalGameInterface
-from stable_baselines3 import A2C
-from stable_baselines3.common.env_checker import check_env
-
 import sys
 from os import path
 
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
+from stable_baselines3 import A2C
+from stable_baselines3.common.env_checker import check_env
+
+from conf.example_configuration import get_game_config
+from interface.local import LocalGameInterface
+from rl.enviroment import RealTimeEnviroment
 from rl.final_state.detector import FinalStateDetector
-from rl.models.final_feature_value_detecion_params import (
-    FinalValueDetectionParameters,
-)
+from rl.models.final_value_detecion_params import FinalValueDetectionParameters
 
 
 def main():
     config = get_game_config()
-
+    width, height = config.window_size
+    observation_shape = (height, width, 3)
     interface = LocalGameInterface(config)
     final_st_det = FinalStateDetector(
         [
@@ -30,7 +29,7 @@ def main():
             )
         ]
     )
-    env = RealTimeEnviroment(interface, final_st_det)
+    env = RealTimeEnviroment(interface, final_st_det, observation_shape)
     check_env(env)
 
     model = A2C("CnnPolicy", env, verbose=1)
