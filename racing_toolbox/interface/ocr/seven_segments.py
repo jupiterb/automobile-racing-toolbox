@@ -29,14 +29,16 @@ class SevenSegmentsOcr(AbstractOcr):
         digits_img = [
             SevenSegmentsOcr._move_left(digit) for digit in self._split_digits(image)
         ]
+        digits_segments = [self._get_segments(img) for img in digits_img]
         try:
             digits = [
-                SevenSegmentsOcr._digits_segments.index(self._get_segments(digit_img))
-                for digit_img in digits_img
+                SevenSegmentsOcr._digits_segments.index(s)
+                for s in digits_segments
             ]
             digits.reverse()
             return sum([digit * 10**i for i, digit in enumerate(digits)])
         except ValueError:
+            print("Error", digits_segments)
             return 0
 
     def _preprocess_image(self, image: np.ndarray) -> np.ndarray:

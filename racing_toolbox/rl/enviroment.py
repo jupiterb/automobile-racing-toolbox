@@ -5,9 +5,22 @@ from typing import Optional, Any
 from interface import GameInterface
 from interface.models import SteeringAction
 from rl.final_state import FinalStateDetector
-
+import cv2
+import matplotlib.pyplot as plt
 
 Frame = Optional[np.ndarray]
+
+def _to_grayscale(frame):
+    rgb_weights = [0.2989, 0.5870, 0.1140]
+    grayscale_image = np.dot(frame, rgb_weights)
+    return grayscale_image
+
+
+def _rescale(frame, max_side_len):
+    scale = max_side_len / np.max(frame.shape)
+    target_shape = list((scale * np.array(frame.shape)).astype(np.uint8))
+    return cv2.resize(frame, dsize=target_shape[::-1], interpolation=cv2.INTER_CUBIC)
+
 
 
 class RealTimeEnviroment(gym.Env):
@@ -20,9 +33,11 @@ class RealTimeEnviroment(gym.Env):
         super().__init__()
 
         self.available_actions: list[list[Optional[SteeringAction]]] = [
-            [a] for a in SteeringAction
+            [SteeringAction.FORWARD],
+            [SteeringAction.LEFT],
+            [SteeringAction.RIGHT],
+            [None]
         ]
-        self.available_actions.append([None])  # None means no action
         self.action_space = gym.spaces.Discrete(len(self.available_actions))
         self.observation_space = gym.spaces.Box(
             low=0,
@@ -43,11 +58,16 @@ class RealTimeEnviroment(gym.Env):
         self._apply_action(action)
 
         state, features = self._fetch_state()
-        reward = 0  # TODO: reward system
+        reward = features['speed']  # TODO: reward system
 
         is_final = self._final_state_detector.is_final(new_features=features)
         self._last_frame = state
 
+        if is_final:
+            self._final_state_detector.reset()
+            print("FINAL!")
+        else:
+            print("Reward:", reward)
         return state, reward, is_final, {}
 
     def render(self) -> Frame:
@@ -61,4 +81,6 @@ class RealTimeEnviroment(gym.Env):
         image = self._game_interface.grab_image().astype(np.uint8)
         features = self._game_interface.perform_ocr()
         # TODO: state is image or values vector?
-        return image, features
+        image = _rescale(_to_grayscale(image[380:730, 10:-10, :]), 100)
+        # print(image.shape
+        return image[:, :, np.newaxis], features

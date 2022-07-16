@@ -42,6 +42,13 @@ class FinalStateDetector:
                 return True
         return False
 
+    def reset(self):
+        for parameters in self._all_parameters:
+            name = parameters.feature_name
+            self._other_value_condition[name] = False
+            self._repetitions[name] = 0
+
+
     def _consider(self, features: dict[str, float]) -> None:
         """
         Increment number of repetitions for sepcfied features if new value is NOT in range <min_value : max_value>

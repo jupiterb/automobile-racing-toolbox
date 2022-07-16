@@ -4,13 +4,15 @@ from interface import GameInterface
 from interface.models import GameConfiguration, SteeringAction
 from interface.components import Keyboard, Screen
 from interface.ocr import SevenSegmentsOcr
-
+from pynput.keyboard import Controller, Listener, Key
+import time
 
 class LocalGameInterface(GameInterface):
     def __init__(self, configuration: GameConfiguration) -> None:
         super().__init__()
         self._configuration = configuration
-        self._keyboard = Keyboard(set(configuration.discrete_actions_mapping.values()))
+        self._keyboard = Controller()#Keyboard(set(configuration.discrete_actions_mapping.values()))
+        
         self._screen = Screen(configuration.process_name, configuration.window_size)
         self._keys_mapping = {
             key: action
@@ -26,7 +28,11 @@ class LocalGameInterface(GameInterface):
         return self._configuration.game_id
 
     def reset(self) -> None:
-        self._keyboard.reset()
+        """Method responsible for resseting enviroment"""
+        self._keyboard.press(Key.enter)
+        self._keyboard.release(Key.enter)
+        time.sleep(3)
+
 
     def grab_image(self) -> np.ndarray:
         self._last_image = self._screen.grab_image(self._configuration.obervation_frame)
@@ -39,11 +45,10 @@ class LocalGameInterface(GameInterface):
         }
 
     def apply_action(self, discrete_actions: list[SteeringAction]) -> None:
-        keys = [
-            self._configuration.discrete_actions_mapping[action]
-            for action in discrete_actions
-        ]
-        self._keyboard.set_pressed(keys)
+        for a in discrete_actions:
+            self._keyboard.press(self._configuration.discrete_actions_mapping[a])
+        for a in set(SteeringAction) - set(discrete_actions):
+            self._keyboard.release(self._configuration.discrete_actions_mapping[a])
 
     def read_action(self) -> list[SteeringAction]:
         return [self._keys_mapping[key] for key in self._keyboard.get_pressed()]
