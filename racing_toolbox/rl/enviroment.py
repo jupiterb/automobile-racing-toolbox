@@ -10,22 +10,6 @@ import cv2
 Frame = Optional[np.ndarray]
 
 
-def _to_grayscale(frame):
-    rgb_weights = [0.2989, 0.5870, 0.1140]
-    grayscale_image = np.dot(frame, rgb_weights)
-    return grayscale_image
-
-
-def _rescale(frame, max_side_len):
-    scale = max_side_len / np.max(frame.shape)
-    target_shape = list((scale * np.array(frame.shape)).astype(np.uint8))
-    return cv2.resize(frame, dsize=target_shape[::-1], interpolation=cv2.INTER_CUBIC)
-
-
-def _preprocess_image(image: np.ndarray) -> np.ndarray:
-    return _rescale(_to_grayscale(image), 100).astype(np.uint8)
-
-
 class RealTimeEnviroment(gym.Env):
     def __init__(
         self, game_interface: GameInterface, final_state_detector: FinalStateDetector
@@ -42,7 +26,7 @@ class RealTimeEnviroment(gym.Env):
         self.observation_space = gym.spaces.Box(
             low=0,
             high=255,
-            shape=_preprocess_image(game_interface.grab_image()).shape,
+            shape=game_interface.grab_image().shape,
             dtype=np.uint8,
         )
 
@@ -80,6 +64,4 @@ class RealTimeEnviroment(gym.Env):
     def _fetch_state(self) -> tuple[np.ndarray, dict[str, float]]:
         image = self._game_interface.grab_image().astype(np.uint8)
         features = self._game_interface.perform_ocr()
-        # TODO: state is image or values vector?
-        image = _preprocess_image(image)
         return image, features
