@@ -30,7 +30,6 @@ def test_gym_implementation(monkeypatch) -> None:
     config.reset_seconds = 0
 
     interface = TrainingLocalGameInterface(config)
-    observation_shape = _rescale(_to_grayscale(interface.grab_image()), 100).shape
     detector = FinalStateDetector(
         [
             FinalValueDetectionParameters(
@@ -43,5 +42,5 @@ def test_gym_implementation(monkeypatch) -> None:
         ]
     )
 
-    env = RealTimeEnviroment(interface, detector, observation_shape)
+    env = RealTimeEnviroment(interface, detector)
     check_env(env)

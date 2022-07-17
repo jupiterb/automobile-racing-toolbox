@@ -13,7 +13,7 @@ def get_game_config() -> GameConfiguration:
         game_id="trackmania",
         process_name="Trackmania Nations Forever",
         window_size=(1000, 800),
-        obervation_frame=ScreenFrame(top=0.38, bottom=0.73, left=0.0125, right=0.9875),
+        obervation_frame=ScreenFrame(top=0.475, bottom=0.9125, left=0.01, right=0.99),
         discrete_actions_mapping={
             SteeringAction.FORWARD: Key.up,
             SteeringAction.BREAK: Key.down,

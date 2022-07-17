@@ -12,8 +12,6 @@ from rl.models.final_value_detecion_params import FinalValueDetectionParameters
 
 def main():
     config = get_game_config()
-    width, height = config.window_size
-    observation_shape = (28, 100)
     interface = TrainingLocalGameInterface(config)
     final_st_det = FinalStateDetector(
         [
@@ -26,7 +24,7 @@ def main():
             )
         ]
     )
-    env = RealTimeEnviroment(interface, final_st_det, observation_shape)
+    env = RealTimeEnviroment(interface, final_st_det)
     # check_env(env)
 
     model = DQN("MlpPolicy", env, verbose=1, buffer_size=10_000, learning_starts=100)
