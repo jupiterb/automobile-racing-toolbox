@@ -50,8 +50,7 @@ class RealTimeEnviroment(gym.Env):
         if is_final:
             self._final_state_detector.reset()
             print("FINAL!")
-        else:
-            print("Reward:", reward)
+
         return state, reward, is_final, {}
 
     def render(self) -> Frame:
