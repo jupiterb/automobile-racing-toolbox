@@ -7,13 +7,13 @@ import numpy as np
 from PIL import Image
 from time import sleep
 
-from interface import LocalGameInterface
+from interface import FullLocalGameInterface
 from interface.models import SteeringAction
 from interface.components import Screen
 from conf import get_game_config
 
 
-interface = LocalGameInterface(get_game_config())
+interface = FullLocalGameInterface(get_game_config())
 
 
 def test_perform_ocr(monkeypatch) -> None:

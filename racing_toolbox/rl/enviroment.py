@@ -6,9 +6,9 @@ from interface import GameInterface
 from interface.models import SteeringAction
 from rl.final_state import FinalStateDetector
 import cv2
-import matplotlib.pyplot as plt
 
 Frame = Optional[np.ndarray]
+
 
 def _to_grayscale(frame):
     rgb_weights = [0.2989, 0.5870, 0.1140]
@@ -22,13 +22,12 @@ def _rescale(frame, max_side_len):
     return cv2.resize(frame, dsize=target_shape[::-1], interpolation=cv2.INTER_CUBIC)
 
 
-
 class RealTimeEnviroment(gym.Env):
     def __init__(
         self,
         game_interface: GameInterface,
         final_state_detector: FinalStateDetector,
-        observation_shape: tuple[int, int, int],
+        observation_shape: tuple[int, int],
     ) -> None:
         super().__init__()
 
@@ -36,7 +35,7 @@ class RealTimeEnviroment(gym.Env):
             [SteeringAction.FORWARD],
             [SteeringAction.LEFT],
             [SteeringAction.RIGHT],
-            [None]
+            [None],
         ]
         self.action_space = gym.spaces.Discrete(len(self.available_actions))
         self.observation_space = gym.spaces.Box(
@@ -58,7 +57,7 @@ class RealTimeEnviroment(gym.Env):
         self._apply_action(action)
 
         state, features = self._fetch_state()
-        reward = features['speed']  # TODO: reward system
+        reward = features["speed"]  # TODO: reward system
 
         is_final = self._final_state_detector.is_final(new_features=features)
         self._last_frame = state
@@ -81,6 +80,5 @@ class RealTimeEnviroment(gym.Env):
         image = self._game_interface.grab_image().astype(np.uint8)
         features = self._game_interface.perform_ocr()
         # TODO: state is image or values vector?
-        image = _rescale(_to_grayscale(image[380:730, 10:-10, :]), 100)
-        # print(image.shape
-        return image[:, :, np.newaxis], features
+        image = _rescale(_to_grayscale(image), 100).astype(np.uint8)
+        return image, features

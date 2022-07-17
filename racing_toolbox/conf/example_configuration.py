@@ -13,13 +13,15 @@ def get_game_config() -> GameConfiguration:
         game_id="trackmania",
         process_name="Trackmania Nations Forever",
         window_size=(1000, 800),
-        obervation_frame=ScreenFrame(),
+        obervation_frame=ScreenFrame(top=0.38, bottom=0.73, left=0.0125, right=0.9875),
         discrete_actions_mapping={
             SteeringAction.FORWARD: Key.up,
             SteeringAction.BREAK: Key.down,
             SteeringAction.RIGHT: Key.right,
             SteeringAction.LEFT: Key.left,
         },
+        reset_seconds=3,
+        reset_keys_sequence=[Key.enter],
         ocrs={
             "speed": (
                 ScreenFrame(top=0.945, bottom=0.9875, left=0.918, right=0.9825),

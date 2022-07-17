@@ -45,9 +45,8 @@ class FinalStateDetector:
     def reset(self):
         for parameters in self._all_parameters:
             name = parameters.feature_name
-            self._other_value_condition[name] = False
+            self._other_value_condition[name] = parameters.not_final_value_required
             self._repetitions[name] = 0
-
 
     def _consider(self, features: dict[str, float]) -> None:
         """

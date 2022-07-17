@@ -32,13 +32,13 @@ class SevenSegmentsOcr(AbstractOcr):
         digits_segments = [self._get_segments(img) for img in digits_img]
         try:
             digits = [
-                SevenSegmentsOcr._digits_segments.index(s)
-                for s in digits_segments
+                SevenSegmentsOcr._digits_segments.index(segments)
+                for segments in digits_segments
             ]
             digits.reverse()
             return sum([digit * 10**i for i, digit in enumerate(digits)])
         except ValueError:
-            print("Error", digits_segments)
+            print(f"Error: unknown segments: {digits_segments}")
             return 0
 
     def _preprocess_image(self, image: np.ndarray) -> np.ndarray:

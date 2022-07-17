@@ -4,7 +4,7 @@ from stable_baselines3 import DQN, SAC
 from stable_baselines3.common.env_checker import check_env
 
 from conf.example_configuration import get_game_config
-from interface.local import LocalGameInterface
+from interface.training_local import TrainingLocalGameInterface
 from rl.enviroment import RealTimeEnviroment
 from rl.final_state.detector import FinalStateDetector
 from rl.models.final_value_detecion_params import FinalValueDetectionParameters
@@ -13,8 +13,8 @@ from rl.models.final_value_detecion_params import FinalValueDetectionParameters
 def main():
     config = get_game_config()
     width, height = config.window_size
-    observation_shape = (35, 100, 1)
-    interface = LocalGameInterface(config)
+    observation_shape = (28, 100)
+    interface = TrainingLocalGameInterface(config)
     final_st_det = FinalStateDetector(
         [
             FinalValueDetectionParameters(
@@ -29,7 +29,7 @@ def main():
     env = RealTimeEnviroment(interface, final_st_det, observation_shape)
     # check_env(env)
 
-    model = DQN("MlpPolicy", env, verbose=1,buffer_size=10_000, learning_starts=100)
+    model = DQN("MlpPolicy", env, verbose=1, buffer_size=10_000, learning_starts=100)
     model.learn(total_timesteps=1000)
 
     print("EVAL")
@@ -43,4 +43,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

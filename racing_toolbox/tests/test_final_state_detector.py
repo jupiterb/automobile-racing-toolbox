@@ -7,7 +7,7 @@ import pytest
 import numpy as np
 from PIL import Image
 
-from interface import LocalGameInterface
+from interface import TrainingLocalGameInterface
 from interface.components import Screen
 from rl.final_state import FinalStateDetector
 from rl.models import FinalValueDetectionParameters
@@ -61,6 +61,10 @@ def test_final_state_detection() -> None:
 
     assert not detector.is_final({"speed": 2.0, "last_checkpoint_detected": 0.0})
 
+    assert detector.is_final({"speed": 5.0, "last_checkpoint_detected": 1.0})
+    detector.reset()
+    assert not detector.is_final()
+
 
 def test_integration_with_ocr(monkeypatch) -> None:
     final_features_values = [
@@ -77,7 +81,7 @@ def test_integration_with_ocr(monkeypatch) -> None:
     assert not detector.is_final()
 
     end_of_race_detected = False
-    interface = LocalGameInterface(get_game_config())
+    interface = TrainingLocalGameInterface(get_game_config())
 
     path_to_images = "assets/screenshots/end_of_race"
     for image_name in listdir(path_to_images):

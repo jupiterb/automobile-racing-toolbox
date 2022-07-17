@@ -1,2 +1,3 @@
 from interface.abstract import GameInterface
-from interface.local import LocalGameInterface
+from interface.training_local import TrainingLocalGameInterface
+from interface.full_local import FullLocalGameInterface
