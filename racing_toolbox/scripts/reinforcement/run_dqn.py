@@ -1,14 +1,11 @@
-import sys
-
-from stable_baselines3 import DQN, SAC
-from stable_baselines3.common.env_checker import check_env
-from gym.wrappers import GrayScaleObservation, ResizeObservation
+from stable_baselines3 import DQN
+from gym.wrappers import GrayScaleObservation, ResizeObservation, FrameStack
 from conf.example_configuration import get_game_config
 from interface.training_local import TrainingLocalGameInterface
 from rl.enviroment import RealTimeEnviroment
 from rl.final_state.detector import FinalStateDetector
 from rl.models.final_value_detecion_params import FinalValueDetectionParameters
-from rl.wrappers.preprocessing import LoggingWrapper
+from rl.wrappers.observation_squeezing import SqueezingWrapper
 
 def main():
     config = get_game_config()
@@ -25,9 +22,10 @@ def main():
         ]
     )
     env = RealTimeEnviroment(interface, final_st_det)
-    env = GrayScaleObservation(env, keep_dim=True)
-    env = ResizeObservation(env, (100, 150))
-    env = LoggingWrapper(env)
+    env = GrayScaleObservation(env, keep_dim=False)
+    env = ResizeObservation(env, (50, 100))
+    env = FrameStack(env, 4)
+    env = SqueezingWrapper(env)
     # check_env(env)
 
     model = DQN("CnnPolicy", env, verbose=1, buffer_size=10_000, learning_starts=100)
