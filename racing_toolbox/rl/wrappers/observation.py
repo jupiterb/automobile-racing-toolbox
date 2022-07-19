@@ -9,4 +9,9 @@ class SqueezingWrapper(gym.ObservationWrapper):
     def observation(self, observation):
         observation = np.squeeze(observation)
         return observation 
+
+
+class RescaleWrapper(gym.ObservationWrapper):
+    def observation(self, observation):
+        return observation / 255.0
         

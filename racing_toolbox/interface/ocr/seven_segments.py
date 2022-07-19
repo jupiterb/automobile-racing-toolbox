@@ -23,6 +23,7 @@ class SevenSegmentsOcr(AbstractOcr):
 
     def __init__(self, configuration: OcrConfiguration) -> None:
         self._config = configuration
+        self.last_vel = 0
 
     def read_numer(self, image: np.ndarray) -> int:
         image = self._preprocess_image(image)
@@ -36,10 +37,10 @@ class SevenSegmentsOcr(AbstractOcr):
                 for segments in digits_segments
             ]
             digits.reverse()
-            return sum([digit * 10**i for i, digit in enumerate(digits)])
+            self.last_vel = sum([digit * 10**i for i, digit in enumerate(digits)])
         except ValueError:
             print(f"Error: unknown segments: {digits_segments}")
-            return 0
+        return self.last_vel
 
     def _preprocess_image(self, image: np.ndarray) -> np.ndarray:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) if image.ndim > 2 else image

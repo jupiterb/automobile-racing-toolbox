@@ -1,7 +1,7 @@
 import gym
 import numpy as np 
 from collections import deque
-
+from typing import Callable
 
 class OffTrackPunishment(gym.RewardWrapper):
     def step(self, action):
@@ -9,7 +9,7 @@ class OffTrackPunishment(gym.RewardWrapper):
         return observation, self.reward(reward, observation), done, info
 
     def reward(self, reward, observation):
-        r = - abs(reward) if self._is_off_track(observation) else reward # abs to make sure it is still punishment
+        r = - abs(reward) - 100 if self._is_off_track(observation) else reward # abs to make sure it is still punishment
         return r
 
     def _is_off_track(self, observation) -> bool:
@@ -20,15 +20,16 @@ class OffTrackPunishment(gym.RewardWrapper):
 class SpeedDropPunishment(gym.RewardWrapper):
     """This wrapper will add punishment for every 'major' drop in speed. So it assumes that returned reward is speed related"""
 
-    def __init__(self, env, memory_length: int, diff_thresh: float) -> None:
+    def __init__(self, env, memory_length: int, diff_thresh: float, metric: Callable[[float], float]) -> None:
         super().__init__(env)
         self.reward_history = deque([], maxlen=memory_length)
         self.threshold = diff_thresh
+        self.metric = metric
 
     def reward(self, reward: float) -> float:
         baseline = np.mean(self.reward_history)
         self.reward_history.append(reward)
-        r = reward - (baseline - reward) ** 2 if reward < baseline - self.threshold else reward
+        r = reward - self.metric(baseline - reward) if reward < baseline - self.threshold else reward
         return r
 
 
@@ -46,3 +47,14 @@ class ClipReward(gym.RewardWrapper):
         else:
             r = reward
         return r 
+
+
+class StandarizeReward(gym.RewardWrapper):
+    def __init__(self, env, baseline: float, scale: float) -> None:
+        super().__init__(env)
+        self.baseline = baseline
+        self.scale = scale 
+
+    def reward(self, reward: float) -> float:
+       r = (reward - self.baseline) / self.scale
+       return r 

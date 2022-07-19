@@ -18,6 +18,10 @@ class RealTimeEnviroment(gym.Env):
 
         self.available_actions: list[list[Optional[SteeringAction]]] = [
             [SteeringAction.FORWARD],
+            [SteeringAction.FORWARD, SteeringAction.LEFT],
+            [SteeringAction.FORWARD, SteeringAction.RIGHT],
+            [SteeringAction.BREAK, SteeringAction.RIGHT],
+            [SteeringAction.BREAK, SteeringAction.RIGHT],
             [SteeringAction.LEFT],
             [SteeringAction.RIGHT],
             [None],
