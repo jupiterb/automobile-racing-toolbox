@@ -18,8 +18,8 @@ def main():
     config = {
         "policy": "CnnPolicy",
         "total_timesteps": 1_000_000, 
-        "buffer_size": 10_000,
-        "learning_starts": 100,
+        "buffer_size": 100_000,
+        "learning_starts": 1000,
     }
 
     run = wandb.init(
