@@ -15,9 +15,10 @@ from rl.builder import reward_wrappers, observation_wrappers
 def main():
     config = {
         "policy": "CnnPolicy",
-        "total_timesteps": 1_000_000, 
-        "buffer_size": 10_000,
-        "learning_starts": 100,
+        "total_timesteps": 500_000, 
+        "buffer_size": 100_000,
+        "learning_starts": 10_00,
+        "gamma": 0.96,
     }
 
     run = wandb.init(
@@ -96,5 +97,5 @@ def debug():
 
 
 if __name__ == "__main__":
-    main()
-    # debug()
+    # main()
+    debug()
