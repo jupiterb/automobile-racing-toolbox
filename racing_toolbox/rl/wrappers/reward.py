@@ -4,16 +4,21 @@ from collections import deque
 from typing import Callable
 
 class OffTrackPunishment(gym.RewardWrapper):
+    def __init__(self, env, metric: Callable[[float], float] = None):
+        super().__init__(env)
+        self.metric = metric or (lambda reward: -abs(reward) - 100)
+
     def step(self, action):
         observation, reward, done, info = self.env.step(action)
         return observation, self.reward(reward, observation), done, info
 
     def reward(self, reward, observation):
-        r = - abs(reward) - 100 if self._is_off_track(observation) else reward # abs to make sure it is still punishment
+        r = self.metric(reward) if self._is_off_track(observation) else reward # abs to make sure it is still punishment
         return r
 
     def _is_off_track(self, observation) -> bool:
         """If car is off track, std of green channel is lower than 30"""
+        # when thsis will be properly implemented, it will be configurable also
         return np.std(observation[:, :, 1]) < 35
 
 
