@@ -5,7 +5,6 @@ from interface.models import (
     ScreenFrame,
     OcrConfiguration,
 )
-from observation.models.observation_configuration import ObservationConfiguration
 
 
 def get_game_config() -> GameConfiguration:

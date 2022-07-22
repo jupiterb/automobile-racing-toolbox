@@ -1,7 +1,7 @@
 from typing import Optional
 import numpy as np
 
-from rl.models import FinalValueDetectionParameters
+from rl.config import FinalValueDetectionParameters
 
 
 class FinalStateDetector:
