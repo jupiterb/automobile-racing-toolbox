@@ -6,6 +6,9 @@ class RewardConfig(BaseModel):
     # minimal threshold of speed drop/increase to apply additional punsihment or reward
     speed_diff_thresh: PositiveInt
 
+    # how much frames should be taken into consideration in calculating mean speed to determine deviation
+    memory_length: PositiveInt
+
     # function to be applied to the speed difference, to create reward boost/punishment
     speed_diff_trans: Callable[[float], float]
 

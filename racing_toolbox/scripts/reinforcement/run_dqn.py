@@ -1,46 +1,43 @@
-from stable_baselines3 import DQN
-from stable_baselines3.common.vec_env import DummyVecEnv
-from gym.wrappers import GrayScaleObservation, ResizeObservation, FrameStack, Monitor, RecordEpisodeStatistics
-from wandb.integration.sb3 import WandbCallback
+import gym
 import wandb
-import numpy as np 
+import numpy as np
+from stable_baselines3 import DQN
+from wandb.integration.sb3 import WandbCallback
+from stable_baselines3.common.vec_env import DummyVecEnv
 
 from conf.example_configuration import get_game_config
 from interface.training_local import TrainingLocalGameInterface
-from rl.wrappers.reward import OffTrackPunishment, SpeedDropPunishment, ClipReward, StandarizeReward
 from rl.enviroment import RealTimeEnviroment
 from rl.final_state.detector import FinalStateDetector
-from rl.models.final_value_detecion_params import FinalValueDetectionParameters
-from rl.wrappers.observation import SqueezingWrapper, RescaleWrapper
+from rl.config import FinalValueDetectionParameters, RewardConfig, ObservationConfig
+from rl.builder import reward_wrappers, observation_wrappers
 
 def main():
     config = {
         "policy": "CnnPolicy",
-        "total_timesteps": 25_000, 
-        "buffer_size": 100_000,
-        "learning_starts": 1000,
-        "gamma": 0.96,
-        "learni"
+        "total_timesteps": 1_000_000, 
+        "buffer_size": 10_000,
+        "learning_starts": 100,
     }
 
     run = wandb.init(
-        project="test-sb3v2",
+        project="test-sb3",
         sync_tensorboard=True,  # auto-upload sb3's tensorboard metrics
         monitor_gym=True,  # auto-upload the videos of agents playing the game
+        save_code=False,
         entity="automobile-racing-toolbox",
         config=config,
     )
 
-    env = DummyVecEnv([lambda: setup_env(run)])
-
+    env = DummyVecEnv([setup_env])
+  
     model = DQN(
         env=env, 
         policy=config["policy"],
         buffer_size=config["buffer_size"],
         learning_starts=config["learning_starts"],
         verbose=1, 
-        tensorboard_log=f"runs/{run.id}",
-        gamma=config["gamma"],
+        tensorboard_log=f"runs/{run.id}"
     )
     model.learn(
         total_timesteps=config["total_timesteps"],
@@ -53,7 +50,9 @@ def main():
     run.finish()
 
 
-def setup_env(run=None) -> RealTimeEnviroment:
+
+
+def setup_env() -> gym.Env:
     config = get_game_config()
     interface = TrainingLocalGameInterface(config)
     final_st_det = FinalStateDetector(
@@ -67,29 +66,25 @@ def setup_env(run=None) -> RealTimeEnviroment:
             )
         ]
     )
+
+    reward_conf = RewardConfig(
+        speed_diff_thresh=15,
+        memory_length=1,
+        speed_diff_trans=np.abs,
+        off_track_reward_trans=lambda reward: -abs(reward) - 100,
+        clip_range=(-300, 300),
+        baseline=100,
+        scale=100
+    )
+
+    observation_conf = ObservationConfig(
+        shape=(50, 100),
+        stack_size=4
+    )
+
     env = RealTimeEnviroment(interface, final_st_det)
-    if run:
-        env = Monitor(env, f"videos_{run.id}")      # record videos
-    env = reward_wrappers(env)
-    env = observations_wrappers(env)
-    env = RecordEpisodeStatistics(env)   # record videos
-    return env 
-
-
-def observations_wrappers(env):
-    env = GrayScaleObservation(env, keep_dim=False)
-    env = ResizeObservation(env, (50, 100))
-    env = RescaleWrapper(env)
-    env = FrameStack(env, 4)
-    env = SqueezingWrapper(env)
-    return env 
-
-
-def reward_wrappers(env):
-    env = SpeedDropPunishment(env, 1, 1, np.abs)
-    env = OffTrackPunishment(env)
-    env = ClipReward(env, -400, 400)
-    env = StandarizeReward(env, 100, 100)
+    env = reward_wrappers(env, reward_conf)
+    env = observation_wrappers(env, observation_conf)
     return env 
 
 
@@ -97,8 +92,9 @@ def debug():
     env = setup_env()
     env.reset()
     for _ in range(10000):
-        _, reward, _, _ = env.step(-1)
-        print(reward)
+        _ = env.step(-1)
+
 
 if __name__ == "__main__":
     main()
+    # debug()

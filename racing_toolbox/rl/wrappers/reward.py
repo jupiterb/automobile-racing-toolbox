@@ -3,10 +3,10 @@ import numpy as np
 from collections import deque
 from typing import Callable
 
+
 class OffTrackPunishment(gym.RewardWrapper):
-    def __init__(self, env, metric: Callable[[float], float] = None):
+    def __init__(self, env, metric: Callable[[float], float]):
         super().__init__(env)
-        self.metric = metric or (lambda reward: -abs(reward) - 100)
 
     def step(self, action):
         observation, reward, done, info = self.env.step(action)
