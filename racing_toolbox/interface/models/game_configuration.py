@@ -15,4 +15,5 @@ class GameConfiguration(BaseModel):
     ocrs: dict[str, tuple[ScreenFrame, OcrConfiguration]]
     reset_seconds: int
     reset_keys_sequence: list[Key]
+    frequency_per_second: int
     

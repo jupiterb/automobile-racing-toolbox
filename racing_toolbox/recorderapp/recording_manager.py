@@ -7,13 +7,6 @@ from recorderapp.dataservice import RecorderDataService, InMemoryDataService
 
 
 class EpisodeRecordingManager:
-
-    __default_fps: int = 10
-
-    @staticmethod
-    def default_fps():
-        return EpisodeRecordingManager.__default_fps
-
     def __init__(self) -> None:
         self.__dataservice: RecorderDataService = InMemoryDataService()
         self.__recording_thread: Optional[threading.Thread] = None
