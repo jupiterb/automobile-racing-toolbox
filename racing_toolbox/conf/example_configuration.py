@@ -24,18 +24,19 @@ def get_game_config() -> GameConfiguration:
         frequency_per_second=10,
         ocrs={
             "speed": (
-                ScreenFrame(top=0.945, bottom=0.9875, left=0.918, right=0.9825),
+                ScreenFrame(top=0.94, bottom=0.99, left=0.91, right=0.99),
                 OcrConfiguration(
                     threshold=190,
-                    max_digits=3,
-                    segemnts_definitions={
-                        0: ScreenFrame(top=0, bottom=0.09, left=0.42, right=0.60),
-                        1: ScreenFrame(top=0.15, bottom=0.28, left=0.14, right=0.28),
-                        2: ScreenFrame(top=0.15, bottom=0.28, left=0.85, right=1.0),
-                        3: ScreenFrame(top=0.38, bottom=0.5, left=0.42, right=0.60),
-                        4: ScreenFrame(top=0.58, bottom=0.73, left=0.14, right=0.28),
-                        5: ScreenFrame(top=0.58, bottom=0.73, left=0.85, right=1.0),
-                        6: ScreenFrame(top=0.82, bottom=0.94, left=0.42, right=0.60),
+                    segments_coordinates={
+                        0: (0.14, 0.5),
+                        1: (0.34, 0.15),
+                        2: (0.34, 0.5),
+                        3: (0.34, 0.84),
+                        4: (0.5, 0.5),
+                        5: (0.66, 0.15),
+                        6: (0.65, 0.5),
+                        7: (0.65, 0.84),
+                        8: (0.85, 0.5),
                     },
                 ),
             )

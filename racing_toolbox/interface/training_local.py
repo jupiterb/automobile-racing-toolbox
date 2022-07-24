@@ -3,7 +3,7 @@ import numpy as np
 from interface import GameInterface
 from interface.models import GameConfiguration, SteeringAction
 from interface.components import KeyboardController, Screen
-from interface.ocr import SevenSegmentsOcr
+from interface.ocr import NineSegmentsOcr
 import time
 
 
@@ -18,7 +18,7 @@ class TrainingLocalGameInterface(GameInterface):
         self._screen = Screen(configuration.process_name, configuration.window_size)
 
         self._ocrs = [
-            (name, frame, SevenSegmentsOcr(ocr_configuration))
+            (name, frame, NineSegmentsOcr(ocr_configuration))
             for name, (frame, ocr_configuration) in configuration.ocrs.items()
         ]
 
