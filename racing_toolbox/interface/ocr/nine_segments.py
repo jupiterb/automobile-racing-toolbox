@@ -1,4 +1,3 @@
-from turtle import shape
 import numpy as np
 import cv2
 
@@ -9,6 +8,7 @@ from interface.models import OcrConfiguration
 class NineSegmentsOcr(AbstractOcr):
 
     _element_size_threshold: float = 0.2
+    _elements_height = 40
     _digits_segments: list[set[int]] = [
         {0, 1, 3, 5, 7, 8},
         {2, 6},
@@ -44,6 +44,16 @@ class NineSegmentsOcr(AbstractOcr):
     def _preprocess_image(self, image: np.ndarray) -> np.ndarray:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) if image.ndim > 2 else image
         image = cv2.threshold(image, self._config.threshold, 255, cv2.THRESH_BINARY)[1]
+        # rescale image to standard element height
+        nonzero_rows = np.nonzero(image)[0]
+        if not any(nonzero_rows):
+            return image
+        raw_elements_height = nonzero_rows.max() - nonzero_rows.min() + 1
+        rescale_factor = NineSegmentsOcr._elements_height / raw_elements_height
+        height = int(image.shape[0] * rescale_factor)
+        width = int(image.shape[1] * rescale_factor)
+        dsize = (width, height)
+        image = cv2.resize(image, dsize, interpolation=cv2.INTER_AREA)
         # connect segements
         image = cv2.dilate(image, kernel=np.array([[1, 1], [1, 1]]))
         # additional, vertical connection
@@ -58,6 +68,8 @@ class NineSegmentsOcr(AbstractOcr):
             image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
         )
         rects = [cv2.boundingRect(contour) for contour in contours]
+        if not any(rects):
+            return []
         # sort from left to right
         rects.sort(key=lambda rect: rect[0])
         max_height = np.max([height for _, _, _, height in rects])
