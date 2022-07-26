@@ -5,7 +5,6 @@ from interface.models import (
     ScreenFrame,
     OcrConfiguration,
 )
-from observation.models.observation_configuration import ObservationConfiguration
 
 
 def get_game_config() -> GameConfiguration:
@@ -22,6 +21,7 @@ def get_game_config() -> GameConfiguration:
         },
         reset_seconds=3,
         reset_keys_sequence=[Key.enter],
+        frequency_per_second=10,
         ocrs={
             "speed": (
                 ScreenFrame(top=0.945, bottom=0.9875, left=0.918, right=0.9825),

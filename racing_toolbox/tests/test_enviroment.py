@@ -10,9 +10,8 @@ from PIL import Image
 from interface import TrainingLocalGameInterface
 from interface.components import Screen
 from rl import RealTimeEnviroment
-from rl.enviroment import _rescale, _to_grayscale
 from rl.final_state import FinalStateDetector
-from rl.models import FinalValueDetectionParameters
+from rl.config import FinalValueDetectionParameters
 from conf import get_game_config
 
 

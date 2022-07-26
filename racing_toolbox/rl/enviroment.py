@@ -1,11 +1,10 @@
 import gym
 import numpy as np
-from typing import Optional, Any
+from typing import Optional
 
 from interface import GameInterface
 from interface.models import SteeringAction
 from rl.final_state import FinalStateDetector
-import cv2
 
 Frame = Optional[np.ndarray]
 
@@ -46,7 +45,7 @@ class RealTimeEnviroment(gym.Env):
         self._apply_action(action)
 
         state, features = self._fetch_state()
-        reward = features["speed"]  # TODO: reward system
+        reward = features["speed"]
 
         is_final = self._final_state_detector.is_final(new_features=features)
         self._last_frame = state

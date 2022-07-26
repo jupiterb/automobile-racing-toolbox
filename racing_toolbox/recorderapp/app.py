@@ -45,7 +45,7 @@ class RecorderScreen(GridLayout):
                 FullLocalGameInterface(get_game_config()),
                 self._user_name.text,
                 self._recording_name.text,
-                EpisodeRecordingManager.default_fps(),
+                get_game_config().frequency_per_second,
             )
             self._start_save_button.text = "Save recording"
 
