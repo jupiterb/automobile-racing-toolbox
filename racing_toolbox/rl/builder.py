@@ -16,6 +16,7 @@ def reward_wrappers(env: gym.Env, config: RewardConfig) -> gym.Env:
 def observation_wrappers(env: gym.Env, config: ObservationConfig) -> gym.Env:
     env = GrayScaleObservation(env, keep_dim=False)
     env = ResizeObservation(env, config.shape)
-    env = FrameStack(env, 4)
+    env = RescaleWrapper(env)
+    env = FrameStack(env, config.stack_size)
     env = SqueezingWrapper(env)
     return env

@@ -39,7 +39,8 @@ class SevenSegmentsOcr(AbstractOcr):
             digits.reverse()
             self.last_vel = sum([digit * 10**i for i, digit in enumerate(digits)])
         except ValueError:
-            print(f"Error: unknown segments: {digits_segments}")
+            # print(f"Error: unknown segments: {digits_segments}")
+            pass
         return self.last_vel
 
     def _preprocess_image(self, image: np.ndarray) -> np.ndarray:

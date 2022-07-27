@@ -27,15 +27,21 @@ class SpeedDropPunishment(gym.RewardWrapper):
 
     def __init__(self, env, memory_length: int, diff_thresh: float, metric: Callable[[float], float]) -> None:
         super().__init__(env)
-        self.reward_history = deque([], maxlen=memory_length)
+        self.reward_history = deque([0], maxlen=memory_length)
         self.threshold = diff_thresh
         self.metric = metric
 
     def reward(self, reward: float) -> float:
         baseline = np.mean(self.reward_history)
         self.reward_history.append(reward)
-        r = reward - self.metric(baseline - reward) if reward < baseline - self.threshold else reward
-        return r
+        diff = reward - baseline 
+        if abs(diff) < self.threshold:
+            return reward 
+
+        if diff >= 0: # agent drives faster
+            return reward + self.metric(diff)
+        else:
+            return reward - self.metric(abs(diff))
 
 
 class ClipReward(gym.RewardWrapper):

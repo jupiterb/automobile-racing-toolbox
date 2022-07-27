@@ -3,7 +3,9 @@ import wandb
 import numpy as np
 from stable_baselines3 import DQN
 from wandb.integration.sb3 import WandbCallback
-from stable_baselines3.common.vec_env import DummyVecEnv
+from stable_baselines3.common.vec_env import DummyVecEnv, VecVideoRecorder
+from stable_baselines3.common.monitor import Monitor
+from gym.wrappers import RecordEpisodeStatistics, RecordVideo, TimeLimit
 
 from conf.example_configuration import get_game_config
 from interface.training_local import TrainingLocalGameInterface
@@ -11,26 +13,30 @@ from rl.enviroment import RealTimeEnviroment
 from rl.final_state.detector import FinalStateDetector
 from rl.config import FinalValueDetectionParameters, RewardConfig, ObservationConfig
 from rl.builder import reward_wrappers, observation_wrappers
+np.seterr(all='raise')
+
 
 def main():
     config = {
         "policy": "CnnPolicy",
         "total_timesteps": 500_000, 
         "buffer_size": 100_000,
-        "learning_starts": 10_00,
-        "gamma": 0.96,
+        "learning_starts": 1000,
+        "gamma": 0.99,
     }
 
     run = wandb.init(
         project="test-sb3",
         sync_tensorboard=True,  # auto-upload sb3's tensorboard metrics
         monitor_gym=True,  # auto-upload the videos of agents playing the game
-        save_code=False,
+        save_code=True,
         entity="automobile-racing-toolbox",
         config=config,
     )
 
     env = DummyVecEnv([setup_env])
+    env = VecVideoRecorder(env, f"foo-videos/{run.id}", record_video_trigger=lambda x: x % 10_000 == 0, video_length=400)
+    
   
     model = DQN(
         env=env, 
@@ -69,13 +75,13 @@ def setup_env() -> gym.Env:
     )
 
     reward_conf = RewardConfig(
-        speed_diff_thresh=15,
+        speed_diff_thresh=3,
         memory_length=1,
-        speed_diff_trans=np.abs,
+        speed_diff_trans=lambda x: float(x) ** 1.4,
         off_track_reward_trans=lambda reward: -abs(reward) - 100,
-        clip_range=(-300, 300),
-        baseline=100,
-        scale=100
+        clip_range=(-400, 400),
+        baseline=0,
+        scale=10_000
     )
 
     observation_conf = ObservationConfig(
@@ -83,19 +89,28 @@ def setup_env() -> gym.Env:
         stack_size=4
     )
 
-    env = RealTimeEnviroment(interface, final_st_det)
+    env = gym.make("custom/real-time-v0", game_interface=interface, final_state_detector=final_st_det)
     env = reward_wrappers(env, reward_conf)
     env = observation_wrappers(env, observation_conf)
+    env = Monitor(env)
+    env = TimeLimit(env, 2_000)
     return env 
 
 
 def debug():
-    env = setup_env()
+    env = RecordEpisodeStatistics(setup_env())
     env.reset()
+    c = 0
     for _ in range(10000):
-        _ = env.step(-1)
+        c += 1
+        _, _, done, info = env.step(-1)
+        if done:
+            env.reset()
+            print(c)
+            c = 0
+            print(info)
 
 
 if __name__ == "__main__":
-    # main()
-    debug()
+    main()
+    # debug()
