@@ -1,4 +1,5 @@
 import gym
+import math 
 import numpy as np 
 from collections import deque
 from typing import Callable
@@ -35,14 +36,13 @@ class SpeedDropPunishment(gym.RewardWrapper):
         baseline = np.mean(self.reward_history)
         self.reward_history.append(reward)
         diff = reward - baseline 
-        if abs(diff) < self.threshold:
-            return reward 
+        if abs(diff) < self.threshold or diff == 0:
+            r = reward 
 
-        if diff >= 0: # agent drives faster
-            return reward + self.metric(diff)
-        else:
-            return reward - self.metric(abs(diff))
-
+        r = reward + math.copysign(self.metric(abs(diff)), diff)
+        print(r, diff)
+        return r 
+        
 
 class ClipReward(gym.RewardWrapper):
     def __init__(self, env, min_value: float, max_value: float) -> None:
@@ -51,12 +51,7 @@ class ClipReward(gym.RewardWrapper):
         self.max_value = max_value
 
     def reward(self, reward: float) -> float:
-        if reward < self.min_value:
-            r = self.min_value
-        elif reward > self.max_value:
-            r = self.max_value
-        else:
-            r = reward
+        r = max(min(reward, self.max_value), self.min_value)
         return r 
 
 
