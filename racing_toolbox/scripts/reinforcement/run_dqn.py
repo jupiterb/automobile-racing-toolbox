@@ -69,7 +69,7 @@ def setup_env() -> gym.Env:
                 min_value=2,
                 max_value=float("inf"),
                 required_repetitions_in_row=20,
-                not_final_value_required=True,
+                not_final_value_required=False,
             )
         ]
     )
@@ -77,11 +77,11 @@ def setup_env() -> gym.Env:
     reward_conf = RewardConfig(
         speed_diff_thresh=3,
         memory_length=1,
-        speed_diff_trans=lambda x: float(x) ** 1.4,
-        off_track_reward_trans=lambda reward: -abs(reward) - 100,
+        speed_diff_trans=lambda x: float(x) ** 1.6,
+        off_track_reward_trans=lambda reward: -abs(reward) - 400,
         clip_range=(-400, 400),
         baseline=0,
-        scale=10_000
+        scale=400
     )
 
     observation_conf = ObservationConfig(
@@ -93,7 +93,7 @@ def setup_env() -> gym.Env:
     env = reward_wrappers(env, reward_conf)
     env = observation_wrappers(env, observation_conf)
     env = Monitor(env)
-    env = TimeLimit(env, 2_000)
+    env = TimeLimit(env, 1_000)
     return env 
 
 
