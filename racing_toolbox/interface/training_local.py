@@ -35,7 +35,7 @@ class TrainingLocalGameInterface(GameInterface):
 
     def perform_ocr(self, on_last_image: bool = True) -> dict[str, float]:
         return {
-            name: ocr.read_number(self._screen.grab_image(frame, on_last_image))
+            name: ocr.read_numer(self._screen.grab_image(frame, on_last_image))
             for name, frame, ocr in self._ocrs
         }
 
