@@ -16,7 +16,7 @@ from conf import get_game_config
 interface = FullLocalGameInterface(get_game_config())
 
 
-def test_perform_ocr(monkeypatch) -> None:
+def test_perform_ocr_on_speed(monkeypatch) -> None:
     test_cases = {
         "trackmania_1000x800_0": 84.0,
         "trackmania_1000x800_1": 207.0,
@@ -36,7 +36,7 @@ def test_perform_ocr(monkeypatch) -> None:
 
         monkeypatch.setattr(Screen, "_get_screenshot", mock_get_screenshot)
         ocr_result = interface.perform_ocr()
-        assert ocr_result == {"speed": value}
+        assert ocr_result["speed"] == value
 
 
 def test_apply_read_action() -> None:

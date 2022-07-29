@@ -8,7 +8,8 @@ from interface.models import OcrConfiguration
 class NineSegmentsOcr(AbstractOcr):
 
     _element_size_threshold: float = 0.2
-    _elements_height = 40
+    _dst_elements_height = 40
+    _min_elements_height = 12
     _digits_segments: list[set[int]] = [
         {0, 1, 3, 5, 7, 8},
         {2, 6},
@@ -49,7 +50,9 @@ class NineSegmentsOcr(AbstractOcr):
         if not any(nonzero_rows):
             return image
         raw_elements_height = nonzero_rows.max() - nonzero_rows.min() + 1
-        rescale_factor = NineSegmentsOcr._elements_height / raw_elements_height
+        if raw_elements_height < NineSegmentsOcr._min_elements_height:
+            return np.zeros_like(image)
+        rescale_factor = NineSegmentsOcr._dst_elements_height / raw_elements_height
         height = int(image.shape[0] * rescale_factor)
         width = int(image.shape[1] * rescale_factor)
         dsize = (width, height)
@@ -81,7 +84,7 @@ class NineSegmentsOcr(AbstractOcr):
         return [
             NineSegmentsOcr._move_bottom(element, max_height)
             for element in elements
-            if np.max(element.shape) > min_size
+            if np.max(element.shape) > min_size and element.shape[0] > element.shape[1]
         ]
 
     def _get_segments(self, image: np.ndarray) -> set[int]:
