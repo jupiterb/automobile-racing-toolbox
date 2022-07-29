@@ -20,9 +20,10 @@ def main():
     config = {
         "policy": "CnnPolicy",
         "total_timesteps": 500_000, 
-        "buffer_size": 100_000,
-        "learning_starts": 1000,
+        "buffer_size": 150_000,
+        "learning_starts": 50_00,
         "gamma": 0.99,
+        "exploration_final_epsilon": 0.08
     }
 
     run = wandb.init(
@@ -44,7 +45,8 @@ def main():
         buffer_size=config["buffer_size"],
         learning_starts=config["learning_starts"],
         verbose=1, 
-        tensorboard_log=f"runs/{run.id}"
+        tensorboard_log=f"runs/{run.id}",
+        exploration_final_eps=config["exploration_final_epsilon"],
     )
     model.learn(
         total_timesteps=config["total_timesteps"],
@@ -77,7 +79,7 @@ def setup_env() -> gym.Env:
     reward_conf = RewardConfig(
         speed_diff_thresh=3,
         memory_length=1,
-        speed_diff_trans=lambda x: float(x) ** 1.6,
+        speed_diff_trans=lambda x: float(x) ** 2,
         off_track_reward_trans=lambda reward: -abs(reward) - 400,
         clip_range=(-400, 400),
         baseline=0,
