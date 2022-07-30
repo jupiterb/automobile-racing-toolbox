@@ -4,7 +4,7 @@ from typing import Optional
 
 from interface import GameInterface
 from interface.config import SteeringAction
-from rl.event import EventsDetector
+from rl.event import EventDetector
 
 Frame = Optional[np.ndarray]
 
@@ -13,8 +13,8 @@ class RealTimeEnvironment(gym.Env):
     def __init__(
         self,
         game_interface: GameInterface,
-        final_state_detector: EventsDetector,
-        checpoint_detector: Optional[EventsDetector] = None,
+        final_state_detector: EventDetector,
+        checpoint_detector: Optional[EventDetector] = None,
     ) -> None:
         super().__init__()
 

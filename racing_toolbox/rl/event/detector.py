@@ -4,7 +4,7 @@ import numpy as np
 from rl.config import EventDetectionParameters
 
 
-class EventsDetector:
+class EventDetector:
     def __init__(self, all_parameters: list[EventDetectionParameters]) -> None:
         self._all_parameters = all_parameters
         self._other_value_condition = {
@@ -24,6 +24,8 @@ class EventsDetector:
         for min_value, max_value in self._ranges.values():
             if min_value > max_value:
                 raise ValueError("Minimal value should be lower than maximum value")
+        if min(self._other_value_condition.values()) < 0:
+            raise ValueError("Not event values required number should be non-negative")
 
     def is_final(self, new_features: Optional[dict[str, float]] = None) -> bool:
         """
@@ -61,9 +63,10 @@ class EventsDetector:
             name = parameters.feature_name
             if name in features:
                 min_value, max_value = self._ranges[name]
-                if not min_value <= features[name] <= max_value:
+                if min_value <= features[name] <= max_value:
                     if not self._other_value_condition[name]:
                         self._repetitions[name] += 1
                 else:
-                    self._other_value_condition[name] -= 1
+                    if self._other_value_condition[name]:
+                        self._other_value_condition[name] -= 1
                     self._repetitions[name] = 0

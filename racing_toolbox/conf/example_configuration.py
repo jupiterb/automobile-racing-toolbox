@@ -6,6 +6,7 @@ from interface.config import (
     OcrConfiguration,
     NoResultPolicy,
 )
+from rl.config import EventDetectionParameters
 
 
 common_ocr_segments_coordinates = {
@@ -69,3 +70,34 @@ def get_game_config() -> GameConfiguration:
             ),
         },
     )
+
+
+def get_final_state_detection_parameters() -> list[EventDetectionParameters]:
+    return [
+        EventDetectionParameters(
+            feature_name="speed",
+            min_value=None,
+            max_value=2.0,
+            required_repetitions_in_row=5,
+            not_event_values_required=5,
+        )
+    ]
+
+
+def get_checkpoint_detection_parameters() -> list[EventDetectionParameters]:
+    return [
+        EventDetectionParameters(
+            feature_name="checkpoint_ms",
+            min_value=0.0,
+            max_value=99.0,
+            required_repetitions_in_row=3,
+            not_event_values_required=5,
+        ),
+        EventDetectionParameters(
+            feature_name="checkpoint_sec",
+            min_value=0.0,
+            max_value=59.0,
+            required_repetitions_in_row=3,
+            not_event_values_required=5,
+        ),
+    ]

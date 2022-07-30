@@ -10,9 +10,13 @@ from PIL import Image
 from interface import TrainingLocalGameInterface
 from interface.components import Screen
 from rl import RealTimeEnvironment
-from rl.event import EventsDetector
+from rl.event import EventDetector
 from rl.config import EventDetectionParameters
-from conf import get_game_config
+from conf import (
+    get_game_config,
+    get_checkpoint_detection_parameters,
+    get_final_state_detection_parameters,
+)
 
 
 def test_gym_implementation(monkeypatch) -> None:
@@ -29,17 +33,8 @@ def test_gym_implementation(monkeypatch) -> None:
     config.reset_seconds = 0
 
     interface = TrainingLocalGameInterface(config)
-    detector = EventsDetector(
-        [
-            EventDetectionParameters(
-                feature_name="speed",
-                min_value=2.0,
-                max_value=None,
-                required_repetitions_in_row=5,
-                not_event_values_required=True,
-            )
-        ]
-    )
+    final_state_detector = EventDetector(get_final_state_detection_parameters())
+    checkpoint_detector = EventDetector(get_checkpoint_detection_parameters())
 
-    env = RealTimeEnvironment(interface, detector)
+    env = RealTimeEnvironment(interface, final_state_detector, checkpoint_detector)
     check_env(env)

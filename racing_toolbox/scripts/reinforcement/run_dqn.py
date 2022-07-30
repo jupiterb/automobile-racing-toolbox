@@ -5,10 +5,14 @@ from stable_baselines3 import DQN
 from wandb.integration.sb3 import WandbCallback
 from stable_baselines3.common.vec_env import DummyVecEnv
 
-from conf.example_configuration import get_game_config
+from conf.example_configuration import (
+    get_game_config,
+    get_checkpoint_detection_parameters,
+    get_final_state_detection_parameters,
+)
 from interface.training_local import TrainingLocalGameInterface
 from racing_toolbox.rl.environment import RealTimeEnvironment
-from rl.event.detector import EventsDetector
+from rl.event.detector import EventDetector
 from rl.config import EventDetectionParameters, RewardConfig, ObservationConfig
 from rl.builder import reward_wrappers, observation_wrappers
 
@@ -53,19 +57,9 @@ def main():
 
 
 def setup_env() -> gym.Env:
-    config = get_game_config()
-    interface = TrainingLocalGameInterface(config)
-    final_st_det = EventsDetector(
-        [
-            EventDetectionParameters(
-                feature_name="speed",
-                min_value=2,
-                max_value=float("inf"),
-                required_repetitions_in_row=20,
-                not_event_values_required=True,
-            )
-        ]
-    )
+    interface = TrainingLocalGameInterface(get_game_config())
+    final_state_detector = EventDetector(get_final_state_detection_parameters())
+    checkpoint_detector = EventDetector(get_checkpoint_detection_parameters())
 
     reward_conf = RewardConfig(
         speed_diff_thresh=15,
@@ -79,7 +73,7 @@ def setup_env() -> gym.Env:
 
     observation_conf = ObservationConfig(shape=(50, 100), stack_size=4)
 
-    env = RealTimeEnvironment(interface, final_st_det)
+    env = RealTimeEnvironment(interface, final_state_detector, checkpoint_detector)
     env = reward_wrappers(env, reward_conf)
     env = observation_wrappers(env, observation_conf)
     return env

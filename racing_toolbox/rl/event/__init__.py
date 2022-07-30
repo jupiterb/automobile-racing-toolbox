@@ -1,1 +1,1 @@
-from rl.event.detector import EventsDetector
+from rl.event.detector import EventDetector
