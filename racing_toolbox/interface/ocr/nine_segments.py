@@ -48,7 +48,8 @@ class NineSegmentsOcr(AbstractOcr):
             digits.reverse()
             self._last_number = sum([digit * 10**i for i, digit in enumerate(digits)])
         except ValueError:
-            # print(f"Error: unknown segments: {digits_segments}")
+            if self._config.debug:
+                print(f"Error: unknown segments: {digits_segments}")
             return self._policy_decision(self._config.unknown_elements_policy, image)
 
         self._retries_left = NineSegmentsOcr._on_error_retries

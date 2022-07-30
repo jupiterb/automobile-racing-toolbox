@@ -46,6 +46,7 @@ def get_game_config() -> GameConfiguration:
                     unknown_elements_policy=NoResultPolicy.RETURN_LAST,
                     lack_of_elements_policy=NoResultPolicy.RETURN_ZERO,
                     try_lower_threshold=True,
+                    debug=True
                 ),
             ),
             "checkpoint_sec": (
@@ -56,6 +57,7 @@ def get_game_config() -> GameConfiguration:
                     unknown_elements_policy=NoResultPolicy.RETURN_NEGATIVE,
                     lack_of_elements_policy=NoResultPolicy.RETURN_NEGATIVE,
                     try_lower_threshold=False,
+                    debug=False
                 ),
             ),
             "checkpoint_ms": (
@@ -66,6 +68,7 @@ def get_game_config() -> GameConfiguration:
                     unknown_elements_policy=NoResultPolicy.RETURN_NEGATIVE,
                     lack_of_elements_policy=NoResultPolicy.RETURN_NEGATIVE,
                     try_lower_threshold=False,
+                    debug=False
                 ),
             ),
         },

@@ -6,7 +6,7 @@ class NoResultPolicy(Enum):
     RETURN_ZERO = auto()
     RETURN_LAST = auto()
     RETURN_NEGATIVE = auto()
-    
+
 
 class OcrConfiguration(BaseModel):
     threshold: int
@@ -14,3 +14,4 @@ class OcrConfiguration(BaseModel):
     unknown_elements_policy: NoResultPolicy
     lack_of_elements_policy: NoResultPolicy
     try_lower_threshold: bool
+    debug: bool
