@@ -8,7 +8,7 @@ from PIL import Image
 from time import sleep
 
 from interface import FullLocalGameInterface
-from interface.models import SteeringAction
+from interface.config import SteeringAction
 from interface.components import Screen
 from conf import get_game_config
 

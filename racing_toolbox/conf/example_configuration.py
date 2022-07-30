@@ -1,6 +1,5 @@
 from pynput.keyboard import Key
-from sqlalchemy import true
-from interface.models import (
+from interface.config import (
     GameConfiguration,
     SteeringAction,
     ScreenFrame,
@@ -27,8 +26,7 @@ def get_game_config() -> GameConfiguration:
         game_id="trackmania",
         process_name="Trackmania Nations Forever",
         window_size=(1000, 800),
-        obervation_frame=ScreenFrame(top=0.0, bottom=1.0, left=0.0, right=1.0),
-        # obervation_frame=ScreenFrame(top=0.475, bottom=0.9125, left=0.01, right=0.99),
+        obervation_frame=ScreenFrame(top=0.475, bottom=0.9125, left=0.01, right=0.99),
         discrete_actions_mapping={
             SteeringAction.FORWARD: Key.up,
             SteeringAction.BREAK: Key.down,
@@ -49,16 +47,6 @@ def get_game_config() -> GameConfiguration:
                     try_lower_threshold=True,
                 ),
             ),
-            "checkpoint_ms": (
-                ScreenFrame(top=0.28, bottom=0.32, left=0.51, right=0.54),
-                OcrConfiguration(
-                    threshold=200,
-                    segments_coordinates=common_ocr_segments_coordinates,
-                    unknown_elements_policy=NoResultPolicy.RETURN_NEGATIVE,
-                    lack_of_elements_policy=NoResultPolicy.RETURN_NEGATIVE,
-                    try_lower_threshold=True,
-                ),
-            ),
             "checkpoint_sec": (
                 ScreenFrame(top=0.28, bottom=0.32, left=0.475, right=0.503),
                 OcrConfiguration(
@@ -66,7 +54,17 @@ def get_game_config() -> GameConfiguration:
                     segments_coordinates=common_ocr_segments_coordinates,
                     unknown_elements_policy=NoResultPolicy.RETURN_NEGATIVE,
                     lack_of_elements_policy=NoResultPolicy.RETURN_NEGATIVE,
-                    try_lower_threshold=True,
+                    try_lower_threshold=False,
+                ),
+            ),
+            "checkpoint_ms": (
+                ScreenFrame(top=0.28, bottom=0.32, left=0.51, right=0.54),
+                OcrConfiguration(
+                    threshold=200,
+                    segments_coordinates=common_ocr_segments_coordinates,
+                    unknown_elements_policy=NoResultPolicy.RETURN_NEGATIVE,
+                    lack_of_elements_policy=NoResultPolicy.RETURN_NEGATIVE,
+                    try_lower_threshold=False,
                 ),
             ),
         },

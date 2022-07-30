@@ -9,43 +9,43 @@ from PIL import Image
 
 from interface import TrainingLocalGameInterface
 from interface.components import Screen
-from rl.final_state import FinalStateDetector
-from rl.config import FinalValueDetectionParameters
+from rl.event import EventsDetector
+from rl.config import EventDetectionParameters
 from conf import get_game_config
 
 
 def test_detector_not_accept_unvalid_values_ranges() -> None:
     final_features_values = [
-        FinalValueDetectionParameters(
+        EventDetectionParameters(
             feature_name="test",
             min_value=10.0,
             max_value=0.0,
             required_repetitions_in_row=3,
-            not_final_value_required=True,
+            not_event_values_required=True,
         ),
     ]
     with pytest.raises(ValueError):
-        detector = FinalStateDetector(final_features_values)
+        detector = EventsDetector(final_features_values)
 
 
 def test_final_state_detection() -> None:
     final_values_detection_parameters = [
-        FinalValueDetectionParameters(
+        EventDetectionParameters(
             feature_name="speed",
             min_value=2.0,
             max_value=None,
             required_repetitions_in_row=3,
-            not_final_value_required=True,
+            not_event_values_required=True,
         ),
-        FinalValueDetectionParameters(
+        EventDetectionParameters(
             feature_name="last_checkpoint_detected",
             min_value=None,
             max_value=0.0,
             required_repetitions_in_row=1,
-            not_final_value_required=False,
+            not_event_values_required=False,
         ),
     ]
-    detector = FinalStateDetector(final_values_detection_parameters)
+    detector = EventsDetector(final_values_detection_parameters)
 
     assert not detector.is_final({"speed": 0.0, "last_checkpoint_detected": 0.0})
     assert not detector.is_final({"speed": 0.0, "last_checkpoint_detected": 0.0})
@@ -68,15 +68,15 @@ def test_final_state_detection() -> None:
 
 def test_integration_with_ocr(monkeypatch) -> None:
     final_features_values = [
-        FinalValueDetectionParameters(
+        EventDetectionParameters(
             feature_name="speed",
             min_value=2.0,
             max_value=None,
             required_repetitions_in_row=5,
-            not_final_value_required=True,
+            not_event_values_required=True,
         ),
     ]
-    detector = FinalStateDetector(final_features_values)
+    detector = EventsDetector(final_features_values)
 
     assert not detector.is_final()
 

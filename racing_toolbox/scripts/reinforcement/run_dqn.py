@@ -7,15 +7,16 @@ from stable_baselines3.common.vec_env import DummyVecEnv
 
 from conf.example_configuration import get_game_config
 from interface.training_local import TrainingLocalGameInterface
-from rl.enviroment import RealTimeEnviroment
-from rl.final_state.detector import FinalStateDetector
-from rl.config import FinalValueDetectionParameters, RewardConfig, ObservationConfig
+from racing_toolbox.rl.environment import RealTimeEnvironment
+from rl.event.detector import EventsDetector
+from rl.config import EventDetectionParameters, RewardConfig, ObservationConfig
 from rl.builder import reward_wrappers, observation_wrappers
+
 
 def main():
     config = {
         "policy": "CnnPolicy",
-        "total_timesteps": 500_000, 
+        "total_timesteps": 500_000,
         "buffer_size": 100_000,
         "learning_starts": 10_00,
         "gamma": 0.96,
@@ -31,14 +32,14 @@ def main():
     )
 
     env = DummyVecEnv([setup_env])
-  
+
     model = DQN(
-        env=env, 
+        env=env,
         policy=config["policy"],
         buffer_size=config["buffer_size"],
         learning_starts=config["learning_starts"],
-        verbose=1, 
-        tensorboard_log=f"runs/{run.id}"
+        verbose=1,
+        tensorboard_log=f"runs/{run.id}",
     )
     model.learn(
         total_timesteps=config["total_timesteps"],
@@ -51,19 +52,17 @@ def main():
     run.finish()
 
 
-
-
 def setup_env() -> gym.Env:
     config = get_game_config()
     interface = TrainingLocalGameInterface(config)
-    final_st_det = FinalStateDetector(
+    final_st_det = EventsDetector(
         [
-            FinalValueDetectionParameters(
+            EventDetectionParameters(
                 feature_name="speed",
                 min_value=2,
                 max_value=float("inf"),
                 required_repetitions_in_row=20,
-                not_final_value_required=True,
+                not_event_values_required=True,
             )
         ]
     )
@@ -75,18 +74,15 @@ def setup_env() -> gym.Env:
         off_track_reward_trans=lambda reward: -abs(reward) - 100,
         clip_range=(-300, 300),
         baseline=100,
-        scale=100
+        scale=100,
     )
 
-    observation_conf = ObservationConfig(
-        shape=(50, 100),
-        stack_size=4
-    )
+    observation_conf = ObservationConfig(shape=(50, 100), stack_size=4)
 
-    env = RealTimeEnviroment(interface, final_st_det)
+    env = RealTimeEnvironment(interface, final_st_det)
     env = reward_wrappers(env, reward_conf)
     env = observation_wrappers(env, observation_conf)
-    return env 
+    return env
 
 
 def debug():

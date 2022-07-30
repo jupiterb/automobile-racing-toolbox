@@ -2,17 +2,19 @@ import numpy as np
 import cv2
 
 from interface.ocr.abstract import AbstractOcr
-from interface.models import OcrConfiguration, NoResultPolicy
+from interface.config import OcrConfiguration, NoResultPolicy
 
 
 class NineSegmentsOcr(AbstractOcr):
 
-    _element_size_threshold: float = 0.2
+    _element_width_threshold = 0.1
+    _element_height_threshold = 0.8
     _dst_elements_height = 40
-    _min_elements_height = 12
+
     _on_error_retries = 2
     _on_error_threshold_change = 13
-    _digits_segments: list[set[int]] = [
+
+    _digits_segments = [
         {0, 1, 3, 5, 7, 8},
         {2, 6},
         {0, 3, 4, 5, 8},
@@ -32,7 +34,7 @@ class NineSegmentsOcr(AbstractOcr):
 
     def read_number(self, image: np.ndarray) -> int:
         image = self._preprocess_image(image)
-        elements = self._split_digits(image)
+        elements = self._extract_digits(image)
         digits_segments = [self._get_segments(element) for element in elements]
 
         if not any(digits_segments):
@@ -46,13 +48,14 @@ class NineSegmentsOcr(AbstractOcr):
             digits.reverse()
             self._last_number = sum([digit * 10**i for i, digit in enumerate(digits)])
         except ValueError:
-            print(f"Error: unknown segments: {digits_segments}")
+            # print(f"Error: unknown segments: {digits_segments}")
             return self._policy_decision(self._config.unknown_elements_policy, image)
 
         self._retries_left = NineSegmentsOcr._on_error_retries
         return self._last_number
 
     def _preprocess_image(self, image: np.ndarray) -> np.ndarray:
+        # get binsry image
         image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY) if image.ndim > 2 else image
         image = cv2.threshold(image, self._config.threshold, 255, cv2.THRESH_BINARY)[1]
         # rescale image to standard element height
@@ -60,8 +63,6 @@ class NineSegmentsOcr(AbstractOcr):
         if not any(nonzero_rows):
             return image
         raw_elements_height = nonzero_rows.max() - nonzero_rows.min() + 1
-        if raw_elements_height < NineSegmentsOcr._min_elements_height:
-            return np.zeros_like(image)
         rescale_factor = NineSegmentsOcr._dst_elements_height / raw_elements_height
         height = int(image.shape[0] * rescale_factor)
         width = int(image.shape[1] * rescale_factor)
@@ -69,14 +70,13 @@ class NineSegmentsOcr(AbstractOcr):
         image = cv2.resize(image, dsize, interpolation=cv2.INTER_AREA)
         # connect segements
         image = cv2.dilate(image, kernel=np.array([[1, 1], [1, 1]]))
-        # additional, vertical connection
         image = cv2.dilate(image, kernel=np.array([[1], [1], [1], [1]]))
         # make sure there is no connections between two or more digits
         image = cv2.erode(image, kernel=np.array([[1, 0], [0, 1]], np.uint8))
         image = cv2.erode(image, kernel=np.array([[0, 1], [1, 0]], np.uint8))
         return image
 
-    def _split_digits(self, image: np.ndarray) -> list[np.ndarray]:
+    def _extract_digits(self, image: np.ndarray) -> list[np.ndarray]:
         contours, _ = cv2.findContours(
             image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
         )
@@ -86,17 +86,18 @@ class NineSegmentsOcr(AbstractOcr):
         # sort from left to right
         rects.sort(key=lambda rect: rect[0])
 
-        elements = [
-            image[top : top + height, left : left + width] / np.max(image)
-            for left, top, width, height in rects
-        ]
         max_height = np.max([height for _, _, _, height in rects])
-        min_size = NineSegmentsOcr._element_size_threshold * max_height
+
+        min_width = NineSegmentsOcr._element_width_threshold * max_height
+        min_height = NineSegmentsOcr._element_height_threshold * max_height
 
         return [
-            NineSegmentsOcr._move_bottom(element, max_height)
-            for element in elements
-            if np.max(element.shape) > min_size and element.shape[0] > element.shape[1]
+            NineSegmentsOcr._move_bottom(
+                image[top : top + height, left : left + width] / np.max(image),
+                max_height,
+            )
+            for left, top, width, height in rects
+            if width > min_width and height > min_height
         ]
 
     def _get_segments(self, image: np.ndarray) -> set[int]:

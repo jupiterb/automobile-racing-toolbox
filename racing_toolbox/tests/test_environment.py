@@ -9,9 +9,9 @@ from PIL import Image
 
 from interface import TrainingLocalGameInterface
 from interface.components import Screen
-from rl import RealTimeEnviroment
-from rl.final_state import FinalStateDetector
-from rl.config import FinalValueDetectionParameters
+from rl import RealTimeEnvironment
+from rl.event import EventsDetector
+from rl.config import EventDetectionParameters
 from conf import get_game_config
 
 
@@ -29,17 +29,17 @@ def test_gym_implementation(monkeypatch) -> None:
     config.reset_seconds = 0
 
     interface = TrainingLocalGameInterface(config)
-    detector = FinalStateDetector(
+    detector = EventsDetector(
         [
-            FinalValueDetectionParameters(
+            EventDetectionParameters(
                 feature_name="speed",
                 min_value=2.0,
                 max_value=None,
                 required_repetitions_in_row=5,
-                not_final_value_required=True,
+                not_event_values_required=True,
             )
         ]
     )
 
-    env = RealTimeEnviroment(interface, detector)
+    env = RealTimeEnvironment(interface, detector)
     check_env(env)

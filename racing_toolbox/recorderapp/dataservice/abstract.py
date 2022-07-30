@@ -1,6 +1,6 @@
 import numpy as np
 from abc import ABC, abstractmethod
-from interface.models import SteeringAction
+from interface.config import SteeringAction
 
 
 class RecorderDataService(ABC):

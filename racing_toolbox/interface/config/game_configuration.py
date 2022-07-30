@@ -1,9 +1,9 @@
 from pydantic import BaseModel
 from pynput.keyboard import Key
 
-from interface.models.screen_frame import ScreenFrame
-from interface.models.steereing_actions import SteeringAction
-from interface.models.ocr_configuration import OcrConfiguration
+from interface.config.screen_frame import ScreenFrame
+from interface.config.steereing_actions import SteeringAction
+from interface.config.ocr_configuration import OcrConfiguration
 
 
 class GameConfiguration(BaseModel):

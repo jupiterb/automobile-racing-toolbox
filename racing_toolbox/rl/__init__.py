@@ -1,1 +1,1 @@
-from rl.enviroment import RealTimeEnviroment
+from rl.environment import RealTimeEnvironment

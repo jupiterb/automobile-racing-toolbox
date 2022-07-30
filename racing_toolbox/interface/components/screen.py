@@ -6,7 +6,7 @@ import numpy as np
 from PIL import ImageGrab
 
 from interface.exceptions import WindowNotFound
-from interface.models import ScreenFrame
+from interface.config import ScreenFrame
 
 
 class Screen:

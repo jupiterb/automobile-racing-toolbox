@@ -4,7 +4,7 @@ import numpy as np
 from PIL import Image
 import pandas as pd
 
-from interface.models import SteeringAction
+from interface.config import SteeringAction
 from recorderapp.dataservice import RecorderDataService
 from recorderapp.exceptions import RecordindExists
 
