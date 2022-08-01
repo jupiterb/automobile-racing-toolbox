@@ -24,4 +24,4 @@ class LidarWrapper(gym.ObservationWrapper):
         super().__init__(env)
 
     def observation(self, observation: np.ndarray):
-        return
+        return self._lidar.scan_2d(observation)[0]

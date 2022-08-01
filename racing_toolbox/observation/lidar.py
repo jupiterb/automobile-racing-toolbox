@@ -12,20 +12,22 @@ class Lidar:
         self._distances: list[list[np.floating[Any]]] = []
         self._rays_coordinates: list[list[tuple[int, int]]] = []
 
-    def scan_2d(self, image: np.ndarray) -> np.ndarray:
+    def scan_2d(self, image: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         if image.shape != self._shape:
             self._shape = image.shape[0:2]
             self._set_rays()
         image = self._preprocess_image(image)
-        return np.array(
-            [
-                distances[self._first_collision_with_edge(ray_coordinates, image)]
-                / distances[-1]
-                for distances, ray_coordinates in zip(
-                    self._distances, self._rays_coordinates
-                )
-            ]
+        collisions = [
+            self._first_collision_with_edge(ray_coordinates, image)
+            for ray_coordinates in self._rays_coordinates
+        ]
+        distances_to_collisions = np.array(
+            [self._distances[i][col] for i, col in enumerate(collisions)]
         )
+        cooridnates_of_collisions = np.array(
+            [self._rays_coordinates[i][col] for i, col in enumerate(collisions)]
+        )
+        return distances_to_collisions, cooridnates_of_collisions
 
     def _preprocess_image(self, image: np.ndarray) -> np.ndarray:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) if image.ndim > 2 else image
