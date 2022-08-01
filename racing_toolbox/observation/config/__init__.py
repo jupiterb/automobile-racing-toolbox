@@ -1,0 +1,1 @@
+from observation.config.lidar_configuration import LidarConfig
