@@ -72,13 +72,13 @@ def test_lidar_with_real_images() -> None:
     distances_from_the_left, _ = lidar.scan_2d(on_the_left)
     distances_on_the_edge, _ = lidar.scan_2d(on_the_edge)
 
-    for i in range(0, 5):  # most left lidars
+    for i in range(0, 4):  # most left lidars
         assert distances_from_the_left[i, 0] < distances_from_the_middle[i, 0]
 
-    for i in range(0, 5):  # most left lidars
-        assert distances_on_the_edge[i, 0] < 1 - 0.1 * i
+    for i in range(0, 4):  # most left lidars
+        assert distances_on_the_edge[i, 0] < 1 - 0.15 * i
 
-    for i in range(-1, -4, -1):  # most right lidars,
+    for i in range(-1, -5, -1):  # most right lidars,
         assert distances_on_the_edge[i, 0] < 0.2
         assert distances_on_the_edge[i, 1] > 0.95
         assert distances_on_the_edge[i, 2] == 1.0
