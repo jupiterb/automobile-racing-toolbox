@@ -40,6 +40,8 @@ class Lidar:
         image[image > road_color + self._config.threshold] = 0
         image[image < road_color - self._config.threshold] = 0
         image[image > 0] = 1
+        # another noise reduction
+        image = cv2.morphologyEx(image, cv2.MORPH_CLOSE, kernel)
         return image
 
     def _first_collision_with_edge(
@@ -50,7 +52,7 @@ class Lidar:
 
     def _set_rays(self) -> None:
         start, end, angle_between = self._config.rays_angles_range
-        end = end if end % angle_between else end + angle_between
+        end = end if (end - start) % angle_between else end + angle_between
         start_point = self._get_start_point()
         self._distances = []
         self._rays_coordinates = []
