@@ -1,3 +1,4 @@
+from racing_toolbox.rl.wrappers.observation import LidarWrapper
 from rl.config import RewardConfig, ObservationConfig
 from rl.wrappers import *
 from gym.wrappers import GrayScaleObservation, ResizeObservation, FrameStack
@@ -14,8 +15,11 @@ def reward_wrappers(env: gym.Env, config: RewardConfig) -> gym.Env:
 
 
 def observation_wrappers(env: gym.Env, config: ObservationConfig) -> gym.Env:
-    env = GrayScaleObservation(env, keep_dim=False)
-    env = ResizeObservation(env, config.shape)
-    env = FrameStack(env, 4)
+    if config.lidar_config:
+        env = LidarWrapper(env, config.lidar_config)
+    else:
+        env = GrayScaleObservation(env, keep_dim=False)
+        env = ResizeObservation(env, config.shape)
+    env = FrameStack(env, config.stack_size)
     env = SqueezingWrapper(env)
     return env

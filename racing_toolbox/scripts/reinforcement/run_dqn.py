@@ -12,10 +12,11 @@ from rl.final_state.detector import FinalStateDetector
 from rl.config import FinalValueDetectionParameters, RewardConfig, ObservationConfig
 from rl.builder import reward_wrappers, observation_wrappers
 
+
 def main():
     config = {
         "policy": "CnnPolicy",
-        "total_timesteps": 500_000, 
+        "total_timesteps": 500_000,
         "buffer_size": 100_000,
         "learning_starts": 10_00,
         "gamma": 0.96,
@@ -31,14 +32,14 @@ def main():
     )
 
     env = DummyVecEnv([setup_env])
-  
+
     model = DQN(
-        env=env, 
+        env=env,
         policy=config["policy"],
         buffer_size=config["buffer_size"],
         learning_starts=config["learning_starts"],
-        verbose=1, 
-        tensorboard_log=f"runs/{run.id}"
+        verbose=1,
+        tensorboard_log=f"runs/{run.id}",
     )
     model.learn(
         total_timesteps=config["total_timesteps"],
@@ -49,8 +50,6 @@ def main():
         ),
     )
     run.finish()
-
-
 
 
 def setup_env() -> gym.Env:
@@ -75,18 +74,17 @@ def setup_env() -> gym.Env:
         off_track_reward_trans=lambda reward: -abs(reward) - 100,
         clip_range=(-300, 300),
         baseline=100,
-        scale=100
+        scale=100,
     )
 
     observation_conf = ObservationConfig(
-        shape=(50, 100),
-        stack_size=4
+        shape=(50, 100), stack_size=4, lidar_config=None
     )
 
     env = RealTimeEnviroment(interface, final_st_det)
     env = reward_wrappers(env, reward_conf)
     env = observation_wrappers(env, observation_conf)
-    return env 
+    return env
 
 
 def debug():
