@@ -7,4 +7,4 @@ class LidarConfig(BaseModel):
     upper_threshold: int
     kernel_size: int
     lidar_start: tuple[float, float]
-    rays_angles_range: tuple[int, int, int]
+    angles_range: tuple[int, int, int]

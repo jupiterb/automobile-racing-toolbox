@@ -83,7 +83,7 @@ class Lidar:
         """
         counts cooridnates of every point of lidars and distances to this points
         """
-        start, end, angle_between = self._config.rays_angles_range
+        start, end, angle_between = self._config.angles_range
         end = end if (end - start) % angle_between else end + angle_between
         start_point = self._get_start_point()
         self._distances = []
