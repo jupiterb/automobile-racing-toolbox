@@ -11,10 +11,7 @@ Frame = Optional[np.ndarray]
 
 class RealTimeEnvironment(gym.Env):
     def __init__(
-        self,
-        game_interface: GameInterface,
-        final_state_detector: EventDetector,
-        checpoint_detector: Optional[EventDetector] = None,
+        self, game_interface: GameInterface, final_state_detector: EventDetector
     ) -> None:
         super().__init__()
 
@@ -38,7 +35,6 @@ class RealTimeEnvironment(gym.Env):
 
         self._game_interface = game_interface
         self._final_state_detector = final_state_detector
-        self._checpoint_detector = checpoint_detector
         self._last_frame: Frame = None
 
     def reset(self) -> Frame:
@@ -57,10 +53,6 @@ class RealTimeEnvironment(gym.Env):
         if is_final:
             self._final_state_detector.reset()
             print("FINAL!")
-
-        if self._checpoint_detector and self._checpoint_detector.is_final(features):
-            self._checpoint_detector.reset()
-            print("CHECKPOINT!")
 
         return state, reward, is_final, {}
 

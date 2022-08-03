@@ -24,12 +24,12 @@ def test_detector_not_accept_unvalid_parameters() -> None:
         min_value=10.0,
         max_value=0.0,
         required_repetitions_in_row=3,
-        not_event_values_required=0,
+        different_values_required=0,
     )
     with pytest.raises(ValueError):
         detector = EventDetector([parameters])
     parameters.max_value = 20
-    parameters.not_event_values_required = -1
+    parameters.different_values_required = -1
     with pytest.raises(ValueError):
         detector = EventDetector([parameters])
 
@@ -38,17 +38,17 @@ def test_event_detection() -> None:
     parameters = [
         EventDetectionParameters(
             feature_name="speed",
-            min_value=None,
+            min_value=float("-inf"),
             max_value=2.0,
             required_repetitions_in_row=3,
-            not_event_values_required=2,
+            different_values_required=2,
         ),
         EventDetectionParameters(
             feature_name="last_checkpoint_detected",
             min_value=1.0,
-            max_value=None,
+            max_value=float("inf"),
             required_repetitions_in_row=1,
-            not_event_values_required=0,
+            different_values_required=0,
         ),
     ]
     detector = EventDetector(parameters)

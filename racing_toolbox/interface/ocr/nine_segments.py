@@ -12,7 +12,7 @@ class NineSegmentsOcr(AbstractOcr):
     _dst_elements_height = 40
 
     _on_error_retries = 2
-    _on_error_threshold_change = 13
+    _on_error_threshold_reduction = 13
 
     _digits_segments = [
         {0, 1, 3, 5, 7, 8},
@@ -27,38 +27,48 @@ class NineSegmentsOcr(AbstractOcr):
         {0, 1, 3, 4, 7, 8},
     ]
 
-    def __init__(self, configuration: OcrConfiguration) -> None:
-        self._config = configuration
-        self._last_number = 0
-        self._retries_left = NineSegmentsOcr._on_error_retries
+    def __init__(self, config: OcrConfiguration) -> None:
+        self._config = config
+        self._result = 0
+        self._tries_limit = (
+            NineSegmentsOcr._on_error_retries if config.try_lower_threshold else 1
+        )
 
     def read_number(self, image: np.ndarray) -> int:
-        image = self._preprocess_image(image)
-        elements = self._extract_digits(image)
-        digits_segments = [self._get_segments(element) for element in elements]
+        threshold, tries = self._config.threshold, 0
+        while tries < self._tries_limit:
+            image = self._preprocess_image(image, threshold)
+            elements = self._extract_digits(image)
+            digits_segments = [self._get_segments(element) for element in elements]
 
-        if not any(digits_segments):
-            return self._policy_decision(self._config.lack_of_elements_policy, image)
+            if not any(digits_segments):
+                self._result = self._policy_decision(self._config.no_elements_policy)
+                break
 
-        try:
-            digits = [
-                NineSegmentsOcr._digits_segments.index(segments)
-                for segments in digits_segments
-            ]
-            digits.reverse()
-            self._last_number = sum([digit * 10**i for i, digit in enumerate(digits)])
-        except ValueError:
-            if self._config.debug:
-                print(f"Error: unknown segments: {digits_segments}")
-            return self._policy_decision(self._config.unknown_elements_policy, image)
+            try:
+                digits = [
+                    NineSegmentsOcr._digits_segments.index(segments)
+                    for segments in digits_segments
+                ]
+                digits.reverse()
+                self._result = sum([digit * 10**i for i, digit in enumerate(digits)])
+                break
 
-        self._retries_left = NineSegmentsOcr._on_error_retries
-        return self._last_number
+            except ValueError:
+                if self._config.debug:
+                    print(f"Error: unknown segments: {digits_segments}")
+                threshold -= NineSegmentsOcr._on_error_threshold_reduction
 
-    def _preprocess_image(self, image: np.ndarray) -> np.ndarray:
+            tries += 1
+
+        if tries == self._tries_limit:
+            self._result = self._policy_decision(self._config.no_result_policy)
+        return self._result
+
+    def _preprocess_image(self, image: np.ndarray, threshold: int) -> np.ndarray:
         # get binsry image
         image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY) if image.ndim > 2 else image
-        image = cv2.threshold(image, self._config.threshold, 255, cv2.THRESH_BINARY)[1]
+        image = cv2.threshold(image, threshold, 255, cv2.THRESH_BINARY)[1]
         # rescale image to standard element height
         nonzero_rows = np.nonzero(image)[0]
         if not any(nonzero_rows):
@@ -114,22 +124,13 @@ class NineSegmentsOcr(AbstractOcr):
         fixed_one = NineSegmentsOcr._digits_segments[1]
         return segments if not fixed_one.issubset(segments) else fixed_one
 
-    def _policy_decision(self, policy: NoResultPolicy, image: np.ndarray) -> int:
-        if self._config.try_lower_threshold and self._retries_left > 0:
-            self._retries_left -= 1
-            original_threshold = self._config.threshold
-            self._config.threshold -= NineSegmentsOcr._on_error_threshold_change
-            number = self.read_number(image)
-            self._config.threshold = original_threshold
-            return number
-        else:
-            self._retries_left = NineSegmentsOcr._on_error_retries
+    def _policy_decision(self, policy: NoResultPolicy) -> int:
         if policy == NoResultPolicy.RETURN_ZERO:
             return 0
         if policy == NoResultPolicy.RETURN_NEGATIVE:
             return -1
         else:  # return last policy
-            return self._last_number
+            return self._result
 
     @staticmethod
     def _move_bottom(image: np.ndarray, destination_height: int) -> np.ndarray:

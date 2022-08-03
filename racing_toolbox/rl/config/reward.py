@@ -1,5 +1,6 @@
-from typing import Callable
+from typing import Callable, Optional
 from pydantic import BaseModel, PositiveFloat, PositiveInt
+from rl.config.event_detecion_params import EventDetectionParameters
 
 
 class RewardConfig(BaseModel):
@@ -18,6 +19,9 @@ class RewardConfig(BaseModel):
     # range to which reward will be clipped
     clip_range: tuple[float, float]
 
-    # reward = (reward - baseline) / scale 
+    # reward = (reward - baseline) / scale
     baseline: float
     scale: PositiveFloat
+
+    # checpoint reward
+    checkpoint_detector_parameters: Optional[list[EventDetectionParameters]]

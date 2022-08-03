@@ -59,7 +59,6 @@ def main():
 def setup_env() -> gym.Env:
     interface = TrainingLocalGameInterface(get_game_config())
     final_state_detector = EventDetector(get_final_state_detection_parameters())
-    checkpoint_detector = EventDetector(get_checkpoint_detection_parameters())
 
     reward_conf = RewardConfig(
         speed_diff_thresh=15,
@@ -69,12 +68,13 @@ def setup_env() -> gym.Env:
         clip_range=(-300, 300),
         baseline=100,
         scale=100,
+        checkpoint_detector_parameters=get_checkpoint_detection_parameters(),
     )
 
     observation_conf = ObservationConfig(shape=(50, 100), stack_size=4)
 
-    env = RealTimeEnvironment(interface, final_state_detector, checkpoint_detector)
-    env = reward_wrappers(env, reward_conf)
+    env = RealTimeEnvironment(interface, final_state_detector)
+    env = reward_wrappers(env, reward_conf, interface)
     env = observation_wrappers(env, observation_conf)
     return env
 

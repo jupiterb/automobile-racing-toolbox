@@ -1,7 +1,12 @@
+from charset_normalizer import detect
 import gym
-import numpy as np 
+import numpy as np
 from collections import deque
 from typing import Callable
+
+from interface import GameInterface
+from rl.config import EventDetectionParameters
+from rl.event import EventDetector
 
 
 class OffTrackPunishment(gym.RewardWrapper):
@@ -13,7 +18,9 @@ class OffTrackPunishment(gym.RewardWrapper):
         return observation, self.reward(reward, observation), done, info
 
     def reward(self, reward, observation):
-        r = self.metric(reward) if self._is_off_track(observation) else reward # abs to make sure it is still punishment
+        r = (
+            self.metric(reward) if self._is_off_track(observation) else reward
+        )  # abs to make sure it is still punishment
         return r
 
     def _is_off_track(self, observation) -> bool:
@@ -25,7 +32,13 @@ class OffTrackPunishment(gym.RewardWrapper):
 class SpeedDropPunishment(gym.RewardWrapper):
     """This wrapper will add punishment for every 'major' drop in speed. So it assumes that returned reward is speed related"""
 
-    def __init__(self, env, memory_length: int, diff_thresh: float, metric: Callable[[float], float]) -> None:
+    def __init__(
+        self,
+        env,
+        memory_length: int,
+        diff_thresh: float,
+        metric: Callable[[float], float],
+    ) -> None:
         super().__init__(env)
         self.reward_history = deque([], maxlen=memory_length)
         self.threshold = diff_thresh
@@ -34,7 +47,11 @@ class SpeedDropPunishment(gym.RewardWrapper):
     def reward(self, reward: float) -> float:
         baseline = np.mean(self.reward_history)
         self.reward_history.append(reward)
-        r = reward - self.metric(baseline - reward) if reward < baseline - self.threshold else reward
+        r = (
+            reward - self.metric(baseline - reward)
+            if reward < baseline - self.threshold
+            else reward
+        )
         return r
 
 
@@ -51,15 +68,34 @@ class ClipReward(gym.RewardWrapper):
             r = self.max_value
         else:
             r = reward
-        return r 
+        return r
 
 
 class StandarizeReward(gym.RewardWrapper):
     def __init__(self, env, baseline: float, scale: float) -> None:
         super().__init__(env)
         self.baseline = baseline
-        self.scale = scale 
+        self.scale = scale
 
     def reward(self, reward: float) -> float:
-       r = (reward - self.baseline) / self.scale
-       return r 
+        r = (reward - self.baseline) / self.scale
+        return r
+
+
+class CheckpointReward(gym.RewardWrapper):
+    def __init__(
+        self,
+        env: gym.Env,
+        detector_parameters: list[EventDetectionParameters],
+        game_interface: GameInterface,
+    ) -> None:
+        super().__init__(env)
+        self._detector = EventDetector(detector_parameters)
+        self._game_interface = game_interface
+
+    def reward(self, reward: float) -> float:
+        if self._detector.is_final(self._game_interface.perform_ocr()):
+            self._detector.reset()
+            print("CHECKPOINT!")
+            # TODO: reward based on checkpoint
+        return reward

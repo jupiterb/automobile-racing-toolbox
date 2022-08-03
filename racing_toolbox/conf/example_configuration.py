@@ -43,10 +43,10 @@ def get_game_config() -> GameConfiguration:
                 OcrConfiguration(
                     threshold=200,
                     segments_coordinates=common_ocr_segments_coordinates,
-                    unknown_elements_policy=NoResultPolicy.RETURN_LAST,
-                    lack_of_elements_policy=NoResultPolicy.RETURN_ZERO,
+                    no_result_policy=NoResultPolicy.RETURN_LAST,
+                    no_elements_policy=NoResultPolicy.RETURN_ZERO,
                     try_lower_threshold=True,
-                    debug=True
+                    debug=True,
                 ),
             ),
             "checkpoint_sec": (
@@ -54,10 +54,10 @@ def get_game_config() -> GameConfiguration:
                 OcrConfiguration(
                     threshold=200,
                     segments_coordinates=common_ocr_segments_coordinates,
-                    unknown_elements_policy=NoResultPolicy.RETURN_NEGATIVE,
-                    lack_of_elements_policy=NoResultPolicy.RETURN_NEGATIVE,
+                    no_result_policy=NoResultPolicy.RETURN_NEGATIVE,
+                    no_elements_policy=NoResultPolicy.RETURN_NEGATIVE,
                     try_lower_threshold=False,
-                    debug=False
+                    debug=False,
                 ),
             ),
             "checkpoint_ms": (
@@ -65,10 +65,10 @@ def get_game_config() -> GameConfiguration:
                 OcrConfiguration(
                     threshold=200,
                     segments_coordinates=common_ocr_segments_coordinates,
-                    unknown_elements_policy=NoResultPolicy.RETURN_NEGATIVE,
-                    lack_of_elements_policy=NoResultPolicy.RETURN_NEGATIVE,
+                    no_result_policy=NoResultPolicy.RETURN_NEGATIVE,
+                    no_elements_policy=NoResultPolicy.RETURN_NEGATIVE,
                     try_lower_threshold=False,
-                    debug=False
+                    debug=False,
                 ),
             ),
         },
@@ -79,10 +79,10 @@ def get_final_state_detection_parameters() -> list[EventDetectionParameters]:
     return [
         EventDetectionParameters(
             feature_name="speed",
-            min_value=None,
+            min_value=float("-inf"),
             max_value=2.0,
             required_repetitions_in_row=5,
-            not_event_values_required=5,
+            different_values_required=5,
         )
     ]
 
@@ -94,13 +94,13 @@ def get_checkpoint_detection_parameters() -> list[EventDetectionParameters]:
             min_value=0.0,
             max_value=99.0,
             required_repetitions_in_row=3,
-            not_event_values_required=5,
+            different_values_required=5,
         ),
         EventDetectionParameters(
             feature_name="checkpoint_sec",
             min_value=0.0,
             max_value=59.0,
             required_repetitions_in_row=3,
-            not_event_values_required=5,
+            different_values_required=5,
         ),
     ]

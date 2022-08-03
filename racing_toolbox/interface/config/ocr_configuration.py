@@ -11,7 +11,7 @@ class NoResultPolicy(Enum):
 class OcrConfiguration(BaseModel):
     threshold: int
     segments_coordinates: dict[int, tuple[float, float]] | None
-    unknown_elements_policy: NoResultPolicy
-    lack_of_elements_policy: NoResultPolicy
+    no_result_policy: NoResultPolicy
+    no_elements_policy: NoResultPolicy
     try_lower_threshold: bool
     debug: bool
