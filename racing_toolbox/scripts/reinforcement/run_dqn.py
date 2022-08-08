@@ -9,24 +9,48 @@ from gym.wrappers import RecordEpisodeStatistics, RecordVideo, TimeLimit
 
 from conf.example_configuration import get_game_config
 from interface.training_local import TrainingLocalGameInterface
+from racing_toolbox.interface.models.game_configuration import GameConfiguration
+from racing_toolbox.rl.config.training import DQNConfig
 from rl.wrappers.stats import WandbWrapper
 from rl.enviroment import RealTimeEnviroment
 from rl.final_state.detector import FinalStateDetector
 from rl.config import FinalValueDetectionParameters, RewardConfig, ObservationConfig
 from rl.builder import reward_wrappers, observation_wrappers
 
-CONFIG = {
-    "policy": "CnnPolicy",
-    "total_timesteps": 500_000,
-    "buffer_size": 100_000,
-    "learning_starts": 50_00,
-    "gamma": 0.99,
-    "exploration_final_epsilon": 0.1,
-    "learning_rate": 1e-5,
-}
+
+def get_configuration() -> tuple[
+    GameConfiguration, ObservationConfig, RewardConfig, DQNConfig
+]:
+    game_conf = get_game_config()
+
+    reward_conf = RewardConfig(
+        speed_diff_thresh=3,
+        memory_length=1,
+        speed_diff_trans=lambda x: float(x) ** 2,
+        off_track_reward_trans=lambda reward: -abs(reward) - 400,
+        clip_range=(-400, 400),
+        baseline=0,
+        scale=400,
+    )
+
+    observation_conf = ObservationConfig(shape=(50, 100), stack_size=4)
+    
+    train_conf = DQNConfig(
+        policy="CnnPolicy",
+        total_timesteps=500_000,
+        buffer_size=100_000,
+        learning_starts=50_00,
+        gamma=0.99,
+        exploration_final_epsilon=0.1,
+        learning_rate=1e-5,
+    )
+
+    return game_conf, observation_conf, reward_conf, train_conf
 
 
 def main():
+
+    game_conf, obs_conf, rew_conf, train_conf = get_configuration()
 
     run = wandb.init(
         project="testsb3v3",
@@ -34,10 +58,15 @@ def main():
         monitor_gym=True,  # auto-upload the videos of agents playing the game
         save_code=True,
         entity="automobile-racing-toolbox",
-        CONFIG=CONFIG,
+        config={
+            "training": dict(train_conf),
+            "observation": dict(obs_conf),
+            "reward": dict(rew_conf),
+            "game": dict(game_conf),
+        },
     )
 
-    env = DummyVecEnv([setup_env])
+    env = DummyVecEnv([lambda: setup_env(game_conf, rew_conf, obs_conf)])
     env = VecVideoRecorder(
         env,
         f"foo-videos/{run.id}",
@@ -47,16 +76,16 @@ def main():
 
     model = DQN(
         env=env,
-        policy=CONFIG["policy"],
-        buffer_size=CONFIG["buffer_size"],
-        learning_starts=CONFIG["learning_starts"],
+        policy=train_conf["policy"],
+        buffer_size=train_conf["buffer_size"],
+        learning_starts=train_conf["learning_starts"],
         verbose=1,
         tensorboard_log=f"runs/{run.id}",
-        exploration_final_eps=CONFIG["exploration_final_epsilon"],
+        exploration_final_eps=train_conf["exploration_final_epsilon"],
         learning_rate=0.00005,
     )
     model.learn(
-        total_timesteps=CONFIG["total_timesteps"],
+        total_timesteps=train_conf["total_timesteps"],
         callback=WandbCallback(
             gradient_save_freq=10,
             model_save_path=f"models/{run.id}",
@@ -66,8 +95,9 @@ def main():
     run.finish()
 
 
-def setup_env() -> gym.Env:
-    config = get_game_config()
+def setup_env(
+    config: GameConfiguration, reward_conf: RewardConfig, obs_conf: ObservationConfig
+) -> gym.Env:
     interface = TrainingLocalGameInterface(config)
     final_st_det = FinalStateDetector(
         [
@@ -81,28 +111,16 @@ def setup_env() -> gym.Env:
         ]
     )
 
-    reward_conf = RewardConfig(
-        speed_diff_thresh=3,
-        memory_length=1,
-        speed_diff_trans=lambda x: float(x) ** 2,
-        off_track_reward_trans=lambda reward: -abs(reward) - 400,
-        clip_range=(-400, 400),
-        baseline=0,
-        scale=400,
-    )
-
-    observation_conf = ObservationConfig(shape=(50, 100), stack_size=4)
-
     env = gym.make(
         "custom/real-time-v0",
         game_interface=interface,
         final_state_detector=final_st_det,
     )
     env = reward_wrappers(env, reward_conf)
-    env = observation_wrappers(env, observation_conf)
+    env = observation_wrappers(env, obs_conf)
     env = TimeLimit(env, 1_000)
     env = Monitor(env)
-    env = WandbWrapper(env, 1)
+    env = WandbWrapper(env, 5)
     return env
 
 

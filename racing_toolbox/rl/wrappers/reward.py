@@ -16,7 +16,6 @@ class OffTrackPunishment(gym.RewardWrapper):
 
     def reward(self, reward, observation):
         r = self.metric(reward) if self._is_off_track(observation) else reward # abs to make sure it is still punishment
-        # print(f"Off track: {r}")
         return r
 
     def _is_off_track(self, observation) -> bool:
@@ -42,7 +41,6 @@ class SpeedDropPunishment(gym.RewardWrapper):
             r = reward 
 
         r = reward + math.copysign(self.metric(abs(diff)), diff)
-        # print(f"Drop punishment: before {reward} after {r} diff {diff}")
         return r 
         
 
@@ -53,7 +51,6 @@ class ClipReward(gym.RewardWrapper):
         self.max_value = max_value
 
     def reward(self, reward: float) -> float:
-        # print(f"clip: got {reward} of type {type(reward)}")
         r = max(min(reward, self.max_value), self.min_value)
         return r 
 
@@ -66,5 +63,4 @@ class StandarizeReward(gym.RewardWrapper):
 
     def reward(self, reward: float) -> float:
        r = (reward - self.baseline) / self.scale
-    #    print(f"final: {reward}")
        return r 
