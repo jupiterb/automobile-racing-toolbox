@@ -12,15 +12,15 @@ class TrackSegmenter:
         """
         return 2-dimensional array, wehere if cell is equal to 0, there is no track
         """
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) if image.ndim > 2 else image
-        # gaussian blur
-        size = self._config.kernel_size
+        assert image.ndim == 3 and image.shape[2] == 3
+        # gaussian filter
+        size = self._config.noise_reduction
         kernel = np.ones((size, size), np.float32)
-        image = cv2.filter2D(image, -1, kernel / size**2)
+        filtered = cv2.filter2D(image, -1, kernel / size**2)
         # find points with road
-        image[image > self._config.upper_threshold] = 0
-        image[image < self._config.lower_threshold] = 0
-        image[image > 0] = 1
+        lower = np.array(self._config.track_color) - self._config.tolerance
+        upper = np.array(self._config.track_color) + self._config.tolerance
+        mask = cv2.inRange(filtered, lower, upper)
         # another noise reduction
-        image = cv2.morphologyEx(image, cv2.MORPH_CLOSE, kernel)
-        return image
+        closed_mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+        return closed_mask

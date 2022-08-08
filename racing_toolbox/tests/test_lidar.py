@@ -26,27 +26,23 @@ lidar = LidarWithTrackSegmentation(
         lidar_start=(0.9, 0.5),
     ),
     TrackSegmentationConfig(
-        lower_threshold=60,
-        upper_threshold=255,
-        kernel_size=5,
+        track_color=(200, 200, 200),
+        tolerance=80,
+        noise_reduction=5,
     ),
 )
 
 
 def test_shape_of_lidar_result() -> None:
-    distances, cooridnates = lidar.scan_2d(np.zeros((10, 10), dtype=np.uint8))
-    assert distances.shape == (19, 3)
-    assert cooridnates.shape == (19, 3, 2)
-
     distances, cooridnates = lidar.scan_2d(np.zeros((10, 10, 3), dtype=np.uint8))
     assert distances.shape == (19, 3)
     assert cooridnates.shape == (19, 3, 2)
 
 
 def test_values_of_lidar_result() -> None:
-    image = np.full((100, 100), 75, dtype=np.uint8)
-    image[:, :20] = 0
-    image[:45, :] = 0
+    image = np.full((100, 100, 3), 150, dtype=np.uint8)
+    image[:, :20, :] = 0
+    image[:45, :, 1] = 0
 
     distances, cooridnates = lidar.scan_2d(image)
 
@@ -68,12 +64,12 @@ def test_values_of_lidar_result() -> None:
     for distance in distances[:, 2]:
         assert distance == 1.0
 
-    image[:, 5:15] = 75
+    image[:, 5:15, :] = 150
     distances, cooridnates = lidar.scan_2d(image)
 
     assert distances[0, 0] == 0.6
+    assert distances[0, 1] == 0.9
     assert distances[0, 2] == 1.0
-    assert distances[0, 0] < distances[0, 1] < distances[0, 2]
 
 
 def test_lidar_with_real_images() -> None:
@@ -91,7 +87,7 @@ def test_lidar_with_real_images() -> None:
     for i in range(0, 4):  # most left lidars
         assert distances_on_the_edge[i, 0] < 1 - 0.15 * i
 
-    for i in range(-1, -5, -1):  # most right lidars,
+    for i in range(-1, -4, -1):  # most right lidars,
         assert distances_on_the_edge[i, 0] < 0.2
-        assert distances_on_the_edge[i, 1] > 0.95
+        assert distances_on_the_edge[i, 1] == 1.0
         assert distances_on_the_edge[i, 2] == 1.0

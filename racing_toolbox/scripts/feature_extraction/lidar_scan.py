@@ -10,8 +10,8 @@ from os import path, listdir, makedirs
 import cv2
 import numpy as np
 
-from observation import Lidar
-from observation.config import LidarConfig
+from observation import Lidar, TrackSegmenter
+from observation.config import LidarConfig, TrackSegmentationConfig
 
 
 def perfrom_lidar_scaning(path_to_images: str, path_to_result: str) -> None:
@@ -25,22 +25,32 @@ def perfrom_lidar_scaning(path_to_images: str, path_to_result: str) -> None:
     names = [name for name in listdir(path_to_images) if name[-5:] == ".jpeg"]
     images = [cv2.imread(f"{path_to_images}/{image_name}") for image_name in names]
 
-    config = LidarConfig(
-        depth=3,
-        lower_threshold=60,
-        upper_threshold=255,
-        kernel_size=5,
-        angles_range=(-90, 90, 10),
-        lidar_start=(0.9, 0.5),
+    segmenter = TrackSegmenter(
+        TrackSegmentationConfig(
+            track_color=(200, 200, 200),
+            tolerance=80,
+            noise_reduction=15,
+        )
     )
-    lidar = Lidar(config)
+
+    lidar = Lidar(
+        LidarConfig(
+            depth=3,
+            angles_range=(-90, 90, 10),
+            lidar_start=(0.9, 0.5),
+        )
+    )
 
     for name, image in zip(names, images):
-        Image.fromarray(scan_image(lidar, image)).save(f"{fullpath}/{name}")
+        Image.fromarray(scan_image(lidar, segmenter, image)).save(f"{fullpath}/{name}")
 
 
-def scan_image(lidar: Lidar, image: np.ndarray) -> np.ndarray:
-    _, all_lidars_collision_points = lidar.scan_2d(image)
+def scan_image(
+    lidar: Lidar, segmenter: TrackSegmenter, image: np.ndarray
+) -> np.ndarray:
+    _, all_lidars_collision_points = lidar.scan_2d(
+        segmenter.perform_segmentation(image)
+    )
     start_point = lidar._get_start_point()
     for collision_points in all_lidars_collision_points:
         collision_points = list(collision_points)
