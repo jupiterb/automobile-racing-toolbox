@@ -9,25 +9,25 @@ from gym.wrappers import RecordEpisodeStatistics, RecordVideo, TimeLimit
 
 from conf.example_configuration import get_game_config
 from interface.training_local import TrainingLocalGameInterface
+from rl.wrappers.stats import WandbWrapper
 from rl.enviroment import RealTimeEnviroment
 from rl.final_state.detector import FinalStateDetector
 from rl.config import FinalValueDetectionParameters, RewardConfig, ObservationConfig
-from rl.builder import reward_wrappers, observation_wrappers
-np.seterr(all='raise')
+from rl.builder import reward_wrappers, observation_wrappers\
 
 
 def main():
     config = {
         "policy": "CnnPolicy",
         "total_timesteps": 500_000, 
-        "buffer_size": 150_000,
+        "buffer_size": 100_000,
         "learning_starts": 50_00,
         "gamma": 0.99,
         "exploration_final_epsilon": 0.08
     }
 
     run = wandb.init(
-        project="test-sb3",
+        project="testsb3v3",
         sync_tensorboard=True,  # auto-upload sb3's tensorboard metrics
         monitor_gym=True,  # auto-upload the videos of agents playing the game
         save_code=True,
@@ -47,6 +47,7 @@ def main():
         verbose=1, 
         tensorboard_log=f"runs/{run.id}",
         exploration_final_eps=config["exploration_final_epsilon"],
+        learning_rate=0.00005
     )
     model.learn(
         total_timesteps=config["total_timesteps"],
@@ -94,18 +95,20 @@ def setup_env() -> gym.Env:
     env = gym.make("custom/real-time-v0", game_interface=interface, final_state_detector=final_st_det)
     env = reward_wrappers(env, reward_conf)
     env = observation_wrappers(env, observation_conf)
-    env = Monitor(env)
     env = TimeLimit(env, 1_000)
+    env = Monitor(env)
+    env = WandbWrapper(env, 1)
     return env 
 
 
 def debug():
-    env = RecordEpisodeStatistics(setup_env())
+    env = setup_env()
     env.reset()
     c = 0
     for _ in range(10000):
         c += 1
-        _, _, done, info = env.step(-1)
+        _, r, done, info = env.step(-1)
+        # print(f"rewrd {r}")
         if done:
             env.reset()
             print(c)

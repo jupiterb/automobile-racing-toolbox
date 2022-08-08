@@ -66,5 +66,5 @@ class StandarizeReward(gym.RewardWrapper):
 
     def reward(self, reward: float) -> float:
        r = (reward - self.baseline) / self.scale
-       print(f"final: {reward}")
+    #    print(f"final: {reward}")
        return r 
