@@ -5,19 +5,32 @@ import cv2
 
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
-from observation.config import LidarConfig
-from observation import Lidar
+from observation.config import LidarConfig, TrackSegmentationConfig
+from observation import Lidar, TrackSegmenter
 
 
-config = LidarConfig(
-    depth=3,
-    lower_threshold=60,
-    upper_threshold=255,
-    kernel_size=5,
-    angles_range=(-90, 90, 10),
-    lidar_start=(0.9, 0.5),
+class LidarWithTrackSegmentation(Lidar):
+    def __init__(self, lidar_config: LidarConfig, segmenter_config) -> None:
+        super().__init__(lidar_config)
+        self._segmenter = TrackSegmenter(segmenter_config)
+
+    def scan_2d(self, image: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        image = self._segmenter.perform_segmentation(image)
+        return super().scan_2d(image)
+
+
+lidar = LidarWithTrackSegmentation(
+    LidarConfig(
+        depth=3,
+        angles_range=(-90, 90, 10),
+        lidar_start=(0.9, 0.5),
+    ),
+    TrackSegmentationConfig(
+        lower_threshold=60,
+        upper_threshold=255,
+        kernel_size=5,
+    ),
 )
-lidar = Lidar(config)
 
 
 def test_shape_of_lidar_result() -> None:

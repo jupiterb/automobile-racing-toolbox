@@ -1,1 +1,2 @@
-from observation.config.lidar_configuration import LidarConfig
+from observation.config.lidar_config import LidarConfig
+from observation.config.track_segmentation_config import TrackSegmentationConfig

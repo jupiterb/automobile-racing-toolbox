@@ -78,7 +78,7 @@ def setup_env() -> gym.Env:
     )
 
     observation_conf = ObservationConfig(
-        shape=(50, 100), stack_size=4, lidar_config=None
+        shape=(50, 100), stack_size=4, lidar_config=None, track_segmentation_config=None
     )
 
     env = RealTimeEnviroment(interface, final_st_det)

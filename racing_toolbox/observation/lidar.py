@@ -14,6 +14,8 @@ class Lidar:
 
     def scan_2d(self, image: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         """
+        Parameters:
+            image - 2 dimensional image with zero values in cells which are off track
         Returns tuple of:
             1. distances (np.ndarray of shape (lidars_count, depth))
                 to first <depth> elements on which lidars had a collision
@@ -23,7 +25,6 @@ class Lidar:
         if image.shape != self._shape:
             self._shape = image.shape[0:2]
             self._set_lidars()
-        image = self._preprocess_image(image)
         collisions = [
             self._get_collisions(ray_coordinates, image)
             for ray_coordinates in self._rays_coordinates
@@ -44,23 +45,6 @@ class Lidar:
             ]
         )
         return distances_to_collisions, coordinates_of_collisions
-
-    def _preprocess_image(self, image: np.ndarray) -> np.ndarray:
-        """
-        checks wheter point of image is on or off track
-        """
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) if image.ndim > 2 else image
-        # gaussian blur
-        size = self._config.kernel_size
-        kernel = np.ones((size, size), np.float32)
-        image = cv2.filter2D(image, -1, kernel / size**2)
-        # find points with road
-        image[image > self._config.upper_threshold] = 0
-        image[image < self._config.lower_threshold] = 0
-        image[image > 0] = 1
-        # another noise reduction
-        image = cv2.morphologyEx(image, cv2.MORPH_CLOSE, kernel)
-        return image
 
     def _get_collisions(
         self, ray_coordinates: list[tuple[int, int]], image: np.ndarray
