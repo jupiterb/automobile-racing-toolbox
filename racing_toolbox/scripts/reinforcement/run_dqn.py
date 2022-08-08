@@ -9,8 +9,8 @@ from gym.wrappers import RecordEpisodeStatistics, RecordVideo, TimeLimit
 
 from conf.example_configuration import get_game_config
 from interface.training_local import TrainingLocalGameInterface
-from racing_toolbox.interface.models.game_configuration import GameConfiguration
-from racing_toolbox.rl.config.training import DQNConfig
+from interface.models.game_configuration import GameConfiguration
+from rl.config.training import DQNConfig
 from rl.wrappers.stats import WandbWrapper
 from rl.enviroment import RealTimeEnviroment
 from rl.final_state.detector import FinalStateDetector
@@ -34,7 +34,7 @@ def get_configuration() -> tuple[
     )
 
     observation_conf = ObservationConfig(shape=(50, 100), stack_size=4)
-    
+
     train_conf = DQNConfig(
         policy="CnnPolicy",
         total_timesteps=500_000,
@@ -62,7 +62,7 @@ def main():
             "training": dict(train_conf),
             "observation": dict(obs_conf),
             "reward": dict(rew_conf),
-            "game": dict(game_conf),
+            # "game": dict(game_conf), # TODO: Add proper JSON encoder to the enums
         },
     )
 
@@ -76,16 +76,16 @@ def main():
 
     model = DQN(
         env=env,
-        policy=train_conf["policy"],
-        buffer_size=train_conf["buffer_size"],
-        learning_starts=train_conf["learning_starts"],
+        policy=train_conf.policy,
+        buffer_size=train_conf.buffer_size,
+        learning_starts=train_conf.learning_starts,
         verbose=1,
         tensorboard_log=f"runs/{run.id}",
-        exploration_final_eps=train_conf["exploration_final_epsilon"],
+        exploration_final_eps=train_conf.exploration_final_epsilon,
         learning_rate=0.00005,
     )
     model.learn(
-        total_timesteps=train_conf["total_timesteps"],
+        total_timesteps=train_conf.total_timesteps,
         callback=WandbCallback(
             gradient_save_freq=10,
             model_save_path=f"models/{run.id}",
