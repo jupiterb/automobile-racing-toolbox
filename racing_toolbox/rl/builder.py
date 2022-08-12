@@ -15,9 +15,16 @@ def reward_wrappers(env: gym.Env, config: RewardConfig) -> gym.Env:
 
 
 def observation_wrappers(env: gym.Env, config: ObservationConfig) -> gym.Env:
-    env = GrayScaleObservation(env, keep_dim=False)
-    env = ResizeObservation(env, config.shape)
-    env = RescaleWrapper(env)
+    if config.track_segmentation_config:
+        env = TrackSegmentationWrapper(env, config.track_segmentation_config)
+        if config.lidar_config:
+            env = LidarWrapper(env, config.lidar_config)
+        else:
+            env = ResizeObservation(env, config.shape)
+    else:
+        env = GrayScaleObservation(env, keep_dim=False)
+        env = ResizeObservation(env, config.shape)
+        env = RescaleWrapper(env)
     env = FrameStack(env, config.stack_size)
     env = SqueezingWrapper(env)
     return env

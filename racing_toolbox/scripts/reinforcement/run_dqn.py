@@ -31,7 +31,9 @@ def get_configuration() -> tuple[
         scale=400,
     )
 
-    observation_conf = ObservationConfig(shape=(50, 100), stack_size=4)
+    observation_conf = ObservationConfig(
+        shape=(50, 100), stack_size=4, lidar_config=None, track_segmentation_config=None
+    )
 
     train_conf = DQNConfig(
         policy="CnnPolicy",
