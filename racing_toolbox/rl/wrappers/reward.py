@@ -1,4 +1,5 @@
 import gym
+import math 
 import numpy as np 
 from collections import deque
 from typing import Callable
@@ -7,6 +8,7 @@ from typing import Callable
 class OffTrackPunishment(gym.RewardWrapper):
     def __init__(self, env, metric: Callable[[float], float]):
         super().__init__(env)
+        self.metric = metric 
 
     def step(self, action):
         observation, reward, done, info = self.env.step(action)
@@ -27,16 +29,19 @@ class SpeedDropPunishment(gym.RewardWrapper):
 
     def __init__(self, env, memory_length: int, diff_thresh: float, metric: Callable[[float], float]) -> None:
         super().__init__(env)
-        self.reward_history = deque([], maxlen=memory_length)
+        self.reward_history = deque([0], maxlen=memory_length)
         self.threshold = diff_thresh
         self.metric = metric
 
     def reward(self, reward: float) -> float:
         baseline = np.mean(self.reward_history)
         self.reward_history.append(reward)
-        r = reward - self.metric(baseline - reward) if reward < baseline - self.threshold else reward
-        return r
-
+        diff = reward - baseline 
+        if abs(diff) < self.threshold or diff == 0:
+            return reward 
+        r = reward + math.copysign(self.metric(abs(diff)), diff)
+        return r 
+        
 
 class ClipReward(gym.RewardWrapper):
     def __init__(self, env, min_value: float, max_value: float) -> None:
@@ -45,12 +50,7 @@ class ClipReward(gym.RewardWrapper):
         self.max_value = max_value
 
     def reward(self, reward: float) -> float:
-        if reward < self.min_value:
-            r = self.min_value
-        elif reward > self.max_value:
-            r = self.max_value
-        else:
-            r = reward
+        r = max(min(reward, self.max_value), self.min_value)
         return r 
 
 
