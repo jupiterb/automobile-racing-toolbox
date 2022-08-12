@@ -10,12 +10,14 @@ def reward_wrappers(env: gym.Env, config: RewardConfig) -> gym.Env:
     )
     env = OffTrackPunishment(env, metric=config.off_track_reward_trans)
     env = ClipReward(env, *config.clip_range)
+    env = StandarizeReward(env, config.baseline, config.scale)
     return env
 
 
 def observation_wrappers(env: gym.Env, config: ObservationConfig) -> gym.Env:
     env = GrayScaleObservation(env, keep_dim=False)
     env = ResizeObservation(env, config.shape)
-    env = FrameStack(env, 4)
+    env = RescaleWrapper(env)
+    env = FrameStack(env, config.stack_size)
     env = SqueezingWrapper(env)
     return env

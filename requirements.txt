@@ -12,3 +12,5 @@ stable-baselines3==1.6.0
 tensorboard==2.9.1
 torch==1.12.0
 wandb==0.12.21
+ffmpeg==1.4
+imageio-ffmpeg==0.4.7

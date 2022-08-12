@@ -10,6 +10,10 @@ Frame = Optional[np.ndarray]
 
 
 class RealTimeEnviroment(gym.Env):
+    metadata = {
+        "render.modes": ["human", "rgb_array"],
+    }
+
     def __init__(
         self, game_interface: GameInterface, final_state_detector: FinalStateDetector
     ) -> None:
@@ -19,8 +23,6 @@ class RealTimeEnviroment(gym.Env):
             [SteeringAction.FORWARD],
             [SteeringAction.FORWARD, SteeringAction.LEFT],
             [SteeringAction.FORWARD, SteeringAction.RIGHT],
-            [SteeringAction.BREAK, SteeringAction.RIGHT],
-            [SteeringAction.BREAK, SteeringAction.RIGHT],
             [SteeringAction.LEFT],
             [SteeringAction.RIGHT],
             [None],
@@ -56,7 +58,7 @@ class RealTimeEnviroment(gym.Env):
 
         return state, reward, is_final, {}
 
-    def render(self) -> Frame:
+    def render(self, *args, **kwargs) -> Frame:
         return self._last_frame
 
     def _apply_action(self, action: int) -> None:
