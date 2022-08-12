@@ -1,18 +1,16 @@
 import gym
 import wandb
-import numpy as np
 from stable_baselines3 import DQN
 from wandb.integration.sb3 import WandbCallback
 from stable_baselines3.common.vec_env import DummyVecEnv, VecVideoRecorder
 from stable_baselines3.common.monitor import Monitor
-from gym.wrappers import RecordEpisodeStatistics, RecordVideo, TimeLimit
+from gym.wrappers import TimeLimit
 
 from conf.example_configuration import get_game_config
 from interface.training_local import TrainingLocalGameInterface
 from interface.models.game_configuration import GameConfiguration
 from rl.config.training import DQNConfig
 from rl.wrappers.stats import WandbWrapper
-from rl.enviroment import RealTimeEnviroment
 from rl.final_state.detector import FinalStateDetector
 from rl.config import FinalValueDetectionParameters, RewardConfig, ObservationConfig
 from rl.builder import reward_wrappers, observation_wrappers
@@ -127,15 +125,15 @@ def setup_env(
 def debug():
     env = setup_env()
     env.reset()
-    c = 0
+    episode_len = 0
     for _ in range(10000):
-        c += 1
+        episode_len += 1
         _, r, done, info = env.step(-1)
         # print(f"rewrd {r}")
         if done:
             env.reset()
-            print(c)
-            c = 0
+            print(f"episode length: {episode_len}")
+            episode_len = 0
             print(info)
 
 

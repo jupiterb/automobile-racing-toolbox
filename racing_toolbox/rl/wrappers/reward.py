@@ -38,8 +38,7 @@ class SpeedDropPunishment(gym.RewardWrapper):
         self.reward_history.append(reward)
         diff = reward - baseline 
         if abs(diff) < self.threshold or diff == 0:
-            r = reward 
-
+            return reward 
         r = reward + math.copysign(self.metric(abs(diff)), diff)
         return r 
         

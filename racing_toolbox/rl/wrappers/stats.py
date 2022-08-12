@@ -10,10 +10,10 @@ class WandbWrapper(gym.Wrapper):
         self._log_buffer = []
 
     def step(self, action):
-        o, r, done, info = super().step(action)
+        observation, reward, done, info = super().step(action)
         if done:
             self._log(info)
-        return o, r, done, info
+        return observation, reward, done, info
 
     def _log(self, info: dict) -> None:
         """This method is very basic so far, but could be extended to log
