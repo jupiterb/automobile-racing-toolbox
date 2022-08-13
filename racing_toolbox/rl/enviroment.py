@@ -19,13 +19,13 @@ class RealTimeEnviroment(gym.Env):
     ) -> None:
         super().__init__()
 
-        self.available_actions: list[list[Optional[SteeringAction]]] = [
-            [SteeringAction.FORWARD],
-            [SteeringAction.FORWARD, SteeringAction.LEFT],
-            [SteeringAction.FORWARD, SteeringAction.RIGHT],
-            [SteeringAction.LEFT],
-            [SteeringAction.RIGHT],
-            [None],
+        self.available_actions = [
+            {SteeringAction.FORWARD},
+            {SteeringAction.FORWARD, SteeringAction.LEFT},
+            {SteeringAction.FORWARD, SteeringAction.RIGHT},
+            {SteeringAction.LEFT},
+            {SteeringAction.RIGHT},
+            None,
         ]
         self.action_space = gym.spaces.Discrete(len(self.available_actions))
         self.observation_space = gym.spaces.Box(
@@ -62,8 +62,9 @@ class RealTimeEnviroment(gym.Env):
         return self._last_frame
 
     def _apply_action(self, action: int) -> None:
-        if self.available_actions[action] != [None]:
-            self._game_interface.apply_action(self.available_actions[action])
+        action_set = self.available_actions[action]
+        if action_set != None:
+            self._game_interface.apply_action(action_set)
 
     def _fetch_state(self) -> tuple[np.ndarray, dict[str, float]]:
         image = self._game_interface.grab_image().astype(np.uint8)

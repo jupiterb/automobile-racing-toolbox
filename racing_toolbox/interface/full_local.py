@@ -16,7 +16,7 @@ class FullLocalGameInterface(TrainingLocalGameInterface):
         super().reset()
         self._keyboard_capturing.reset()
 
-    def read_action(self) -> list[SteeringAction]:
-        return [
-            self._keys_mapping[key] for key in self._keyboard_capturing.get_pressed()
-        ]
+    def read_action(self) -> dict[SteeringAction, float]:
+        return {
+            self._keys_mapping[key]: 1 for key in self._keyboard_capturing.get_pressed()
+        }

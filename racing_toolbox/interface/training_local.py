@@ -39,12 +39,12 @@ class TrainingLocalGameInterface(GameInterface):
             for name, frame, ocr in self._ocrs
         }
 
-    def apply_action(self, discrete_actions: list[SteeringAction]) -> None:
+    def apply_action(self, discrete_actions: dict[SteeringAction, float]) -> None:
         keys = [
             self._configuration.discrete_actions_mapping[action]
             for action in discrete_actions
         ]
         self._keyboard_controller.set_pressed(keys)
 
-    def read_action(self) -> list[SteeringAction]:
-        return []
+    def read_action(self) -> dict[SteeringAction, float]:
+        return {}

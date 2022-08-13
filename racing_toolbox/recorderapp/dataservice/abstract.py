@@ -9,7 +9,7 @@ class RecorderDataService(ABC):
         self,
         image: np.ndarray,
         numerical_data: dict[str, float],
-        discrete_actions: set[SteeringAction],
+        actions_values: dict[SteeringAction, float],
     ) -> None:
         pass
 

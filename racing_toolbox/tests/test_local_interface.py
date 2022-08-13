@@ -43,11 +43,11 @@ def test_apply_read_action() -> None:
     interface.reset()
     sleep(0.01)  # we need to wait a bit for keylogger start
     test_cases = [
-        [SteeringAction.RIGHT, SteeringAction.FORWARD],
-        [SteeringAction.BREAK, SteeringAction.LEFT],
-        [SteeringAction.FORWARD],
-        [],
+        {SteeringAction.RIGHT, SteeringAction.FORWARD},
+        {SteeringAction.BREAK, SteeringAction.LEFT},
+        {SteeringAction.FORWARD},
+        set(),
     ]
     for actions in test_cases:
         interface.apply_action(actions)
-        assert set(actions) == set(interface.read_action())
+        assert actions == set(interface.read_action())

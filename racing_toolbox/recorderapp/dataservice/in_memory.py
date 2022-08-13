@@ -36,7 +36,7 @@ class InMemoryDataService(RecorderDataService):
         self,
         image: np.ndarray,
         numerical_data: dict[str, float],
-        discrete_actions: set[SteeringAction],
+        actions_values: dict[SteeringAction, float],
     ) -> None:
         if self._data_frame is None:
             return
@@ -47,7 +47,7 @@ class InMemoryDataService(RecorderDataService):
         for name, value in numerical_data.items():
             datarow[name] = [value]
         for action in list(SteeringAction):
-            datarow[f"action{action}"] = [action in discrete_actions]
+            datarow[f"action{action}"] = actions_values[action]
         self._data_frame = pd.concat(
             [self._data_frame, datarow], ignore_index=True, axis=0
         )
