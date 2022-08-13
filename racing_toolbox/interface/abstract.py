@@ -14,6 +14,10 @@ class GameInterface(ABC):
         pass
 
     @abstractmethod
+    def enable_action_read(self, enable: bool) -> None:
+        pass
+
+    @abstractmethod
     def grab_image(self) -> np.ndarray:
         pass
 

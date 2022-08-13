@@ -7,7 +7,7 @@ from stable_baselines3.common.env_checker import check_env
 import numpy as np
 from PIL import Image
 
-from interface import TrainingLocalGameInterface
+from interface import LocalGameInterface
 from interface.components import Screen
 from rl import RealTimeEnviroment
 from rl.final_state import FinalStateDetector
@@ -28,7 +28,8 @@ def test_gym_implementation(monkeypatch) -> None:
     config.reset_keys_sequence = []
     config.reset_seconds = 0
 
-    interface = TrainingLocalGameInterface(config)
+    interface = LocalGameInterface(config)
+    interface.enable_action_read(False)
     detector = FinalStateDetector(
         [
             FinalValueDetectionParameters(

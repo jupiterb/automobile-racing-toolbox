@@ -19,8 +19,10 @@ def get_game_config() -> GameConfiguration:
             SteeringAction.RIGHT: Key.right,
             SteeringAction.LEFT: Key.left,
         },
+        continous_actions_mapping={},
         reset_seconds=3,
         reset_keys_sequence=[Key.enter],
+        reset_gamepad_sequence=[],
         frequency_per_second=10,
         ocrs={
             "speed": (

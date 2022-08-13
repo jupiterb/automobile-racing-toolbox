@@ -7,8 +7,8 @@ from stable_baselines3.common.monitor import Monitor
 from gym.wrappers import TimeLimit
 
 from conf.example_configuration import get_game_config
-from interface.training_local import TrainingLocalGameInterface
-from interface.models.game_configuration import GameConfiguration
+from interface import LocalGameInterface
+from interface.models import GameConfiguration
 from rl.config.training import DQNConfig
 from rl.wrappers.stats import WandbWrapper
 from rl.final_state.detector import FinalStateDetector
@@ -98,7 +98,8 @@ def main():
 def setup_env(
     config: GameConfiguration, reward_conf: RewardConfig, obs_conf: ObservationConfig
 ) -> gym.Env:
-    interface = TrainingLocalGameInterface(config)
+    interface = LocalGameInterface(config)
+    interface.enable_action_read(False)
     final_st_det = FinalStateDetector(
         [
             FinalValueDetectionParameters(

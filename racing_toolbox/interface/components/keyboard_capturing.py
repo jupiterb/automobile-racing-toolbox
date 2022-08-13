@@ -9,12 +9,14 @@ class KeyboardCapturing:
             on_press=self._on_press, on_release=self._on_release
         )
 
-    def reset(self):
-        self._pressed = set()
+    def stop(self):
         try:
             self._listener.join()
         except:
             pass
+        self._pressed = set()
+
+    def start(self):
         self._listener.start()
 
     def get_pressed(self) -> list[Key]:
