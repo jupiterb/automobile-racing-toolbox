@@ -26,7 +26,7 @@ class GameInterface(ABC):
         pass
 
     @abstractmethod
-    def apply_action(self, discrete_actions: dict[SteeringAction, float]) -> None:
+    def apply_action(self, actions: dict[SteeringAction, float]) -> None:
         pass
 
     @abstractmethod

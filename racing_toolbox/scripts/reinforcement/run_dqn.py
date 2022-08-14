@@ -8,7 +8,7 @@ from gym.wrappers import TimeLimit
 
 from conf.example_configuration import get_game_config
 from interface import LocalGameInterface
-from interface.models import GameConfiguration
+from interface.models import GameConfiguration, ControllerType
 from rl.config.training import DQNConfig
 from rl.wrappers.stats import WandbWrapper
 from rl.final_state.detector import FinalStateDetector
@@ -98,7 +98,7 @@ def main():
 def setup_env(
     config: GameConfiguration, reward_conf: RewardConfig, obs_conf: ObservationConfig
 ) -> gym.Env:
-    interface = LocalGameInterface(config)
+    interface = LocalGameInterface(config, ControllerType.KEYBOARD)
     interface.enable_action_read(False)
     final_st_det = FinalStateDetector(
         [

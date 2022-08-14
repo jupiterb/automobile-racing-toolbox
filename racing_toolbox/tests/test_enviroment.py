@@ -8,7 +8,8 @@ import numpy as np
 from PIL import Image
 
 from interface import LocalGameInterface
-from interface.components import Screen
+from interface.models import ControllerType
+from interface.screen import Screen
 from rl import RealTimeEnviroment
 from rl.final_state import FinalStateDetector
 from rl.config import FinalValueDetectionParameters
@@ -28,7 +29,7 @@ def test_gym_implementation(monkeypatch) -> None:
     config.reset_keys_sequence = []
     config.reset_seconds = 0
 
-    interface = LocalGameInterface(config)
+    interface = LocalGameInterface(config, ControllerType.KEYBOARD)
     interface.enable_action_read(False)
     detector = FinalStateDetector(
         [

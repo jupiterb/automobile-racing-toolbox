@@ -10,6 +10,7 @@ from os import path
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
 from interface import LocalGameInterface
+from interface.models import ControllerType
 from recorderapp import EpisodeRecordingManager
 from conf import get_game_config
 
@@ -42,7 +43,7 @@ class RecorderScreen(GridLayout):
             self._start_save_button.text = "Start recording"
         else:
             self._recording_manager.start(
-                LocalGameInterface(get_game_config()),
+                LocalGameInterface(get_game_config(), ControllerType.KEYBOARD),
                 self._user_name.text,
                 self._recording_name.text,
                 get_game_config().frequency_per_second,

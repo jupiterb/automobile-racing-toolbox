@@ -8,7 +8,8 @@ import numpy as np
 from PIL import Image
 
 from interface import LocalGameInterface
-from interface.components import Screen
+from interface.models import ControllerType
+from interface.screen import Screen
 from rl.final_state import FinalStateDetector
 from rl.config import FinalValueDetectionParameters
 from conf import get_game_config
@@ -81,7 +82,7 @@ def test_integration_with_ocr(monkeypatch) -> None:
     assert not detector.is_final()
 
     end_of_race_detected = False
-    interface = LocalGameInterface(get_game_config())
+    interface = LocalGameInterface(get_game_config(), ControllerType.KEYBOARD)
 
     path_to_images = "assets/screenshots/end_of_race"
     for image_name in listdir(path_to_images):
