@@ -2,7 +2,7 @@ from vgamepad import XUSB_BUTTON
 from enum import Enum
 
 
-class GamepadTrigger(Enum):
+class GamepadControl(Enum):
     LEFT_TRIGGER = 0
     RIGHT_TRIGGER = 1
     LEFT_JOYSTICK_X = 2
@@ -11,4 +11,4 @@ class GamepadTrigger(Enum):
     RIGHT_JOYSTICK_Y = 5
 
 
-GamepadAction = GamepadTrigger | XUSB_BUTTON
+GamepadAction = GamepadControl | XUSB_BUTTON
