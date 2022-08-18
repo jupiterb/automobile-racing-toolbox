@@ -18,6 +18,8 @@ class GamepadController(GameActionController):
     def reset_game(self) -> None:
         gamepad_actions = {action: 1.0 for action in self._reset_sequence}
         self._apply_gamepad_actions(gamepad_actions)
+        self._gamepad.reset()
+        self._gamepad.update()
 
     def apply_actions(self, actions: dict[SteeringAction, float]) -> None:
         gamepad_actions = {
