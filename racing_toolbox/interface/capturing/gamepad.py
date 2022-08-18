@@ -62,7 +62,10 @@ class GamepadCapturing(GameActionCapturing):
         for action in self._actions:
             self._actions[action] = 0.0
         self._keep_capturing = False
-        self._listener.join()
+        try:
+            self._listener.join()
+        except RuntimeError:
+            pass
 
     def get_captured(self) -> dict[SteeringAction, float]:
         return self._actions

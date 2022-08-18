@@ -14,7 +14,7 @@ class KeyboardCapturing(GameActionCapturing):
     def stop(self):
         try:
             self._listener.join()
-        except:
+        except RuntimeError:
             pass
         self._pressed = set()
 

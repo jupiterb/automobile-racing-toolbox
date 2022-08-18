@@ -2,8 +2,12 @@ import numpy as np
 
 from interface import GameInterface
 from interface.models import GameConfiguration, SteeringAction, ControllerType
-from interface.capturing import GameActionCapturing, KeyboardCapturing
-from interface.controllers import GameActionController, KeyboardController
+from interface.capturing import GameActionCapturing, KeyboardCapturing, GamepadCapturing
+from interface.controllers import (
+    GameActionController,
+    KeyboardController,
+    GamepadController,
+)
 from interface.screen import Screen
 from interface.ocr import SevenSegmentsOcr
 import time
@@ -36,7 +40,17 @@ class LocalGameInterface(GameInterface):
             )
 
         else:
-            pass
+            self._controller: GameActionController = GamepadController(
+                configuration.continous_actions_mapping,
+                configuration.reset_gamepad_sequence,
+            )
+            gamepad_to_action_mapping = {
+                gamepad_action: action
+                for action, gamepad_action in configuration.continous_actions_mapping.items()
+            }
+            self._capturing: GameActionCapturing = GamepadCapturing(
+                gamepad_to_action_mapping
+            )
 
     def name(self) -> str:
         return self._configuration.game_id

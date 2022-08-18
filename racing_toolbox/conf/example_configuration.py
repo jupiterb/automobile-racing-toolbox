@@ -1,10 +1,12 @@
 from pynput.keyboard import Key
+from vgamepad import XUSB_BUTTON
 from interface.models import (
     GameConfiguration,
     SteeringAction,
     ScreenFrame,
     OcrConfiguration,
 )
+from interface.models.gamepad_action import GamepadControl
 
 
 def get_game_config() -> GameConfiguration:
@@ -19,10 +21,17 @@ def get_game_config() -> GameConfiguration:
             SteeringAction.RIGHT: Key.right,
             SteeringAction.LEFT: Key.left,
         },
-        continous_actions_mapping={},
+        continous_actions_mapping={
+            SteeringAction.FORWARD: XUSB_BUTTON.XUSB_GAMEPAD_A,
+            SteeringAction.BREAK: XUSB_BUTTON.XUSB_GAMEPAD_LEFT_THUMB,
+            # since we RIGHT and LEFT is in practice same axis (LEFT_JOYSTICK_X)
+            # we can use one of then to mock LEFT_JOYSTICK_Y axis
+            SteeringAction.RIGHT: GamepadControl.LEFT_JOYSTICK_X,
+            SteeringAction.LEFT: GamepadControl.LEFT_JOYSTICK_Y,
+        },
         reset_seconds=3,
         reset_keys_sequence=[Key.enter],
-        reset_gamepad_sequence=[],
+        reset_gamepad_sequence=[XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_THUMB],
         frequency_per_second=10,
         ocrs={
             "speed": (

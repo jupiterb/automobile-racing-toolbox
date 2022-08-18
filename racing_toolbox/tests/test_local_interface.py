@@ -39,7 +39,7 @@ def test_perform_ocr(monkeypatch) -> None:
         assert ocr_result == {"speed": value}
 
 
-def test_apply_read_action() -> None:
+def test_keyboard_action() -> None:
     interface.reset()
     sleep(0.01)  # we need to wait a bit for keylogger start
     test_cases = [

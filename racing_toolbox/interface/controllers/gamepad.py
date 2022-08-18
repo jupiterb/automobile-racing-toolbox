@@ -32,7 +32,9 @@ class GamepadController(GameActionController):
         self, gamepad_actions: dict[GamepadAction, float]
     ) -> None:
         discrete_actions = {
-            action for action in gamepad_actions if isinstance(action, vg.XUSB_BUTTON)
+            action
+            for action, value in gamepad_actions.items()
+            if isinstance(action, vg.XUSB_BUTTON) and value
         }
         continous_actions = {
             action: value
