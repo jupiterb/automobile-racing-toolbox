@@ -10,7 +10,7 @@ from conf.example_configuration import get_game_config
 from interface.training_local import TrainingLocalGameInterface
 from interface.models.game_configuration import GameConfiguration
 from rl.config.training import DQNConfig
-from rl.wrappers.stats import WandbWrapper
+from rl.wrappers.stats import WandbWrapper, LoggingWrapper
 from rl.final_state.detector import FinalStateDetector
 from rl.config import FinalValueDetectionParameters, RewardConfig, ObservationConfig
 from rl.builder import reward_wrappers, observation_wrappers
@@ -121,24 +121,23 @@ def setup_env(
     env = TimeLimit(env, 1_000)
     env = Monitor(env)
     env = WandbWrapper(env, 5)
+    env = LoggingWrapper(env)
     return env
 
 
 def debug():
-    env = setup_env()
+    import logging 
+    logging.basicConfig(level=logging.DEBUG)
+
+    game_conf, obs_conf, rew_conf, train_conf = get_configuration()
+    env = setup_env(game_conf, rew_conf, obs_conf)
     env.reset()
-    episode_len = 0
     for _ in range(10000):
-        episode_len += 1
         _, r, done, info = env.step(-1)
-        # print(f"rewrd {r}")
         if done:
             env.reset()
-            print(f"episode length: {episode_len}")
-            episode_len = 0
-            print(info)
 
 
 if __name__ == "__main__":
-    main()
-    # debug()
+    # main()
+    debug()

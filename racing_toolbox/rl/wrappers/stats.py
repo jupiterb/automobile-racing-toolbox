@@ -1,5 +1,11 @@
 import wandb
 import gym
+import logging
+
+from rl.utils.logging import describe_observation, describe_reward
+
+
+logger = logging.getLogger(__name__)
 
 
 class WandbWrapper(gym.Wrapper):
@@ -24,3 +30,19 @@ class WandbWrapper(gym.Wrapper):
             wandb.log(info)
             print(f"logged {info}")
             self._steps_without_sync = 0
+
+
+class LoggingWrapper(gym.Wrapper):
+    def __init__(self, env: gym.Env) -> None:
+        super().__init__(env)
+        self._ep_len = 1
+
+    def step(self, action):
+        logger.debug(f"took action {action}")
+        obs, rew, done, info = super().step(action)
+        logger.debug(
+            f"observation: {describe_observation(obs)} reward: {describe_reward(rew)} done: {done} info: {info} len={self._ep_len}"
+        )
+
+        self._ep_len = 0 if done else self._ep_len + 1
+        return obs, rew, done, info
