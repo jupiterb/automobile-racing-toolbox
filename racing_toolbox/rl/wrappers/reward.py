@@ -27,16 +27,18 @@ class OffTrackPunishment(gym.RewardWrapper):
 class SpeedDropPunishment(gym.RewardWrapper):
     """This wrapper will add punishment for every 'major' drop in speed. So it assumes that returned reward is speed related"""
 
-    def __init__(self, env, memory_length: int, diff_thresh: float, metric: Callable[[float], float]) -> None:
+    def __init__(self, env, memory_length: int, diff_thresh: float, metric: Callable[[float], float], only_diff: bool=False) -> None:
         super().__init__(env)
         self.reward_history = deque([0], maxlen=memory_length)
         self.threshold = diff_thresh
         self.metric = metric
+        self.only_diff = only_diff
 
     def reward(self, reward: float) -> float:
         baseline = np.mean(self.reward_history)
         self.reward_history.append(reward)
         diff = reward - baseline 
+        reward = 0 if self.only_diff else reward # skip speed itself and praise/punish only deviations 
         if abs(diff) < self.threshold or diff == 0:
             return reward 
         r = reward + math.copysign(self.metric(abs(diff)), diff)
