@@ -50,4 +50,6 @@ def test_keyboard_action() -> None:
     ]
     for actions in test_cases:
         interface.apply_action(actions)
-        assert actions == set(interface.read_action())
+        assert actions == {
+            action for action, value in interface.read_action().items() if value > 0
+        }

@@ -30,7 +30,6 @@ def test_gym_implementation(monkeypatch) -> None:
     config.reset_seconds = 0
 
     interface = LocalGameInterface(config, ControllerType.KEYBOARD)
-    interface.enable_action_read(False)
     detector = FinalStateDetector(
         [
             FinalValueDetectionParameters(

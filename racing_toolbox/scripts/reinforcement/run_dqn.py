@@ -99,7 +99,6 @@ def setup_env(
     config: GameConfiguration, reward_conf: RewardConfig, obs_conf: ObservationConfig
 ) -> gym.Env:
     interface = LocalGameInterface(config, ControllerType.KEYBOARD)
-    interface.enable_action_read(False)
     final_st_det = FinalStateDetector(
         [
             FinalValueDetectionParameters(

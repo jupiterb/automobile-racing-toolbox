@@ -37,28 +37,17 @@ class GamepadCapturing(GameActionCapturing):
         self, gamepad_action_mapping: dict[GamepadAction, SteeringAction]
     ) -> None:
         self._gamepad_action_mapping = gamepad_action_mapping
-        self._joysticks: list[Joystick] = []
         self._actions = {action: 0.0 for action in list(SteeringAction)}
         self._keep_capturing = False
         self._listener: threading.Thread = threading.Thread(
             target=self._listen, args=()
         )
-        pygame.init()
 
     def start(self) -> None:
-        count = pygame.joystick.get_count()
-        if count:
-            for i in range(0, count):
-                pygame.joystick.Joystick(i).init()
-        else:
-            raise JoystickNotFound
         self._keep_capturing = True
         self._listener.start()
 
     def stop(self) -> None:
-        for joystick in self._joysticks:
-            del joystick
-        self._joysticks = []
         for action in self._actions:
             self._actions[action] = 0.0
         self._keep_capturing = False
@@ -71,6 +60,7 @@ class GamepadCapturing(GameActionCapturing):
         return self._actions
 
     def _listen(self) -> None:
+        joysticks = GamepadCapturing._init_joysticks()
         clock = pygame.time.Clock()
         while self._keep_capturing:
             clock.tick(clock_frequency)
@@ -81,16 +71,41 @@ class GamepadCapturing(GameActionCapturing):
                     self._handle_button_event(event, True)
                 elif event.type == pygame.JOYAXISMOTION:
                     self._handle_axis_event(event)
+        GamepadCapturing._del_joysticks(joysticks)
+
+    @staticmethod
+    def _init_joysticks() -> list[Joystick]:
+        pygame.init()
+        pygame.joystick.init()
+        count = pygame.joystick.get_count()
+        joysticks = []
+        if count:
+            for i in range(count):
+                joysticks.append(pygame.joystick.Joystick(i))
+                joysticks[-1].init()
+        else:
+            raise JoystickNotFound
+        return joysticks
+
+    @staticmethod
+    def _del_joysticks(joysticks: list[Joystick]) -> None:
+        for joystick in joysticks:
+            del joystick
 
     def _handle_button_event(self, event: pygame.event.Event, pressed: bool):
-        value = 1.0 if pressed else 0.0
-        button = pygame_to_vg_button[event.button]
+        try:
+            button = pygame_to_vg_button[event.button]
+        except KeyError:
+            return
         if button in self._gamepad_action_mapping:
             action = self._gamepad_action_mapping[button]
-            self._actions[action] = value
+            self._actions[action] = 1.0 if pressed else 0.0
 
     def _handle_axis_event(self, event: pygame.event.Event):
-        control = pygame_to_gamepad_control[event.axis]
+        try:
+            control = pygame_to_gamepad_control[event.axis]
+        except KeyError:
+            return
         if control in self._gamepad_action_mapping:
             action = self._gamepad_action_mapping[control]
             self._actions[action] = event.value

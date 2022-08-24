@@ -13,7 +13,7 @@ class KeyboardCapturing(GameActionCapturing):
 
     def stop(self):
         try:
-            self._listener.join()
+            self._listener.stop()
         except RuntimeError:
             pass
         self._pressed = set()
@@ -22,7 +22,10 @@ class KeyboardCapturing(GameActionCapturing):
         self._listener.start()
 
     def get_captured(self) -> dict[SteeringAction, float]:
-        return {self._key_to_action_mapping[key]: 1 for key in self._pressed}
+        return {
+            action: 1 if key in self._pressed else 0
+            for key, action in self._key_to_action_mapping.items()
+        }
 
     def _on_press(self, key):
         try:

@@ -55,19 +55,12 @@ class LocalGameInterface(GameInterface):
     def name(self) -> str:
         return self._configuration.game_id
 
-    def reset(self) -> None:
+    def reset(self, enable_action_read: bool = True) -> None:
         self._controller.reset_game()
         self._capturing.stop()
         time.sleep(self._configuration.reset_seconds)
-        self._capturing.start()
-
-    def enable_action_read(self, enable: bool) -> None:
-        if self._enable_action_read != enable:
-            if enable:
-                self._capturing.start()
-            else:
-                self._capturing.stop()
-        self._enable_action_read = enable
+        if enable_action_read:
+            self._capturing.start()
 
     def grab_image(self) -> np.ndarray:
         return self._screen.grab_image(self._configuration.obervation_frame)

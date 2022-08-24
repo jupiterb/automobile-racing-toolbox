@@ -10,11 +10,7 @@ class GameInterface(ABC):
         pass
 
     @abstractmethod
-    def reset(self) -> None:
-        pass
-
-    @abstractmethod
-    def enable_action_read(self, enable: bool) -> None:
+    def reset(self, enable_action_read: bool = True) -> None:
         pass
 
     @abstractmethod
