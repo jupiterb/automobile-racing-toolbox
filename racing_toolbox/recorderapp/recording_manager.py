@@ -62,4 +62,4 @@ class EpisodeRecordingManager:
                 action = game_interface.read_action()
                 self.__dataservice.put_observation(image, from_ocr, action)
                 time.sleep(1 / fps)
-        # game_interface.reset(False)
+        game_interface.reset(False)

@@ -1,17 +1,23 @@
 import sys
-from os import path
-
-sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
-
 from interface import LocalGameInterface
 from interface.models import ControllerType
 from recorderapp import EpisodeRecordingManager
 from conf import get_game_config
+import time
+
+
+def starting(seconds: int) -> None:
+    print('To finish recording, type "q" and press Enter')
+    for i in range(seconds):
+        print(f"Recordong start at {seconds - i}s")
+        time.sleep(1)
+    print("Started.")
 
 
 def record(
     user_name: str, recording_name: str, controller_type: ControllerType
 ) -> None:
+    starting(10)
     recording_manager = EpisodeRecordingManager()
     recording_manager.start(
         LocalGameInterface(get_game_config(), controller_type),
@@ -20,8 +26,9 @@ def record(
         get_game_config().frequency_per_second,
     )
     while True:
-        if input() == "stop":
+        if input() == "q":
             recording_manager.release()
+            print("Finished.")
             return
 
 
