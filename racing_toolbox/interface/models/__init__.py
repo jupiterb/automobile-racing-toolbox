@@ -4,5 +4,4 @@ from interface.models.game_configuration import (
     ScreenFrame,
     OcrConfiguration,
     GamepadAction,
-    ControllerType,
 )

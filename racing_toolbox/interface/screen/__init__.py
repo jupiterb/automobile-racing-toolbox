@@ -1,1 +1,2 @@
-from interface.screen.screen import Screen
+from interface.screen.abstract import ScreenProvider
+from interface.screen.local import LocalScreen

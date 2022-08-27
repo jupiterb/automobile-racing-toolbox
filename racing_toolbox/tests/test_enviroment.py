@@ -7,9 +7,8 @@ from stable_baselines3.common.env_checker import check_env
 import numpy as np
 from PIL import Image
 
-from interface import LocalGameInterface
-from interface.models import ControllerType
-from interface.screen import Screen
+from interface import GameInterfaceBuilder
+from interface.screen import LocalScreen
 from rl import RealTimeEnviroment
 from rl.final_state import FinalStateDetector
 from rl.config import FinalValueDetectionParameters
@@ -23,13 +22,17 @@ def test_gym_implementation(monkeypatch) -> None:
             Image.open(f"assets/screenshots/random/trackmania_1000x800_0.jpeg")
         )
 
-    monkeypatch.setattr(Screen, "_get_screenshot", mock_get_screenshot)
+    monkeypatch.setattr(LocalScreen, "_grab_image", mock_get_screenshot)
 
     config = get_game_config()
     config.reset_keys_sequence = []
     config.reset_seconds = 0
 
-    interface = LocalGameInterface(config, ControllerType.KEYBOARD)
+    interface_builder = GameInterfaceBuilder()
+    interface_builder.new_interface(config)
+    interface_builder.with_keyborad_controller()
+    interface = interface_builder.build()
+
     detector = FinalStateDetector(
         [
             FinalValueDetectionParameters(

@@ -40,7 +40,7 @@ class RealTimeEnviroment(gym.Env):
         self._last_frame: Frame = None
 
     def reset(self) -> Frame:
-        self._game_interface.reset(False)
+        self._game_interface.reset()
         return self._fetch_state()[0]
 
     def step(self, action: int) -> tuple[Frame, float, bool, dict]:

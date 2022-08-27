@@ -8,11 +8,6 @@ from interface.models.ocr_configuration import OcrConfiguration
 from interface.models.gamepad_action import GamepadAction
 
 
-class ControllerType(Enum):
-    KEYBOARD = 0
-    GAMEPAD = 1
-
-
 class GameConfiguration(BaseModel):
     game_id: str
     process_name: str

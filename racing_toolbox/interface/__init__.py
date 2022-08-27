@@ -1,2 +1,2 @@
-from interface.abstract import GameInterface
-from interface.local import LocalGameInterface
+from interface.interface import GameInterface
+from interface.builder import GameInterfaceBuilder

@@ -7,13 +7,17 @@ import numpy as np
 from PIL import Image
 from time import sleep
 
-from interface import LocalGameInterface
-from interface.models import SteeringAction, ControllerType
-from interface.screen import Screen
+from interface import GameInterfaceBuilder
+from interface.models import SteeringAction
+from interface.screen import LocalScreen
 from conf import get_game_config
 
 
-interface = LocalGameInterface(get_game_config(), ControllerType.KEYBOARD)
+interface_builder = GameInterfaceBuilder()
+interface_builder.new_interface(get_game_config())
+interface_builder.with_keyboard_capturing()
+interface_builder.with_keyborad_controller()
+interface = interface_builder.build()
 
 
 def test_perform_ocr(monkeypatch) -> None:
@@ -34,8 +38,8 @@ def test_perform_ocr(monkeypatch) -> None:
         def mock_get_screenshot(*args, **kwargs):
             return np.array(Image.open(f"assets/screenshots/random/{screenshot}.jpeg"))
 
-        monkeypatch.setattr(Screen, "_get_screenshot", mock_get_screenshot)
-        ocr_result = interface.perform_ocr()
+        monkeypatch.setattr(LocalScreen, "_grab_image", mock_get_screenshot)
+        ocr_result = interface.perform_ocr(on_last=False)
         assert ocr_result == {"speed": value}
 
 

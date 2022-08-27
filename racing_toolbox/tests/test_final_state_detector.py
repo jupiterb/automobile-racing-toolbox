@@ -7,9 +7,8 @@ import pytest
 import numpy as np
 from PIL import Image
 
-from interface import LocalGameInterface
-from interface.models import ControllerType
-from interface.screen import Screen
+from interface import GameInterfaceBuilder
+from interface.screen import LocalScreen
 from rl.final_state import FinalStateDetector
 from rl.config import FinalValueDetectionParameters
 from conf import get_game_config
@@ -81,8 +80,11 @@ def test_integration_with_ocr(monkeypatch) -> None:
 
     assert not detector.is_final()
 
+    interface_builder = GameInterfaceBuilder()
+    interface_builder.new_interface(get_game_config())
+    interface = interface_builder.build()
+
     end_of_race_detected = False
-    interface = LocalGameInterface(get_game_config(), ControllerType.KEYBOARD)
 
     path_to_images = "assets/screenshots/end_of_race"
     for image_name in listdir(path_to_images):
@@ -90,9 +92,7 @@ def test_integration_with_ocr(monkeypatch) -> None:
         def mock_get_screenshot(*args, **kwargs):
             return np.array(Image.open(f"{path_to_images}/{image_name}"))
 
-        monkeypatch.setattr(Screen, "_get_screenshot", mock_get_screenshot)
-        end_of_race_detected = detector.is_final(
-            interface.perform_ocr(on_last_image=False)
-        )
+        monkeypatch.setattr(LocalScreen, "_grab_image", mock_get_screenshot)
+        end_of_race_detected = detector.is_final(interface.perform_ocr(on_last=False))
 
     assert end_of_race_detected
