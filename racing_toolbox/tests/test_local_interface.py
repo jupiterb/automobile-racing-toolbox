@@ -47,13 +47,20 @@ def test_keyboard_action() -> None:
     interface.reset()
     sleep(0.01)  # we need to wait a bit for keylogger start
     test_cases = [
-        {SteeringAction.RIGHT, SteeringAction.FORWARD},
-        {SteeringAction.BREAK, SteeringAction.LEFT},
-        {SteeringAction.FORWARD},
-        set(),
+        {SteeringAction.RIGHT: 1.0, SteeringAction.FORWARD: 1.0},
+        {SteeringAction.BREAK: 1.0, SteeringAction.LEFT: 1.0},
+        {SteeringAction.FORWARD: 1.0},
+        {},
     ]
     for actions in test_cases:
         interface.apply_action(actions)
         assert actions == {
-            action for action, value in interface.read_action().items() if value > 0
+            action: value
+            for action, value in interface.read_action().items()
+            if value > 0
         }
+
+    action = {SteeringAction.RIGHT: 0.0, SteeringAction.BREAK: 1.0}
+    interface.apply_action(action)
+    assert interface.read_action()[SteeringAction.BREAK] == 1.0
+    assert interface.read_action()[SteeringAction.RIGHT] == 0.0
