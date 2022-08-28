@@ -16,11 +16,15 @@ class KeyboardController(GameActionController):
             self._controller.release(key)
 
     def apply_actions(self, actions: dict[SteeringAction, float]) -> None:
-        for action in actions:
-            if action in self._action_to_key_mapping:
-                key = self._action_to_key_mapping[action]
-                self._controller.press(key)
-        for action in set(self._action_to_key_mapping) - set(actions):
+        actions_set = {
+            action 
+            for action, value in actions.items() 
+            if action in self._action_to_key_mapping and value
+        }
+        for action in  actions_set:
+            key = self._action_to_key_mapping[action]
+            self._controller.press(key)
+        for action in set(self._action_to_key_mapping) - actions_set:
             key = self._action_to_key_mapping[action]
             self._controller.release(key)
         

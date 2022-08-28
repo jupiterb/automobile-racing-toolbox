@@ -1,8 +1,8 @@
-from enum import Enum, auto
+from enum import IntEnum
 
 
-class SteeringAction(Enum):
-    FORWARD = auto()
-    LEFT = auto()
-    RIGHT = auto()
-    BREAK = auto()
+class SteeringAction(IntEnum):
+    FORWARD = 0
+    LEFT = 1
+    RIGHT = 2
+    BREAK = 3

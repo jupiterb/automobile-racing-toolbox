@@ -1,6 +1,6 @@
 import gym
 import wandb
-from stable_baselines3 import DQN
+from stable_baselines3 import SAC
 from wandb.integration.sb3 import WandbCallback
 from stable_baselines3.common.vec_env import DummyVecEnv, VecVideoRecorder
 from stable_baselines3.common.monitor import Monitor
@@ -10,7 +10,7 @@ from conf.example_configuration import get_game_config
 from interface import GameInterfaceBuilder
 from interface.models import GameConfiguration, SteeringAction
 from rl.config.training import DQNConfig
-from rl.wrappers import DiscreteActionToVectorWrapper
+from rl.wrappers import ZeroThresholdingActionWrapper
 from rl.wrappers.stats import WandbWrapper
 from rl.final_state.detector import FinalStateDetector
 from rl.config import FinalValueDetectionParameters, RewardConfig, ObservationConfig
@@ -75,14 +75,13 @@ def main():
         video_length=400,
     )
 
-    model = DQN(
+    model = SAC(
         env=env,
         policy=train_conf.policy,
         buffer_size=train_conf.buffer_size,
         learning_starts=train_conf.learning_starts,
         verbose=1,
         tensorboard_log=f"runs/{run.id}",
-        exploration_final_eps=train_conf.exploration_final_epsilon,
         learning_rate=0.00005,
     )
     model.learn(
@@ -101,7 +100,7 @@ def setup_env(
 ) -> gym.Env:
     interface_builder = GameInterfaceBuilder()
     interface_builder.new_interface(config)
-    interface_builder.with_keyborad_controller()
+    interface_builder.with_gamepad_controller()
     interface = interface_builder.build()
 
     final_st_det = FinalStateDetector(
@@ -122,16 +121,9 @@ def setup_env(
         final_state_detector=final_st_det,
     )
 
-    available_actions = [
-        {SteeringAction.FORWARD},
-        {SteeringAction.FORWARD, SteeringAction.LEFT},
-        {SteeringAction.FORWARD, SteeringAction.RIGHT},
-        {SteeringAction.LEFT},
-        {SteeringAction.RIGHT},
-        set(),
-    ]
-
-    env = DiscreteActionToVectorWrapper(env, available_actions)
+    env = ZeroThresholdingActionWrapper(
+        env, [SteeringAction.BREAK, SteeringAction.FORWARD]
+    )
     env = reward_wrappers(env, reward_conf)
     env = observation_wrappers(env, obs_conf)
     env = TimeLimit(env, 1_000)
