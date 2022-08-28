@@ -15,16 +15,24 @@ class RealTimeEnviroment(gym.Env):
     }
 
     def __init__(
-        self, game_interface: GameInterface, final_state_detector: FinalStateDetector
+        self,
+        game_interface: GameInterface,
+        final_state_detector: FinalStateDetector,
     ) -> None:
         super().__init__()
 
-        self.available_actions = [
+        """self.available_actions = [
             {SteeringAction.FORWARD},
             {SteeringAction.FORWARD, SteeringAction.LEFT},
             {SteeringAction.FORWARD, SteeringAction.RIGHT},
             {SteeringAction.LEFT},
             {SteeringAction.RIGHT},
+            None,
+        ]"""
+        self.available_actions = [
+            {SteeringAction.FORWARD: 1.0},
+            {SteeringAction.LEFT: 0.5, SteeringAction.RIGHT: 1.0},
+            {SteeringAction.RIGHT: -1.0, SteeringAction.LEFT: 0.5},
             None,
         ]
         self.action_space = gym.spaces.Discrete(len(self.available_actions))

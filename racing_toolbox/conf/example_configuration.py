@@ -23,7 +23,7 @@ def get_game_config() -> GameConfiguration:
         },
         continous_actions_mapping={
             SteeringAction.FORWARD: XUSB_BUTTON.XUSB_GAMEPAD_A,
-            SteeringAction.BREAK: XUSB_BUTTON.XUSB_GAMEPAD_LEFT_THUMB,
+            SteeringAction.BREAK: XUSB_BUTTON.XUSB_GAMEPAD_B,
             # since we RIGHT and LEFT is in practice same axis (LEFT_JOYSTICK_X)
             # we can use one of then to mock LEFT_JOYSTICK_Y axis
             SteeringAction.RIGHT: GamepadControl.LEFT_JOYSTICK_X,
@@ -31,7 +31,7 @@ def get_game_config() -> GameConfiguration:
         },
         reset_seconds=3,
         reset_keys_sequence=[Key.enter],
-        reset_gamepad_sequence=[XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_THUMB],
+        reset_gamepad_sequence=[XUSB_BUTTON.XUSB_GAMEPAD_X],
         frequency_per_second=10,
         ocrs={
             "speed": (

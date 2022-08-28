@@ -60,21 +60,24 @@ class GamepadController(GameActionController):
     def _apply_triggers_actions(self, controls: dict[GamepadControl, float]) -> None:
         triggers = [GamepadControl.LEFT_TRIGGER, GamepadControl.RIGHT_TRIGGER]
         actions = [
-            lambda gamepad, value: gamepad.left_trigger_float(value_float=value),
-            lambda gamepad, value: gamepad.right_trigger_float(value_float=value),
+            lambda value: self._gamepad.left_trigger_float(value_float=value),
+            lambda value: self._gamepad.right_trigger_float(value_float=value),
         ]
         for trigger, action in zip(triggers, actions):
             if trigger in controls:
-                action(self._gamepad, controls[trigger])
-        self._gamepad.update()
+                action(controls[trigger])
 
     def _apply_joystick_actions(self, controls: dict[GamepadControl, float]) -> None:
         joysticks_x = [GamepadControl.LEFT_JOYSTICK_X, GamepadControl.RIGHT_JOYSTICK_X]
         joysticks_y = [GamepadControl.LEFT_JOYSTICK_Y, GamepadControl.RIGHT_JOYSTICK_Y]
         actions = [
-            lambda gp, x, y: gp.left_joystick_float(x_value_float=x, y_value_float=y),
-            lambda gp, x, y: gp.right_joystick_float(x_value_float=x, y_value_float=y),
+            lambda x, y: self._gamepad.left_joystick_float(
+                x_value_float=x, y_value_float=y
+            ),
+            lambda x, y: self._gamepad.right_joystick_float(
+                x_value_float=x, y_value_float=y
+            ),
         ]
         for joystick_x, joystick_y, action in zip(joysticks_x, joysticks_y, actions):
             if joystick_x in controls and joystick_y in controls:
-                action(self._gamepad, controls[joystick_x], controls[joystick_y])
+                action(controls[joystick_x], controls[joystick_y])

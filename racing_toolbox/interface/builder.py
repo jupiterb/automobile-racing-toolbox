@@ -1,12 +1,8 @@
 from interface.interface import GameInterface
 from interface.models import GameConfiguration
 from interface.ocr import SevenSegmentsOcr, OcrWrapper
-from interface.capturing import GameActionCapturing, KeyboardCapturing, GamepadCapturing
-from interface.controllers import (
-    GameActionController,
-    KeyboardController,
-    GamepadController,
-)
+from interface.capturing import KeyboardCapturing, GamepadCapturing
+from interface.controllers import KeyboardController, GamepadController
 from interface.screen import LocalScreen
 
 

@@ -125,6 +125,12 @@ def setup_env(
     env = TimeLimit(env, 1_000)
     env = Monitor(env)
     env = WandbWrapper(env, 5)
+
+    print("PRESS S if your game is ready for training!")
+    while True:
+        if input() == "S":
+            break
+
     return env
 
 
