@@ -56,7 +56,7 @@ def test_keyboard_action() -> None:
         {},
     ]
     for actions in test_cases:
-        print(get_actions_values(actions))
+        interface.apply_action(get_actions_values(actions))
         assert get_actions_values(actions) == interface.read_action()
 
     action = {SteeringAction.RIGHT: 0.0, SteeringAction.BREAK: 1.0}
