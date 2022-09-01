@@ -7,8 +7,9 @@ from stable_baselines3.common.monitor import Monitor
 from gym.wrappers import TimeLimit
 
 from conf.example_configuration import get_game_config
-from interface import GameInterfaceBuilder
+from interface import from_config
 from interface.models import GameConfiguration, SteeringAction
+from interface.controllers import GamepadController
 from rl.config.training import DQNConfig
 from rl.wrappers import ZeroThresholdingActionWrapper
 from rl.wrappers.stats import WandbWrapper
@@ -98,10 +99,7 @@ def main():
 def setup_env(
     config: GameConfiguration, reward_conf: RewardConfig, obs_conf: ObservationConfig
 ) -> gym.Env:
-    interface_builder = GameInterfaceBuilder()
-    interface_builder.new_interface(config)
-    interface_builder.with_gamepad_controller()
-    interface = interface_builder.build()
+    interface = from_config(config, GamepadController)
 
     final_st_det = FinalStateDetector(
         [

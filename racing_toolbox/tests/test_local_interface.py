@@ -7,17 +7,15 @@ import numpy as np
 from PIL import Image
 from time import sleep
 
-from interface import GameInterfaceBuilder
+from interface import from_config
 from interface.models import SteeringAction
 from interface.screen import LocalScreen
+from interface.controllers import KeyboardController
+from interface.capturing import KeyboardCapturing
 from conf import get_game_config
 
 
-interface_builder = GameInterfaceBuilder()
-interface_builder.new_interface(get_game_config())
-interface_builder.with_keyboard_capturing()
-interface_builder.with_keyborad_controller()
-interface = interface_builder.build()
+interface = from_config(get_game_config(), KeyboardController, KeyboardCapturing)
 
 
 def test_perform_ocr(monkeypatch) -> None:
@@ -46,19 +44,20 @@ def test_perform_ocr(monkeypatch) -> None:
 def test_keyboard_action() -> None:
     interface.reset()
     sleep(0.01)  # we need to wait a bit for keylogger start
+
+    get_actions_values = lambda actions_set: {
+        action: 1.0 if action in actions_set else 0.0 for action in SteeringAction
+    }
+
     test_cases = [
-        {SteeringAction.RIGHT: 1.0, SteeringAction.FORWARD: 1.0},
-        {SteeringAction.BREAK: 1.0, SteeringAction.LEFT: 1.0},
-        {SteeringAction.FORWARD: 1.0},
+        {SteeringAction.RIGHT, SteeringAction.FORWARD},
+        {SteeringAction.BREAK: SteeringAction.LEFT},
+        {SteeringAction.FORWARD},
         {},
     ]
     for actions in test_cases:
-        interface.apply_action(actions)
-        assert actions == {
-            action: value
-            for action, value in interface.read_action().items()
-            if value > 0
-        }
+        print(get_actions_values(actions))
+        assert get_actions_values(actions) == interface.read_action()
 
     action = {SteeringAction.RIGHT: 0.0, SteeringAction.BREAK: 1.0}
     interface.apply_action(action)

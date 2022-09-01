@@ -5,27 +5,25 @@ from interface.models import SteeringAction
 from interface.screen import ScreenProvider
 from interface.capturing import GameActionCapturing
 from interface.controllers import GameActionController
-from interface.ocr import OcrWrapper
+from interface.ocr import Ocr
+from interface.models.screen_frame import ScreenFrame
 
 
 class GameInterface:
     def __init__(
-        self, game_id: str, screen: ScreenProvider, reset_seconds: int
+        self,
+        game_id: str,
+        reset_seconds: int,
+        screen: ScreenProvider,
+        controller: GameActionController | None = None,
+        capturing: GameActionCapturing | None = None,
+        ocrs: list[tuple[str, ScreenFrame, Ocr]] = [],
     ) -> None:
         self._name = game_id
         self._screen = screen
         self._reset_seconds = reset_seconds
-        self._controller: GameActionController | None = None
-        self._capturing: GameActionCapturing | None = None
-        self._ocrs: list[OcrWrapper] = []
-
-    def set_controller(self, controller: GameActionController | None) -> None:
         self._controller = controller
-
-    def set_capturing(self, capturing: GameActionCapturing | None) -> None:
         self._capturing = capturing
-
-    def set_ocrs(self, ocrs: list[OcrWrapper]) -> None:
         self._ocrs = ocrs
 
     def name(self) -> str:
@@ -45,7 +43,8 @@ class GameInterface:
 
     def perform_ocr(self, on_last=True) -> dict[str, float]:
         return {
-            ocr.name(): ocr.read_numer_from(self._screen, on_last) for ocr in self._ocrs
+            name: ocr.read_numer(self._screen.grab_image(frame, on_last))
+            for name, frame, ocr in self._ocrs
         }
 
     def apply_action(self, actions: dict[SteeringAction, float]) -> None:

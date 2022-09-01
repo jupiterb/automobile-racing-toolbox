@@ -7,7 +7,7 @@ import pytest
 import numpy as np
 from PIL import Image
 
-from interface import GameInterfaceBuilder
+from interface import from_config
 from interface.screen import LocalScreen
 from rl.final_state import FinalStateDetector
 from rl.config import FinalValueDetectionParameters
@@ -80,9 +80,7 @@ def test_integration_with_ocr(monkeypatch) -> None:
 
     assert not detector.is_final()
 
-    interface_builder = GameInterfaceBuilder()
-    interface_builder.new_interface(get_game_config())
-    interface = interface_builder.build()
+    interface = from_config(get_game_config())
 
     end_of_race_detected = False
 

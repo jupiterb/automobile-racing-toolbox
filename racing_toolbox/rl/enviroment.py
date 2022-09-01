@@ -67,7 +67,6 @@ class RealTimeEnviroment(gym.Env):
         actions_values = {
             self._available_actions[action]: value
             for action, value in enumerate(actions)
-            if action < len(self._available_actions)
         }
         self._game_interface.apply_action(actions_values)
 

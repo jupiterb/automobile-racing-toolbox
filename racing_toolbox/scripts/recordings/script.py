@@ -1,5 +1,7 @@
 import sys
-from interface import GameInterfaceBuilder
+from interface import from_config
+from interface.controllers import KeyboardController, GamepadController
+from interface.capturing import KeyboardCapturing, GamepadCapturing
 from recorderapp import EpisodeRecordingManager
 from conf import get_game_config
 import time
@@ -16,15 +18,12 @@ def starting(seconds: int) -> None:
 def record(user_name: str, recording_name: str, controller_type: str) -> None:
     starting(10)
 
-    interface_builder = GameInterfaceBuilder()
-    interface_builder.new_interface(get_game_config())
     if controller_type == "gamepad":
-        interface_builder.with_gamepad_controller()
-        interface_builder.with_gamepad_capturing()
+        interface = from_config(get_game_config(), KeyboardController, KeyboardCapturing)
     elif controller_type == "keyboard":
-        interface_builder.with_keyborad_controller()
-        interface_builder.with_keyboard_capturing()
-    interface = interface_builder.build()
+        interface = from_config(get_game_config(), GamepadController, GamepadCapturing)
+    else:
+        raise NotImplementedError(f"Cannot create game interface with {controller_type} controller")
 
     recording_manager = EpisodeRecordingManager()
     recording_manager.start(

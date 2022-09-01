@@ -1,2 +1,2 @@
 from interface.interface import GameInterface
-from interface.builder import GameInterfaceBuilder
+from interface.constructor import from_config

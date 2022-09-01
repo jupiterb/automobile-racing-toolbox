@@ -1,11 +1,11 @@
 import numpy as np
 import cv2
 
-from interface.ocr.abstract import AbstractOcr
+from interface.ocr.abstract import Ocr
 from interface.models import OcrConfiguration
 
 
-class SevenSegmentsOcr(AbstractOcr):
+class SevenSegmentsOcr(Ocr):
 
     _segment_threshold: float = 0.8
     _digits_segments: list[set[int]] = [

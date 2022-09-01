@@ -11,28 +11,28 @@ from interface.models.gamepad_action import GamepadControl
 from interface.exceptions import JoystickNotFound
 
 
-clock_frequency = 60
-
-pygame_to_vg_button = {
-    pygame.CONTROLLER_BUTTON_A: vg.XUSB_BUTTON.XUSB_GAMEPAD_A,
-    pygame.CONTROLLER_BUTTON_B: vg.XUSB_BUTTON.XUSB_GAMEPAD_B,
-    pygame.CONTROLLER_BUTTON_X: vg.XUSB_BUTTON.XUSB_GAMEPAD_X,
-    pygame.CONTROLLER_BUTTON_Y: vg.XUSB_BUTTON.XUSB_GAMEPAD_Y,
-    pygame.CONTROLLER_AXIS_TRIGGERLEFT: vg.XUSB_BUTTON.XUSB_GAMEPAD_LEFT_THUMB,
-    pygame.CONTROLLER_AXIS_TRIGGERRIGHT: vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_THUMB,
-}
-
-pygame_to_gamepad_control = {
-    pygame.CONTROLLER_AXIS_LEFTX: GamepadControl.LEFT_JOYSTICK_X,
-    pygame.CONTROLLER_AXIS_LEFTY: GamepadControl.LEFT_JOYSTICK_Y,
-    pygame.CONTROLLER_AXIS_RIGHTX: GamepadControl.RIGHT_JOYSTICK_X,
-    pygame.CONTROLLER_AXIS_RIGHTY: GamepadControl.RIGHT_JOYSTICK_Y,
-    pygame.CONTROLLER_AXIS_TRIGGERLEFT: GamepadControl.LEFT_TRIGGER,
-    pygame.CONTROLLER_AXIS_TRIGGERRIGHT: GamepadControl.RIGHT_TRIGGER,
-}
-
-
 class GamepadCapturing(GameActionCapturing):
+
+    _clock_frequency = 60
+
+    _pygame_to_vg_button = {
+        pygame.CONTROLLER_BUTTON_A: vg.XUSB_BUTTON.XUSB_GAMEPAD_A,
+        pygame.CONTROLLER_BUTTON_B: vg.XUSB_BUTTON.XUSB_GAMEPAD_B,
+        pygame.CONTROLLER_BUTTON_X: vg.XUSB_BUTTON.XUSB_GAMEPAD_X,
+        pygame.CONTROLLER_BUTTON_Y: vg.XUSB_BUTTON.XUSB_GAMEPAD_Y,
+        pygame.CONTROLLER_AXIS_TRIGGERLEFT: vg.XUSB_BUTTON.XUSB_GAMEPAD_LEFT_THUMB,
+        pygame.CONTROLLER_AXIS_TRIGGERRIGHT: vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_THUMB,
+    }
+
+    _pygame_to_gamepad_control = {
+        pygame.CONTROLLER_AXIS_LEFTX: GamepadControl.LEFT_JOYSTICK_X,
+        pygame.CONTROLLER_AXIS_LEFTY: GamepadControl.LEFT_JOYSTICK_Y,
+        pygame.CONTROLLER_AXIS_RIGHTX: GamepadControl.RIGHT_JOYSTICK_X,
+        pygame.CONTROLLER_AXIS_RIGHTY: GamepadControl.RIGHT_JOYSTICK_Y,
+        pygame.CONTROLLER_AXIS_TRIGGERLEFT: GamepadControl.LEFT_TRIGGER,
+        pygame.CONTROLLER_AXIS_TRIGGERRIGHT: GamepadControl.RIGHT_TRIGGER,
+    }
+
     def __init__(
         self, gamepad_action_mapping: dict[GamepadAction, SteeringAction]
     ) -> None:
@@ -63,15 +63,19 @@ class GamepadCapturing(GameActionCapturing):
         joysticks = GamepadCapturing._init_joysticks()
         clock = pygame.time.Clock()
         while self._keep_capturing:
-            clock.tick(clock_frequency)
-            for event in pygame.event.get():
-                if event.type == pygame.JOYBUTTONUP:
-                    self._handle_button_event(event, False)
-                elif event.type == pygame.JOYBUTTONDOWN:
-                    self._handle_button_event(event, True)
-                elif event.type == pygame.JOYAXISMOTION:
-                    self._handle_axis_event(event)
+            clock.tick(GamepadCapturing._clock_frequency)
+            self._handle_events()
         GamepadCapturing._del_joysticks(joysticks)
+
+    def _handle_events(self) -> None:
+        for event in pygame.event.get():
+            match event:
+                case pygame.JOYBUTTONUP:
+                    self._handle_button_event(event, False)
+                case pygame.JOYBUTTONDOWN:
+                    self._handle_button_event(event, True)
+                case pygame.JOYAXISMOTION:
+                    self._handle_axis_event(event)
 
     @staticmethod
     def _init_joysticks() -> list[Joystick]:
@@ -94,7 +98,7 @@ class GamepadCapturing(GameActionCapturing):
 
     def _handle_button_event(self, event: pygame.event.Event, pressed: bool):
         try:
-            button = pygame_to_vg_button[event.button]
+            button = GamepadCapturing._pygame_to_vg_button[event.button]
         except KeyError:
             return
         if button in self._gamepad_action_mapping:
@@ -103,7 +107,7 @@ class GamepadCapturing(GameActionCapturing):
 
     def _handle_axis_event(self, event: pygame.event.Event):
         try:
-            control = pygame_to_gamepad_control[event.axis]
+            control = GamepadCapturing._pygame_to_gamepad_control[event.axis]
         except KeyError:
             return
         if control in self._gamepad_action_mapping:

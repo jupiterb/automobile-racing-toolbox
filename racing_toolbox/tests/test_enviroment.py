@@ -9,9 +9,10 @@ import numpy as np
 import gym
 from PIL import Image
 
-from interface import GameInterfaceBuilder
+from interface import from_config
 from interface.screen import LocalScreen
 from interface.models import SteeringAction
+from interface.controllers import KeyboardController
 
 from rl import RealTimeEnviroment
 from rl.final_state import FinalStateDetector
@@ -19,7 +20,6 @@ from rl.config import FinalValueDetectionParameters
 from rl.wrappers import (
     DiscreteActionToVectorWrapper,
     ZeroThresholdingActionWrapper,
-    StandardActionRangeToPositiveWarapper,
 )
 
 from conf import get_game_config
@@ -39,10 +39,7 @@ def my_env(monkeypatch) -> gym.Env:
     config.reset_keys_sequence = []
     config.reset_seconds = 0
 
-    interface_builder = GameInterfaceBuilder()
-    interface_builder.new_interface(config)
-    interface_builder.with_keyborad_controller()
-    interface = interface_builder.build()
+    interface = from_config(config, KeyboardController)
 
     detector = FinalStateDetector(
         [

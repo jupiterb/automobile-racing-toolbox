@@ -9,7 +9,10 @@ from os import path
 
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
-from interface import GameInterfaceBuilder
+from interface import from_config
+from interface.controllers import KeyboardController
+from interface.capturing import KeyboardCapturing
+
 from recorderapp import EpisodeRecordingManager
 from conf import get_game_config
 
@@ -19,7 +22,6 @@ class RecorderScreen(GridLayout):
         super(RecorderScreen, self).__init__(**kwargs)
         self.cols = 2
         self._recording_manager = EpisodeRecordingManager()
-        self._interface_builder = GameInterfaceBuilder()
 
         self.add_widget(Label(text="Usser name"))
         self._user_name = TextInput(multiline=False)
@@ -42,10 +44,9 @@ class RecorderScreen(GridLayout):
             self._recording_manager.release()
             self._start_save_button.text = "Start recording"
         else:
-            self._interface_builder.new_interface(get_game_config())
-            self._interface_builder.with_keyboard_capturing()
-            self._interface_builder.with_keyborad_controller()
-            interface = self._interface_builder.build()
+            interface = from_config(
+                get_game_config(), KeyboardController, KeyboardCapturing
+            )
             self._recording_manager.start(
                 interface,
                 self._user_name.text,
