@@ -29,7 +29,7 @@ def perfrom_lidar_scaning(path_to_images: str, path_to_result: str) -> None:
         TrackSegmentationConfig(
             track_color=(200, 200, 200),
             tolerance=80,
-            noise_reduction=15,
+            noise_reduction=29,
         )
     )
 
