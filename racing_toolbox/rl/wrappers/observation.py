@@ -5,6 +5,7 @@ from observation.config import LidarConfig, TrackSegmentationConfig
 
 from observation.lidar import Lidar
 from observation.track_segmentation import TrackSegmenter
+import gym.spaces
 
 
 class SqueezingWrapper(gym.ObservationWrapper):
@@ -24,6 +25,7 @@ class LidarWrapper(gym.ObservationWrapper):
     def __init__(self, env: gym.Env, config: LidarConfig) -> None:
         super().__init__(env)
         self._lidar = Lidar(config)
+        self.observation_space = gym.spaces.Box(0, 255, (len(range(*config.angles_range)) + 1, config.depth))
 
     def observation(self, observation: np.ndarray):
         return self._lidar.scan_2d(observation)[0]

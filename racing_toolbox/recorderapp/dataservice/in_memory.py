@@ -7,6 +7,7 @@ import pandas as pd
 from interface.models import SteeringAction
 from recorderapp.dataservice import RecorderDataService
 from recorderapp.exceptions import RecordindExists
+from typing import Optional
 
 
 class InMemoryDataService(RecorderDataService):
@@ -14,7 +15,7 @@ class InMemoryDataService(RecorderDataService):
     _path_to_data = "/data"
 
     def __init__(self) -> None:
-        self._data_frame: pd.DataFrame | None = None
+        self._data_frame: Optional[pd.DataFrame]
         self._fullpath: str = ""
         self._sequence_number: int = 0
 
