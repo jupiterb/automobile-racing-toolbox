@@ -3,7 +3,6 @@ from pynput.keyboard import Key
 from enum import Enum
 
 from interface.models.screen_frame import ScreenFrame
-from interface.models.steereing_actions import SteeringAction
 from interface.models.ocr_configuration import OcrConfiguration
 from interface.models.gamepad_action import GamepadAction
 
@@ -13,8 +12,8 @@ class GameConfiguration(BaseModel):
     process_name: str
     window_size: tuple[int, int]
     obervation_frame: ScreenFrame
-    discrete_actions_mapping: dict[SteeringAction, Key]
-    continous_actions_mapping: dict[SteeringAction, GamepadAction]
+    discrete_actions_mapping: dict[str, Key]
+    continous_actions_mapping: dict[str, GamepadAction]
     ocrs: dict[str, tuple[ScreenFrame, OcrConfiguration]]
     reset_seconds: int
     reset_keys_sequence: list[Key]

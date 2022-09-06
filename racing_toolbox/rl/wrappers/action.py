@@ -2,21 +2,20 @@ import gym
 import numpy as np
 from typing import Callable
 
-from interface.models import SteeringAction
-
 
 class DiscreteActionToVectorWrapper(gym.ActionWrapper):
     def __init__(
-        self, env: gym.Env, available_actions: list[set[SteeringAction]]
+        self, env: gym.Env, available_actions: list[set[str]], all_actions: list[str]
     ) -> None:
         super().__init__(env)
         self._available_actions = available_actions
         self.action_space = gym.spaces.Discrete(len(self._available_actions))
+        self._all_actions = all_actions
 
     def action(self, action: int) -> np.ndarray:
         actions_set = self._available_actions[action]
         return np.array(
-            [1.0 if action in actions_set else 0.0 for action in SteeringAction]
+            [1.0 if action in actions_set else 0.0 for action in self._all_actions]
         )
 
 

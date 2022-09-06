@@ -1,12 +1,15 @@
 from abc import ABC, abstractmethod
-from interface.models import SteeringAction
 
 
 class GameActionController(ABC):
     @abstractmethod
-    def apply_actions(self, actions: dict[SteeringAction, float]) -> None:
+    def apply_actions(self, actions: dict[str, float]) -> None:
         pass
 
     @abstractmethod
     def reset_game(self) -> None:
+        pass
+
+    @abstractmethod
+    def get_possible_actions(self) -> list[str]:
         pass

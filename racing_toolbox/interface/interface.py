@@ -2,7 +2,6 @@ from typing import NamedTuple
 import numpy as np
 import time
 
-from interface.models import SteeringAction
 from interface.screen import ScreenProvider
 from interface.capturing import GameActionCapturing
 from interface.controllers import GameActionController
@@ -54,9 +53,12 @@ class GameInterface:
             for name, frame, ocr in self._ocrs
         }
 
-    def apply_action(self, actions: dict[SteeringAction, float]) -> None:
+    def apply_action(self, actions: dict[str, float]) -> None:
         if self._controller:
             self._controller.apply_actions(actions)
 
-    def read_action(self) -> dict[SteeringAction, float]:
+    def read_action(self) -> dict[str, float]:
         return self._capturing.get_captured() if self._capturing else {}
+
+    def get_possible_actions(self) -> list[str]:
+        return self._controller.get_possible_actions() if self._controller else []

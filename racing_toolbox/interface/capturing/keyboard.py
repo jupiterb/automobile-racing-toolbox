@@ -1,10 +1,9 @@
 from pynput.keyboard import Listener, Key
-from interface.models import SteeringAction
 from interface.capturing.abstract import GameActionCapturing
 
 
 class KeyboardCapturing(GameActionCapturing):
-    def __init__(self, key_to_action_mapping: dict[Key, SteeringAction]) -> None:
+    def __init__(self, key_to_action_mapping: dict[Key, str]) -> None:
         self._key_to_action_mapping = key_to_action_mapping
         self._pressed: set[Key] = set()
         self._listener: Listener = Listener(
@@ -21,7 +20,7 @@ class KeyboardCapturing(GameActionCapturing):
     def start(self):
         self._listener.start()
 
-    def get_captured(self) -> dict[SteeringAction, float]:
+    def get_captured(self) -> dict[str, float]:
         return {
             action: 1 if key in self._pressed else 0
             for key, action in self._key_to_action_mapping.items()

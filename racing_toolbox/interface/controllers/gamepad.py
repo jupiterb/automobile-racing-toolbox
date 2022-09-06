@@ -1,14 +1,14 @@
 import vgamepad as vg
 
 from interface.controllers.abstract import GameActionController
-from interface.models import SteeringAction, GamepadAction
+from interface.models import GamepadAction
 from interface.models.gamepad_action import GamepadControl
 
 
 class GamepadController(GameActionController):
     def __init__(
         self,
-        gamepad_action_mapping: dict[SteeringAction, GamepadAction],
+        gamepad_action_mapping: dict[str, GamepadAction],
         reset_sequence: list[GamepadAction],
     ) -> None:
         self._gamepad_action_mapping = gamepad_action_mapping
@@ -21,12 +21,15 @@ class GamepadController(GameActionController):
         self._gamepad.reset()
         self._gamepad.update()
 
-    def apply_actions(self, actions: dict[SteeringAction, float]) -> None:
+    def apply_actions(self, actions: dict[str, float]) -> None:
         gamepad_actions = {
             self._gamepad_action_mapping[action]: value
             for action, value in actions.items()
         }
         self._apply_gamepad_actions(gamepad_actions)
+
+    def get_possible_actions(self) -> list[str]:
+        return list(self._gamepad_action_mapping)
 
     def _apply_gamepad_actions(
         self, gamepad_actions: dict[GamepadAction, float]

@@ -2,6 +2,8 @@ import sys
 from os import path
 import pytest
 
+from racing_toolbox.interface.interface import GameInterface
+
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
 from stable_baselines3.common.env_checker import check_env
@@ -11,7 +13,6 @@ from PIL import Image
 
 from interface import from_config
 from interface.screen import LocalScreen
-from interface.models import SteeringAction
 from interface.controllers import KeyboardController
 
 from rl import RealTimeEnviroment
@@ -26,7 +27,7 @@ from conf import get_game_config
 
 
 @pytest.fixture
-def my_env(monkeypatch) -> gym.Env:
+def my_interface(monkeypatch) -> GameInterface:
     # take screeshot with speed = 0 and same shape like in configuration
     def mock_get_screenshot(*args, **kwargs):
         return np.array(
@@ -40,7 +41,11 @@ def my_env(monkeypatch) -> gym.Env:
     config.reset_seconds = 0
 
     interface = from_config(config, KeyboardController)
+    return interface
 
+
+@pytest.fixture
+def my_env(my_interface) -> gym.Env:
     detector = FinalStateDetector(
         [
             FinalValueDetectionParameters(
@@ -53,7 +58,7 @@ def my_env(monkeypatch) -> gym.Env:
         ]
     )
 
-    env = RealTimeEnviroment(interface, detector)
+    env = RealTimeEnviroment(my_interface, detector)
     return env
 
 
@@ -61,21 +66,24 @@ def test_gym_implementation(my_env) -> None:
     check_env(my_env)
 
 
-def test_env_for_gamepad(my_env) -> None:
+def test_env_for_gamepad(my_env, my_interface) -> None:
+    actions = my_interface.get_possible_actions()
     env = ZeroThresholdingActionWrapper(
-        my_env, [SteeringAction.BREAK, SteeringAction.FORWARD]
+        my_env, [actions.index("BREAK"), actions.index("FORWARD")]
     )
     check_env(env)
 
 
-def test_env_for_keyboard(my_env):
+def test_env_for_keyboard(my_env, my_interface):
     available_actions = [
-        {SteeringAction.FORWARD},
-        {SteeringAction.FORWARD, SteeringAction.LEFT},
-        {SteeringAction.FORWARD, SteeringAction.RIGHT},
-        {SteeringAction.LEFT},
-        {SteeringAction.RIGHT},
+        {"FORWARD"},
+        {"FORWARD", "LEFT"},
+        {"FORWARD", "RIGHT"},
+        {"LEFT"},
+        {"RIGHT"},
         set(),
     ]
-    env = DiscreteActionToVectorWrapper(my_env, available_actions)
+    env = DiscreteActionToVectorWrapper(
+        my_env, available_actions, my_interface.get_possible_actions()
+    )
     check_env(env)

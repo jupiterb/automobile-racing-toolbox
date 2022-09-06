@@ -8,7 +8,7 @@ from gym.wrappers import TimeLimit
 
 from conf.example_configuration import get_game_config
 from interface import from_config
-from interface.models import GameConfiguration, SteeringAction
+from interface.models import GameConfiguration
 from interface.controllers import KeyboardController
 from rl.config.training import DQNConfig
 from rl.wrappers import DiscreteActionToVectorWrapper
@@ -100,7 +100,7 @@ def main():
 def setup_env(
     config: GameConfiguration, reward_conf: RewardConfig, obs_conf: ObservationConfig
 ) -> gym.Env:
-    interface = from_config(get_game_config(), KeyboardController)
+    interface = from_config(config, KeyboardController)
 
     final_st_det = FinalStateDetector(
         [
@@ -121,15 +121,17 @@ def setup_env(
     )
 
     available_actions = [
-        {SteeringAction.FORWARD},
-        {SteeringAction.FORWARD, SteeringAction.LEFT},
-        {SteeringAction.FORWARD, SteeringAction.RIGHT},
-        {SteeringAction.LEFT},
-        {SteeringAction.RIGHT},
+        {"FORWARD"},
+        {"FORWARD", "LEFT"},
+        {"FORWARD", "RIGHT"},
+        {"LEFT"},
+        {"RIGHT"},
         set(),
     ]
 
-    env = DiscreteActionToVectorWrapper(env, available_actions)
+    env = DiscreteActionToVectorWrapper(
+        env, available_actions, interface.get_possible_actions()
+    )
     env = reward_wrappers(env, reward_conf)
     env = observation_wrappers(env, obs_conf)
     env = TimeLimit(env, 1_000)

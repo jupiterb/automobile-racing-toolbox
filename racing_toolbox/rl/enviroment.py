@@ -3,7 +3,6 @@ import numpy as np
 from typing import Optional
 
 from interface import GameInterface
-from interface.models import SteeringAction
 from rl.final_state import FinalStateDetector
 
 Frame = Optional[np.ndarray]
@@ -21,7 +20,7 @@ class RealTimeEnviroment(gym.Env):
     ) -> None:
         super().__init__()
 
-        self._available_actions = list(SteeringAction)
+        self._available_actions = game_interface.get_possible_actions()
 
         self.action_space = gym.spaces.Box(
             low=-1.0,

@@ -2,8 +2,6 @@ import threading
 from typing import Optional
 import time
 
-import numpy
-
 from interface import GameInterface
 from recorderapp.dataservice import RecorderDataService, InMemoryDataService
 

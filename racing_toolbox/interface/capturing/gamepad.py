@@ -6,7 +6,7 @@ from pygame.joystick import Joystick
 import threading
 
 from interface.capturing.abstract import GameActionCapturing
-from interface.models import SteeringAction, GamepadAction
+from interface.models import GamepadAction
 from interface.models.gamepad_action import GamepadControl
 from interface.exceptions import JoystickNotFound
 
@@ -33,11 +33,9 @@ class GamepadCapturing(GameActionCapturing):
         pygame.CONTROLLER_AXIS_TRIGGERRIGHT: GamepadControl.RIGHT_TRIGGER,
     }
 
-    def __init__(
-        self, gamepad_action_mapping: dict[GamepadAction, SteeringAction]
-    ) -> None:
+    def __init__(self, gamepad_action_mapping: dict[GamepadAction, str]) -> None:
         self._gamepad_action_mapping = gamepad_action_mapping
-        self._actions = {action: 0.0 for action in list(SteeringAction)}
+        self._actions = {action: 0.0 for action in gamepad_action_mapping.values()}
         self._keep_capturing = False
         self._listener: threading.Thread = threading.Thread(
             target=self._listen, args=()
@@ -56,7 +54,7 @@ class GamepadCapturing(GameActionCapturing):
         except RuntimeError:
             pass
 
-    def get_captured(self) -> dict[SteeringAction, float]:
+    def get_captured(self) -> dict[str, float]:
         return self._actions
 
     def _listen(self) -> None:

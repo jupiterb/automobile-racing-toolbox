@@ -8,7 +8,7 @@ from gym.wrappers import TimeLimit
 
 from conf.example_configuration import get_game_config
 from interface import from_config
-from interface.models import GameConfiguration, SteeringAction
+from interface.models import GameConfiguration
 from interface.controllers import GamepadController
 from rl.config.training import SACConfig
 from rl.wrappers import ZeroThresholdingActionWrapper
@@ -118,8 +118,10 @@ def setup_env(
         final_state_detector=final_st_det,
     )
 
+    actions = interface.get_possible_actions()
+
     env = ZeroThresholdingActionWrapper(
-        env, [SteeringAction.BREAK, SteeringAction.FORWARD]
+        env, [actions.index("BREAK"), actions.index("FORWARD")]
     )
     env = reward_wrappers(env, reward_conf)
     env = observation_wrappers(env, obs_conf)

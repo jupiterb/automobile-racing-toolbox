@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from interface.models import SteeringAction
 
 
 class GameActionCapturing(ABC):
@@ -12,6 +11,6 @@ class GameActionCapturing(ABC):
         pass
 
     @abstractmethod
-    def get_captured(self) -> dict[SteeringAction, float]:
+    def get_captured(self) -> dict[str, float]:
         pass
     

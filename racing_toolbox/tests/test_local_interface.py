@@ -8,7 +8,6 @@ from PIL import Image
 from time import sleep
 
 from interface import from_config
-from interface.models import SteeringAction
 from interface.screen import LocalScreen
 from interface.controllers import KeyboardController
 from interface.capturing import KeyboardCapturing
@@ -45,21 +44,23 @@ def test_keyboard_action() -> None:
     interface.reset()
     sleep(0.01)  # we need to wait a bit for keylogger start
 
+    actions = interface.get_possible_actions()
+
     get_actions_values = lambda actions_set: {
-        action: 1.0 if action in actions_set else 0.0 for action in SteeringAction
+        action: 1.0 if action in actions_set else 0.0 for action in actions
     }
 
     test_cases = [
-        {SteeringAction.RIGHT, SteeringAction.FORWARD},
-        {SteeringAction.BREAK: SteeringAction.LEFT},
-        {SteeringAction.FORWARD},
+        {actions[0], actions[1]},
+        {actions[2]},
+        {actions[3], actions[0]},
         {},
     ]
     for actions in test_cases:
         interface.apply_action(get_actions_values(actions))
         assert get_actions_values(actions) == interface.read_action()
 
-    action = {SteeringAction.RIGHT: 0.0, SteeringAction.BREAK: 1.0}
+    action = {actions[0]: 0.0, actions[1]: 1.0}
     interface.apply_action(action)
-    assert interface.read_action()[SteeringAction.BREAK] == 1.0
-    assert interface.read_action()[SteeringAction.RIGHT] == 0.0
+    assert interface.read_action()[actions[0]] == 1.0
+    assert interface.read_action()[actions[1]] == 0.0
