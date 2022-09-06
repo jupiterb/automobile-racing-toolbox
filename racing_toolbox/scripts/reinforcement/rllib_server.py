@@ -60,7 +60,7 @@ def get_cli_args():
     parser.add_argument(
         "--framework",
         choices=["tf", "tf2", "tfe", "torch"],
-        default="tf",
+        default="torch",
         help="The DL framework specifier.",
     )
     parser.add_argument(
@@ -134,7 +134,7 @@ if __name__ == "__main__":
         "env": None,
         # TODO: (sven) make these settings unnecessary and get the information
         #  about the env spaces from the client.
-        "observation_space": gym.spaces.Box(0, 1, (4, 50, 100)),
+        "observation_space": gym.spaces.Box(0, 1, (84, 84, 4)),
         "action_space": gym.spaces.Discrete(6),
         # Use the `PolicyServerInput` to generate experiences.
         "input": _input,

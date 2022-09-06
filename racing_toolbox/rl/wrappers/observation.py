@@ -13,7 +13,7 @@ class SqueezingWrapper(gym.ObservationWrapper):
 
     def observation(self, observation: np.ndarray):
         observation = np.squeeze(observation)
-        return observation
+        return np.moveaxis(observation, 0, -1)
 
 
 class RescaleWrapper(gym.ObservationWrapper):
