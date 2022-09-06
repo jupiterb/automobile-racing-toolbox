@@ -1,7 +1,7 @@
-from enum import IntEnum
+from pydantic import BaseModel
 
 
-class SteeringAction(IntEnum):
+class SteeringAction(BaseModel):
     FORWARD = 0
     LEFT = 1
     RIGHT = 2

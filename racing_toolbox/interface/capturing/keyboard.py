@@ -28,15 +28,12 @@ class KeyboardCapturing(GameActionCapturing):
         }
 
     def _on_press(self, key):
-        try:
-            if key in self._key_to_action_mapping:
-                self._pressed.add(key)
-        except AttributeError:
-            pass
+        if key in self._key_to_action_mapping:
+            self._pressed.add(key)
 
     def _on_release(self, key):
         try:
             if key in self._key_to_action_mapping:
                 self._pressed.remove(key)
-        except:
+        except KeyError:
             pass

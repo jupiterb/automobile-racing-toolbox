@@ -1,3 +1,4 @@
+from typing import NamedTuple
 import numpy as np
 import time
 
@@ -9,6 +10,12 @@ from interface.ocr import Ocr
 from interface.models.screen_frame import ScreenFrame
 
 
+class FramedOcr(NamedTuple):
+    name: str
+    frame: ScreenFrame
+    ocr: Ocr
+
+
 class GameInterface:
     def __init__(
         self,
@@ -17,7 +24,7 @@ class GameInterface:
         screen: ScreenProvider,
         controller: GameActionController | None = None,
         capturing: GameActionCapturing | None = None,
-        ocrs: list[tuple[str, ScreenFrame, Ocr]] = [],
+        ocrs: list[FramedOcr] = [],
     ) -> None:
         self._name = game_id
         self._screen = screen

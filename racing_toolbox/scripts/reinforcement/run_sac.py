@@ -10,7 +10,7 @@ from conf.example_configuration import get_game_config
 from interface import from_config
 from interface.models import GameConfiguration, SteeringAction
 from interface.controllers import GamepadController
-from rl.config.training import DQNConfig
+from rl.config.training import SACConfig
 from rl.wrappers import ZeroThresholdingActionWrapper
 from rl.wrappers.stats import WandbWrapper
 from rl.final_state.detector import FinalStateDetector
@@ -19,7 +19,7 @@ from rl.builder import reward_wrappers, observation_wrappers
 
 
 def get_configuration() -> tuple[
-    GameConfiguration, ObservationConfig, RewardConfig, DQNConfig
+    GameConfiguration, ObservationConfig, RewardConfig, SACConfig
 ]:
     game_conf = get_game_config()
 
@@ -37,13 +37,12 @@ def get_configuration() -> tuple[
         shape=(50, 100), stack_size=4, lidar_config=None, track_segmentation_config=None
     )
 
-    train_conf = DQNConfig(
+    train_conf = SACConfig(
         policy="CnnPolicy",
         total_timesteps=500_000,
         buffer_size=100_000,
         learning_starts=50_00,
         gamma=0.99,
-        exploration_final_epsilon=0.1,
         learning_rate=1e-5,
     )
 

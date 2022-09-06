@@ -1,6 +1,6 @@
 from typing import Type
 
-from interface.interface import GameInterface
+from interface.interface import GameInterface, FramedOcr
 from interface.models import GameConfiguration
 from interface.ocr import SevenSegmentsOcr
 from interface.capturing import GameActionCapturing, KeyboardCapturing, GamepadCapturing
@@ -24,7 +24,7 @@ def from_config(
     )
 
     ocrs = [
-        (name, frame, SevenSegmentsOcr(ocr_config))
+        FramedOcr(name, frame, SevenSegmentsOcr(ocr_config))
         for name, (frame, ocr_config) in config.ocrs.items()
     ]
 
