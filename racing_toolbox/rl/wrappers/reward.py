@@ -34,7 +34,7 @@ class SpeedDropPunishment(gym.RewardWrapper):
         self.metric = metric
 
     def reward(self, reward: float) -> float:
-        print(reward)
+        # print(reward)
         baseline = np.mean(self.reward_history)
         self.reward_history.append(reward)
         diff = reward - baseline 
