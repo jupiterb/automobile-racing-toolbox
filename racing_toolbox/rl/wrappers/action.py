@@ -46,3 +46,31 @@ class StandardActionRangeToPositiveWarapper(TransformActionWrapper):
 class ZeroThresholdingActionWrapper(TransformActionWrapper):
     def __init__(self, env: gym.Env, indexes_to_threshold: list[int]) -> None:
         super().__init__(env, indexes_to_threshold, lambda x: 1.0 if x > 0 else 0.0)
+
+
+class SignSplitActionWrapper(gym.ActionWrapper):
+    def __init__(self, env: gym.Env, to_split: dict[int, bool]) -> None:
+        super().__init__(env)
+        self.action_space = gym.spaces.Box(
+            low=-1.0,
+            high=1.0,
+            shape=[len(to_split)],
+            dtype=np.float16,
+        )
+        self._to_split = to_split
+        self._new_action_shape = len(to_split) + len(
+            [split for split in to_split.values() if split]
+        )
+
+    def action(self, action: np.ndarray) -> np.ndarray:
+        new_action = np.zeros(shape=(self._new_action_shape))
+        new_action_index = 0
+        for index, value in enumerate(action):
+            if self._to_split[index]:
+                new_action[new_action_index] = value if value > 0 else 0.0
+                new_action_index += 1
+                new_action[new_action_index] = -value if value < 0 else 0.0
+            else:
+                new_action[new_action_index] = value
+            new_action_index += 1
+        return new_action

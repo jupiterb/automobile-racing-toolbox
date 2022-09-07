@@ -25,7 +25,7 @@ class RealTimeEnviroment(gym.Env):
         self.action_space = gym.spaces.Box(
             low=-1.0,
             high=1.0,
-            shape=np.array(self._available_actions).shape,
+            shape=[len(self._available_actions)],
             dtype=np.float16,
         )
 
