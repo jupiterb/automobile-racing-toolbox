@@ -4,6 +4,9 @@ import cv2
 from interface.ocr.abstract import AbstractOcr
 from interface.models import OcrConfiguration
 
+import logging 
+
+logger = logging.getLogger(__name__)
 
 class SevenSegmentsOcr(AbstractOcr):
 
@@ -39,7 +42,7 @@ class SevenSegmentsOcr(AbstractOcr):
             digits.reverse()
             self.last_vel = sum([digit * 10**i for i, digit in enumerate(digits)])
         except ValueError:
-            # print(f"Error: unknown segments: {digits_segments}")
+            logging.warning(f"Error: unknown segments: {digits_segments}")
             pass
         return self.last_vel
 

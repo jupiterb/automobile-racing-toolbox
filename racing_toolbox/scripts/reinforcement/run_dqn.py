@@ -15,6 +15,9 @@ from rl.final_state.detector import FinalStateDetector
 from rl.config import FinalValueDetectionParameters, RewardConfig, ObservationConfig
 from rl.builder import reward_wrappers, observation_wrappers
 
+import logging 
+logging.basicConfig(level=logging.INFO)
+
 
 def get_configuration() -> tuple[
     GameConfiguration, ObservationConfig, RewardConfig, DQNConfig
@@ -23,8 +26,8 @@ def get_configuration() -> tuple[
 
     reward_conf = RewardConfig(
         speed_diff_thresh=3,
-        memory_length=1,
-        speed_diff_trans=lambda x: float(x) ** 2,
+        memory_length=5,
+        speed_diff_trans=lambda x: float(x) ** 1.3,
         off_track_reward_trans=lambda reward: -abs(reward) - 400,
         clip_range=(-400, 400),
         baseline=0,
@@ -38,11 +41,11 @@ def get_configuration() -> tuple[
     train_conf = DQNConfig(
         policy="CnnPolicy",
         total_timesteps=500_000,
-        buffer_size=100_000,
+        buffer_size=500_000,
         learning_starts=50_00,
         gamma=0.99,
         exploration_final_epsilon=0.1,
-        learning_rate=1e-5,
+        learning_rate=1e-4,
     )
 
     return game_conf, observation_conf, reward_conf, train_conf
@@ -82,7 +85,8 @@ def main():
         verbose=1,
         tensorboard_log=f"runs/{run.id}",
         exploration_final_eps=train_conf.exploration_final_epsilon,
-        learning_rate=0.00005,
+        learning_rate=train_conf.learning_rate,
+        batch_size=256,
     )
     model.learn(
         total_timesteps=train_conf.total_timesteps,
@@ -126,18 +130,18 @@ def setup_env(
 
 
 def debug():
-    import logging 
-    logging.basicConfig(level=logging.DEBUG)
+    
 
     game_conf, obs_conf, rew_conf, train_conf = get_configuration()
     env = setup_env(game_conf, rew_conf, obs_conf)
     env.reset()
     for _ in range(10000):
         _, r, done, info = env.step(-1)
+        # print(r)
         if done:
             env.reset()
 
 
 if __name__ == "__main__":
-    # main()
-    debug()
+    main()
+    # debug()
