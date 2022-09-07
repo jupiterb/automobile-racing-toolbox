@@ -56,11 +56,11 @@ def test_keyboard_action() -> None:
         {actions[3], actions[0]},
         {},
     ]
-    for actions in test_cases:
-        interface.apply_action(get_actions_values(actions))
-        assert get_actions_values(actions) == interface.read_action()
+    for test_case in test_cases:
+        interface.apply_action(get_actions_values(test_case))
+        assert get_actions_values(test_case) == interface.read_action()
 
     action = {actions[0]: 0.0, actions[1]: 1.0}
     interface.apply_action(action)
-    assert interface.read_action()[actions[0]] == 1.0
-    assert interface.read_action()[actions[1]] == 0.0
+    assert interface.read_action()[actions[1]] == 1.0
+    assert interface.read_action()[actions[0]] == 0.0

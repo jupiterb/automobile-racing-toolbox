@@ -2,8 +2,6 @@ import sys
 from os import path
 import pytest
 
-from racing_toolbox.interface.interface import GameInterface
-
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
 from stable_baselines3.common.env_checker import check_env
@@ -11,7 +9,7 @@ import numpy as np
 import gym
 from PIL import Image
 
-from interface import from_config
+from interface import from_config, GameInterface
 from interface.screen import LocalScreen
 from interface.controllers import KeyboardController
 
