@@ -9,6 +9,8 @@ from gym.wrappers import TimeLimit
 from conf.example_configuration import get_game_config
 from interface.training_local import TrainingLocalGameInterface
 from interface.models.game_configuration import GameConfiguration
+from observation.config.lidar_config import LidarConfig
+from observation.config.track_segmentation_config import TrackSegmentationConfig
 from rl.config.training import DQNConfig
 from rl.wrappers.stats import WandbWrapper
 from rl.final_state.detector import FinalStateDetector
@@ -24,19 +26,31 @@ def get_configuration() -> tuple[
     reward_conf = RewardConfig(
         speed_diff_thresh=3,
         memory_length=1,
-        speed_diff_trans=lambda x: float(x) ** 2,
+        speed_diff_trans=lambda x: float(x) ** 1.2,
         off_track_reward_trans=lambda reward: -abs(reward) - 400,
-        clip_range=(-400, 400),
-        baseline=0,
-        scale=400,
+        clip_range=(-300, 300),
+        baseline=40,
+        scale=300,
     )
 
-    observation_conf = ObservationConfig(
-        shape=(50, 100), stack_size=4, lidar_config=None, track_segmentation_config=None
+    lidar_conf = LidarConfig(
+        depth=3,
+        angles_range=(-90, 90, 10),
+        lidar_start=(0.9, 0.5),
     )
+    seg_config = TrackSegmentationConfig(
+        track_color=(200, 200, 200),
+        tolerance=80,
+        noise_reduction=10,
+    )
+    observation_conf = ObservationConfig(
+        shape=(50, 100), stack_size=4, lidar_config=lidar_conf, track_segmentation_config=seg_config
+    )
+
+
 
     train_conf = DQNConfig(
-        policy="CnnPolicy",
+        policy="MlpPolicy",
         total_timesteps=500_000,
         buffer_size=100_000,
         learning_starts=50_00,
@@ -84,6 +98,7 @@ def main():
         exploration_final_eps=train_conf.exploration_final_epsilon,
         learning_rate=0.00005,
     )
+    model.set_parameters("C:\\Users\czyjt\Projects\engineering-thesis\\automobile-racing-toolbox\models\dandy-shape-60\model.zip")
     model.learn(
         total_timesteps=train_conf.total_timesteps,
         callback=WandbCallback(
@@ -125,7 +140,8 @@ def setup_env(
 
 
 def debug():
-    env = setup_env()
+    game_conf, obs_conf, rew_conf, train_conf = get_configuration()
+    env = setup_env(game_conf, rew_conf, obs_conf)
     env.reset()
     episode_len = 0
     for _ in range(10000):
