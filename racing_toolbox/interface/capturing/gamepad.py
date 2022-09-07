@@ -67,7 +67,7 @@ class GamepadCapturing(GameActionCapturing):
 
     def _handle_events(self) -> None:
         for event in pygame.event.get():
-            match event:
+            match event.type:
                 case pygame.JOYBUTTONUP:
                     self._handle_button_event(event, False)
                 case pygame.JOYBUTTONDOWN:

@@ -19,11 +19,15 @@ def record(user_name: str, recording_name: str, controller_type: str) -> None:
     starting(10)
 
     if controller_type == "gamepad":
-        interface = from_config(get_game_config(), KeyboardController, KeyboardCapturing)
-    elif controller_type == "keyboard":
         interface = from_config(get_game_config(), GamepadController, GamepadCapturing)
+    elif controller_type == "keyboard":
+        interface = from_config(
+            get_game_config(), KeyboardController, KeyboardCapturing
+        )
     else:
-        raise NotImplementedError(f"Cannot create game interface with {controller_type} controller")
+        raise NotImplementedError(
+            f"Cannot create game interface with {controller_type} controller"
+        )
 
     recording_manager = EpisodeRecordingManager()
     recording_manager.start(
