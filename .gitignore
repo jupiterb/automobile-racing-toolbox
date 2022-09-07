@@ -131,3 +131,5 @@ dmypy.json
 .pyre/
 wandb
 events*
+*.mp4
+*.meta.json
