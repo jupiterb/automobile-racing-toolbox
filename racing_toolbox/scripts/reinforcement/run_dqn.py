@@ -1,3 +1,4 @@
+
 import gym
 import wandb
 from stable_baselines3 import DQN
@@ -51,8 +52,8 @@ def get_configuration() -> tuple[
 
     train_conf = DQNConfig(
         policy="MlpPolicy",
-        total_timesteps=500_000,
-        buffer_size=100_000,
+        total_timesteps=200_000,
+        buffer_size=500_000,
         learning_starts=50_00,
         gamma=0.99,
         exploration_final_epsilon=0.1,
@@ -98,7 +99,7 @@ def main():
         exploration_final_eps=train_conf.exploration_final_epsilon,
         learning_rate=0.00005,
     )
-    model.set_parameters("C:\\Users\czyjt\Projects\engineering-thesis\\automobile-racing-toolbox\models\dandy-shape-60\model.zip")
+    model.set_parameters("C:\Users\yogam\projects\automobile-racing-toolbox\models\dandy-shape-60\model.zip")
     model.learn(
         total_timesteps=train_conf.total_timesteps,
         callback=WandbCallback(
@@ -156,5 +157,6 @@ def debug():
 
 
 if __name__ == "__main__":
-    # main()
-    debug()
+    main()
+    # debug(
+    # )
