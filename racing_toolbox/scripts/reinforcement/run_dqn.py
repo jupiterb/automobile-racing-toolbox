@@ -39,7 +39,7 @@ def get_configuration() -> tuple[
         lidar_start=(0.9, 0.5),
     )
     seg_config = TrackSegmentationConfig(
-        track_color=(200, 200, 200),
+        track_color=(190, 190, 190),
         tolerance=80,
         noise_reduction=10,
     )
@@ -156,5 +156,5 @@ def debug():
 
 
 if __name__ == "__main__":
-    main()
-    # debug()
+    # main()
+    debug()

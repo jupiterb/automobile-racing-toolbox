@@ -133,3 +133,4 @@ wandb
 events*
 *.mp4
 *.meta.json
+venv*
