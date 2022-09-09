@@ -11,10 +11,7 @@ from interface import from_config
 from interface.models import GameConfiguration
 from interface.controllers import GamepadController
 from rl.config.training import SACConfig
-from rl.wrappers import (
-    ZeroThresholdingActionWrapper,
-    SplitBySignActionWrapper,
-)
+from rl.wrappers import SplitBySignActionWrapper
 from rl.wrappers.stats import WandbWrapper
 from rl.final_state.detector import FinalStateDetector
 from rl.config import FinalValueDetectionParameters, RewardConfig, ObservationConfig
@@ -120,8 +117,6 @@ def setup_env(
         game_interface=interface,
         final_state_detector=final_st_det,
     )
-
-    env = ZeroThresholdingActionWrapper(env, [0, 1])
 
     # FORWARD if first value of action is positive, else BREAK
     env = SplitBySignActionWrapper(env, 0)

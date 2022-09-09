@@ -16,10 +16,7 @@ from interface.controllers import KeyboardController
 from rl import RealTimeEnviroment
 from rl.final_state import FinalStateDetector
 from rl.config import FinalValueDetectionParameters
-from rl.wrappers import (
-    DiscreteActionToVectorWrapper,
-    ZeroThresholdingActionWrapper,
-)
+from rl.wrappers import DiscreteActionToVectorWrapper, SplitBySignActionWrapper
 
 from conf import get_game_config
 
@@ -64,11 +61,8 @@ def test_gym_implementation(my_env) -> None:
     check_env(my_env)
 
 
-def test_env_for_gamepad(my_env, my_interface) -> None:
-    actions = my_interface.get_possible_actions()
-    env = ZeroThresholdingActionWrapper(
-        my_env, [actions.index("BREAK"), actions.index("FORWARD")]
-    )
+def test_env_for_gamepad(my_env) -> None:
+    env = SplitBySignActionWrapper(my_env, 0)
     check_env(env)
 
 

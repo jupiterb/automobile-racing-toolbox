@@ -1,6 +1,5 @@
 import gym
 import numpy as np
-from typing import Callable
 
 
 class DiscreteActionToVectorWrapper(gym.ActionWrapper):
@@ -19,41 +18,12 @@ class DiscreteActionToVectorWrapper(gym.ActionWrapper):
         )
 
 
-class TransformActionWrapper(gym.ActionWrapper):
-    def __init__(
-        self,
-        env: gym.Env,
-        indexes_to_transform: list[int],
-        transform_function: Callable[[float], float],
-    ) -> None:
-        super().__init__(env)
-        self._to_transform = indexes_to_transform
-        self._transform = transform_function
-
-    def action(self, action: np.ndarray) -> np.ndarray:
-        for index in self._to_transform:
-            action[index] = self._transform(action[index])
-        return action
-
-
-class StandardActionRangeToPositiveWarapper(TransformActionWrapper):
-    def __init__(
-        self, env: gym.Env, indexes_to_be_positive: list[int], max_value: float = 1.0
-    ) -> None:
-        super().__init__(env, indexes_to_be_positive, lambda x: (x + max_value) / 2)
-
-
-class ZeroThresholdingActionWrapper(TransformActionWrapper):
-    def __init__(self, env: gym.Env, indexes_to_threshold: list[int]) -> None:
-        super().__init__(env, indexes_to_threshold, lambda x: 1.0 if x > 0 else 0.0)
-
-
 class SplitBySignActionWrapper(gym.ActionWrapper):
     def __init__(self, env: gym.Env, to_split_index: int) -> None:
         assert isinstance(env.action_space, gym.spaces.Box)
         super().__init__(env)
         self._original_action_space_shape = env.action_space.shape
-        action_size = len(self._original_action_space_shape[0]) - 1
+        action_size = self._original_action_space_shape[0] - 1
         self.action_space = gym.spaces.Box(
             low=-1.0,
             high=1.0,
