@@ -1,16 +1,11 @@
-import sys
-from os import path
-
-sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
-
 import numpy as np
 from PIL import Image
 from time import sleep
 
-from interface import FullLocalGameInterface
-from interface.models import SteeringAction
-from interface.components import Screen
-from conf import get_game_config
+from racing_toolbox.interface import FullLocalGameInterface
+from racing_toolbox.interface.models import SteeringAction
+from racing_toolbox.interface.components import Screen
+from racing_toolbox.conf import get_game_config
 
 
 interface = FullLocalGameInterface(get_game_config())

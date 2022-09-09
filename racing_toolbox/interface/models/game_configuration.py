@@ -1,9 +1,9 @@
 from pydantic import BaseModel
 from pynput.keyboard import Key
 
-from interface.models.screen_frame import ScreenFrame
-from interface.models.steereing_actions import SteeringAction
-from interface.models.ocr_configuration import OcrConfiguration
+from racing_toolbox.interface.models.screen_frame import ScreenFrame
+from racing_toolbox.interface.models.steereing_actions import SteeringAction
+from racing_toolbox.interface.models.ocr_configuration import OcrConfiguration
 
 
 class GameConfiguration(BaseModel):
@@ -16,4 +16,3 @@ class GameConfiguration(BaseModel):
     reset_seconds: int
     reset_keys_sequence: list[Key]
     frequency_per_second: int
-    

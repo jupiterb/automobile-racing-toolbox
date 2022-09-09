@@ -10,8 +10,8 @@ from os import path, listdir, makedirs
 import cv2
 import numpy as np
 
-from observation import Lidar, TrackSegmenter
-from observation.config import LidarConfig, TrackSegmentationConfig
+from racing_toolbox.observation import Lidar, TrackSegmenter
+from racing_toolbox.observation.config import LidarConfig, TrackSegmentationConfig
 
 
 def perfrom_lidar_scaning(path_to_images: str, path_to_result: str) -> None:

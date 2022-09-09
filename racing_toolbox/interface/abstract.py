@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import numpy as np
 
-from interface.models import SteeringAction
+from racing_toolbox.interface.models import SteeringAction
 
 
 class GameInterface(ABC):

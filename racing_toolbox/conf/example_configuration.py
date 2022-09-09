@@ -1,5 +1,5 @@
 from pynput.keyboard import Key
-from interface.models import (
+from racing_toolbox.interface.models import (
     GameConfiguration,
     SteeringAction,
     ScreenFrame,

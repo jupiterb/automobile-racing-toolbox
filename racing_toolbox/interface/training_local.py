@@ -1,9 +1,9 @@
 import numpy as np
 
-from interface import GameInterface
-from interface.models import GameConfiguration, SteeringAction
-from interface.components import KeyboardController, Screen
-from interface.ocr import SevenSegmentsOcr
+from racing_toolbox.interface import GameInterface
+from racing_toolbox.interface.models import GameConfiguration, SteeringAction
+from racing_toolbox.interface.components import KeyboardController, Screen
+from racing_toolbox.interface.ocr import SevenSegmentsOcr
 import time
 
 

@@ -4,9 +4,9 @@ import numpy as np
 from PIL import Image
 import pandas as pd
 
-from interface.models import SteeringAction
-from recorderapp.dataservice import RecorderDataService
-from recorderapp.exceptions import RecordindExists
+from racing_toolbox.interface.models import SteeringAction
+from racing_toolbox.recorderapp.dataservice import RecorderDataService
+from racing_toolbox.recorderapp.exceptions import RecordindExists
 
 
 class InMemoryDataService(RecorderDataService):

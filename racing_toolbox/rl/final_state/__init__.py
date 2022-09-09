@@ -1,1 +1,1 @@
-from rl.final_state.detector import FinalStateDetector
+from racing_toolbox.rl.final_state.detector import FinalStateDetector

@@ -1,3 +1,3 @@
-from interface.abstract import GameInterface
-from interface.training_local import TrainingLocalGameInterface
-from interface.full_local import FullLocalGameInterface
+from racing_toolbox.interface.abstract import GameInterface
+from racing_toolbox.interface.training_local import TrainingLocalGameInterface
+from racing_toolbox.interface.full_local import FullLocalGameInterface

@@ -9,9 +9,9 @@ from os import path
 
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
-from interface import FullLocalGameInterface
-from recorderapp import EpisodeRecordingManager
-from conf import get_game_config
+from racing_toolbox.interface import FullLocalGameInterface
+from racing_toolbox.recorderapp import EpisodeRecordingManager
+from racing_toolbox.conf import get_game_config
 
 
 class RecorderScreen(GridLayout):

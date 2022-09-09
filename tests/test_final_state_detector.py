@@ -1,17 +1,12 @@
-import sys
-from os import path, listdir
-
-sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
-
 import pytest
 import numpy as np
 from PIL import Image
 
-from interface import TrainingLocalGameInterface
-from interface.components import Screen
-from rl.final_state import FinalStateDetector
-from rl.config import FinalValueDetectionParameters
-from conf import get_game_config
+from racing_toolbox.interface import TrainingLocalGameInterface
+from racing_toolbox.interface.components import Screen
+from racing_toolbox.rl.final_state import FinalStateDetector
+from racing_toolbox.rl.config import FinalValueDetectionParameters
+from racing_toolbox.conf import get_game_config
 
 
 def test_detector_not_accept_unvalid_values_ranges() -> None:

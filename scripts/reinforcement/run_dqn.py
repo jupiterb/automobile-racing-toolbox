@@ -6,16 +6,21 @@ from stable_baselines3.common.vec_env import DummyVecEnv, VecVideoRecorder
 from stable_baselines3.common.monitor import Monitor
 from gym.wrappers import TimeLimit
 
-from conf.example_configuration import get_game_config
-from interface.training_local import TrainingLocalGameInterface
-from interface.models.game_configuration import GameConfiguration
-from rl.config.training import DQNConfig
-from rl.wrappers.stats import WandbWrapper, LoggingWrapper
-from rl.final_state.detector import FinalStateDetector
-from rl.config import FinalValueDetectionParameters, RewardConfig, ObservationConfig
-from rl.builder import reward_wrappers, observation_wrappers
+from racing_toolbox.conf.example_configuration import get_game_config
+from racing_toolbox.interface.training_local import TrainingLocalGameInterface
+from racing_toolbox.interface.models.game_configuration import GameConfiguration
+from racing_toolbox.rl.config.training import DQNConfig
+from racing_toolbox.rl.wrappers.stats import WandbWrapper, LoggingWrapper
+from racing_toolbox.rl.final_state.detector import FinalStateDetector
+from racing_toolbox.rl.config import (
+    FinalValueDetectionParameters,
+    RewardConfig,
+    ObservationConfig,
+)
+from racing_toolbox.rl.builder import reward_wrappers, observation_wrappers
 
-import logging 
+import logging
+
 logging.basicConfig(level=logging.INFO)
 
 
@@ -130,7 +135,6 @@ def setup_env(
 
 
 def debug():
-    
 
     game_conf, obs_conf, rew_conf, train_conf = get_configuration()
     env = setup_env(game_conf, rew_conf, obs_conf)

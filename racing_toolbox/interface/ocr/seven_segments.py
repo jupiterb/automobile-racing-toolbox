@@ -1,12 +1,13 @@
 import numpy as np
 import cv2
 
-from interface.ocr.abstract import AbstractOcr
-from interface.models import OcrConfiguration
+from racing_toolbox.interface.ocr.abstract import AbstractOcr
+from racing_toolbox.interface.models import OcrConfiguration
 
-import logging 
+import logging
 
 logger = logging.getLogger(__name__)
+
 
 class SevenSegmentsOcr(AbstractOcr):
 

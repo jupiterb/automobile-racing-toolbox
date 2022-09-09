@@ -1,2 +1,2 @@
-from observation.lidar import Lidar
-from observation.track_segmentation import TrackSegmenter
+from racing_toolbox.observation.lidar import Lidar
+from racing_toolbox.observation.track_segmentation import TrackSegmenter

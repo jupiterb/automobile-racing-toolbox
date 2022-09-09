@@ -2,8 +2,11 @@ import threading
 from typing import Optional
 import time
 
-from interface import GameInterface
-from recorderapp.dataservice import RecorderDataService, InMemoryDataService
+from racing_toolbox.interface import GameInterface
+from racing_toolbox.recorderapp.dataservice import (
+    RecorderDataService,
+    InMemoryDataService,
+)
 
 
 class EpisodeRecordingManager:

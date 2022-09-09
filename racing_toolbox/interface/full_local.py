@@ -1,6 +1,6 @@
-from interface import TrainingLocalGameInterface
-from interface.models import GameConfiguration, SteeringAction
-from interface.components import KeyboardCapturing
+from racing_toolbox.interface import TrainingLocalGameInterface
+from racing_toolbox.interface.models import GameConfiguration, SteeringAction
+from racing_toolbox.interface.components import KeyboardCapturing
 
 
 class FullLocalGameInterface(TrainingLocalGameInterface):

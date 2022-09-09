@@ -1,5 +1,5 @@
-from rl.config import RewardConfig, ObservationConfig
-from rl.wrappers import *
+from racing_toolbox.rl.config import RewardConfig, ObservationConfig
+from racing_toolbox.rl.wrappers import *
 from gym.wrappers import GrayScaleObservation, ResizeObservation, FrameStack
 import gym
 

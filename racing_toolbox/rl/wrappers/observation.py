@@ -1,11 +1,11 @@
 import gym
 import numpy as np
 
-from observation.config import LidarConfig, TrackSegmentationConfig
+from racing_toolbox.observation.config import LidarConfig, TrackSegmentationConfig
 
-from observation.lidar import Lidar
-from observation.track_segmentation import TrackSegmenter
-from rl.utils.logging import log_observation
+from racing_toolbox.observation.lidar import Lidar
+from racing_toolbox.observation.track_segmentation import TrackSegmenter
+from racing_toolbox.rl.utils.logging import log_observation
 
 
 class SqueezingWrapper(gym.ObservationWrapper):

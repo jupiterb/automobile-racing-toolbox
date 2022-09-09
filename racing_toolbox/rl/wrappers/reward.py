@@ -4,7 +4,7 @@ import math
 import numpy as np
 from collections import deque
 from typing import Callable
-from rl.utils.logging import log_reward
+from racing_toolbox.rl.utils.logging import log_reward
 
 
 class OffTrackPunishment(gym.RewardWrapper):
@@ -16,7 +16,7 @@ class OffTrackPunishment(gym.RewardWrapper):
         observation, reward, done, info = self.env.step(action)
         if self._is_off_track(observation):
             done = True
-            reward = - reward
+            reward = -reward
         return observation, reward, done, info
 
     @log_reward(__name__)

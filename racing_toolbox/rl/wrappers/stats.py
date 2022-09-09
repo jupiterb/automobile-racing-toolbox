@@ -2,7 +2,7 @@ import wandb
 import gym
 import logging
 
-from rl.utils.logging import describe_observation, describe_reward
+from racing_toolbox.rl.utils.logging import describe_observation, describe_reward
 
 
 logger = logging.getLogger(__name__)

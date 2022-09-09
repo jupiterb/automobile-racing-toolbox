@@ -2,9 +2,9 @@ import gym
 import numpy as np
 from typing import Optional
 
-from interface import GameInterface
-from interface.models import SteeringAction
-from rl.final_state import FinalStateDetector
+from racing_toolbox.interface import GameInterface
+from racing_toolbox.interface.models import SteeringAction
+from racing_toolbox.rl.final_state import FinalStateDetector
 
 Frame = Optional[np.ndarray]
 

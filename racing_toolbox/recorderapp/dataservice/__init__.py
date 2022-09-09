@@ -1,2 +1,2 @@
-from recorderapp.dataservice.abstract import RecorderDataService
-from recorderapp.dataservice.in_memory import InMemoryDataService
+from racing_toolbox.recorderapp.dataservice.abstract import RecorderDataService
+from racing_toolbox.recorderapp.dataservice.in_memory import InMemoryDataService
