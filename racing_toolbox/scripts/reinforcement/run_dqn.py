@@ -99,7 +99,7 @@ def main():
         exploration_final_eps=train_conf.exploration_final_epsilon,
         learning_rate=0.00005,
     )
-    model.set_parameters("C:\Users\yogam\projects\automobile-racing-toolbox\models\dandy-shape-60\model.zip")
+    model.set_parameters("C:\\Users\yogam\projects\\automobile-racing-toolbox\models\dandy-shape-60\model.zip")
     model.learn(
         total_timesteps=train_conf.total_timesteps,
         callback=WandbCallback(
