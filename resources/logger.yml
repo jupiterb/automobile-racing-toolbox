@@ -24,6 +24,11 @@ handlers:
 
 loggers:
   root:
-    level: DEBUG
+    level: WARNING
     handlers: [console,file]
     propogate: false
+
+  racing_toolbox.rl.wrappers: 
+    level: INFO
+    handlers: [console, file]
+    propagate: false 
