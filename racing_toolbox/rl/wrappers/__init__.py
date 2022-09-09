@@ -16,5 +16,5 @@ from rl.wrappers.action import (
     TransformActionWrapper,
     ZeroThresholdingActionWrapper,
     StandardActionRangeToPositiveWarapper,
-    SignSplitActionWrapper,
+    SplitBySignActionWrapper,
 )

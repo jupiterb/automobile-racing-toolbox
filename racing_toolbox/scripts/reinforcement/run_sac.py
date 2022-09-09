@@ -13,7 +13,7 @@ from interface.controllers import GamepadController
 from rl.config.training import SACConfig
 from rl.wrappers import (
     ZeroThresholdingActionWrapper,
-    SignSplitActionWrapper,
+    SplitBySignActionWrapper,
 )
 from rl.wrappers.stats import WandbWrapper
 from rl.final_state.detector import FinalStateDetector
@@ -124,7 +124,7 @@ def setup_env(
     env = ZeroThresholdingActionWrapper(env, [0, 1])
 
     # FORWARD if first value of action is positive, else BREAK
-    env = SignSplitActionWrapper(env, {0: True, 1: False, 2: False})
+    env = SplitBySignActionWrapper(env, 0)
 
     env = reward_wrappers(env, reward_conf)
     env = observation_wrappers(env, obs_conf)

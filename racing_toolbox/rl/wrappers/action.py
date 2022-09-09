@@ -48,29 +48,43 @@ class ZeroThresholdingActionWrapper(TransformActionWrapper):
         super().__init__(env, indexes_to_threshold, lambda x: 1.0 if x > 0 else 0.0)
 
 
-class SignSplitActionWrapper(gym.ActionWrapper):
-    def __init__(self, env: gym.Env, to_split: dict[int, bool]) -> None:
+class SplitBySignActionWrapper(gym.ActionWrapper):
+    def __init__(self, env: gym.Env, to_split_index: int) -> None:
+        assert isinstance(env.action_space, gym.spaces.Box)
         super().__init__(env)
+        self._original_action_space_shape = env.action_space.shape
+        action_size = len(self._original_action_space_shape[0]) - 1
         self.action_space = gym.spaces.Box(
             low=-1.0,
             high=1.0,
-            shape=[len(to_split)],
+            shape=[action_size],
             dtype=np.float16,
         )
-        self._to_split = to_split
-        self._new_action_shape = len(to_split) + len(
-            [split for split in to_split.values() if split]
-        )
+        self._split = to_split_index
+
+        def copy_action_to_split(action, new_action):
+            new_action[self._split + 2 :] = action[self._split + 1 :]
+
+        def copy_action_from_split(action, new_action):
+            new_action[self._split + 2 :] = action[self._split + 1 :]
+
+        def copy_action_to_and_from_split(action, new_action):
+            copy_action_to_split(action, new_action)
+            copy_action_from_split(action, new_action)
+
+        self._copy_action = lambda action, new_action: None
+        if action_size > 1:
+            if self._split == 0:
+                self._copy_action = copy_action_from_split
+            elif self._split == action_size - 1:
+                self._copy_action = copy_action_to_split
+            else:
+                self._copy_action = copy_action_to_and_from_split
 
     def action(self, action: np.ndarray) -> np.ndarray:
-        new_action = np.zeros(shape=(self._new_action_shape))
-        new_action_index = 0
-        for index, value in enumerate(action):
-            if self._to_split[index]:
-                new_action[new_action_index] = value if value > 0 else 0.0
-                new_action_index += 1
-                new_action[new_action_index] = -value if value < 0 else 0.0
-            else:
-                new_action[new_action_index] = value
-            new_action_index += 1
+        new_action = np.zeros(shape=(self._original_action_space_shape))
+        self._copy_action(action, new_action)
+        value = action[self._split]
+        new_action[self._split] = value if value > 0 else 0.0
+        new_action[self._split + 1] = -value if value < 0 else 0.0
         return new_action
