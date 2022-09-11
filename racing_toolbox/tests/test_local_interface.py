@@ -7,13 +7,14 @@ import numpy as np
 from PIL import Image
 from time import sleep
 
-from interface import FullLocalGameInterface
-from interface.models import SteeringAction
-from interface.components import Screen
+from interface import from_config
+from interface.screen import LocalScreen
+from interface.controllers import KeyboardController
+from interface.capturing import KeyboardCapturing
 from conf import get_game_config
 
 
-interface = FullLocalGameInterface(get_game_config())
+interface = from_config(get_game_config(), KeyboardController, KeyboardCapturing)
 
 
 def test_perform_ocr(monkeypatch) -> None:
@@ -34,20 +35,32 @@ def test_perform_ocr(monkeypatch) -> None:
         def mock_get_screenshot(*args, **kwargs):
             return np.array(Image.open(f"assets/screenshots/random/{screenshot}.jpeg"))
 
-        monkeypatch.setattr(Screen, "_get_screenshot", mock_get_screenshot)
-        ocr_result = interface.perform_ocr()
+        monkeypatch.setattr(LocalScreen, "_grab_image", mock_get_screenshot)
+        ocr_result = interface.perform_ocr(on_last=False)
         assert ocr_result == {"speed": value}
 
 
-def test_apply_read_action() -> None:
+def test_keyboard_action() -> None:
     interface.reset()
     sleep(0.01)  # we need to wait a bit for keylogger start
+
+    actions = interface.get_possible_actions()
+
+    get_actions_values = lambda actions_set: {
+        action: 1.0 if action in actions_set else 0.0 for action in actions
+    }
+
     test_cases = [
-        [SteeringAction.RIGHT, SteeringAction.FORWARD],
-        [SteeringAction.BREAK, SteeringAction.LEFT],
-        [SteeringAction.FORWARD],
-        [],
+        {actions[0], actions[1]},
+        {actions[2]},
+        {actions[3], actions[0]},
+        {},
     ]
-    for actions in test_cases:
-        interface.apply_action(actions)
-        assert set(actions) == set(interface.read_action())
+    for test_case in test_cases:
+        interface.apply_action(get_actions_values(test_case))
+        assert get_actions_values(test_case) == interface.read_action()
+
+    action = {actions[0]: 0.0, actions[1]: 1.0}
+    interface.apply_action(action)
+    assert interface.read_action()[actions[1]] == 1.0
+    assert interface.read_action()[actions[0]] == 0.0

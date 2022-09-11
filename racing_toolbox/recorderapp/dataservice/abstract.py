@@ -1,6 +1,5 @@
 import numpy as np
 from abc import ABC, abstractmethod
-from interface.models import SteeringAction
 
 
 class RecorderDataService(ABC):
@@ -9,7 +8,7 @@ class RecorderDataService(ABC):
         self,
         image: np.ndarray,
         numerical_data: dict[str, float],
-        discrete_actions: set[SteeringAction],
+        actions_values: dict[str, float],
     ) -> None:
         pass
 

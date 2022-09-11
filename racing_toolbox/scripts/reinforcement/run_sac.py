@@ -1,6 +1,6 @@
 import gym
 import wandb
-from stable_baselines3 import DQN
+from stable_baselines3 import SAC
 from wandb.integration.sb3 import WandbCallback
 from stable_baselines3.common.vec_env import DummyVecEnv, VecVideoRecorder
 from stable_baselines3.common.monitor import Monitor
@@ -9,9 +9,9 @@ from gym.wrappers import TimeLimit
 from conf.example_configuration import get_game_config
 from interface import from_config
 from interface.models import GameConfiguration
-from interface.controllers import KeyboardController
-from rl.config.training import DQNConfig
-from rl.wrappers import DiscreteActionToVectorWrapper
+from interface.controllers import GamepadController
+from rl.config.training import SACConfig
+from rl.wrappers import SplitBySignActionWrapper
 from rl.wrappers.stats import WandbWrapper
 from rl.final_state.detector import FinalStateDetector
 from rl.config import FinalValueDetectionParameters, RewardConfig, ObservationConfig
@@ -19,7 +19,7 @@ from rl.builder import reward_wrappers, observation_wrappers
 
 
 def get_configuration() -> tuple[
-    GameConfiguration, ObservationConfig, RewardConfig, DQNConfig
+    GameConfiguration, ObservationConfig, RewardConfig, SACConfig
 ]:
     game_conf = get_game_config()
 
@@ -37,13 +37,12 @@ def get_configuration() -> tuple[
         shape=(50, 100), stack_size=4, lidar_config=None, track_segmentation_config=None
     )
 
-    train_conf = DQNConfig(
+    train_conf = SACConfig(
         policy="CnnPolicy",
         total_timesteps=500_000,
         buffer_size=100_000,
         learning_starts=50_00,
         gamma=0.99,
-        exploration_final_epsilon=0.1,
         learning_rate=1e-5,
     )
 
@@ -76,14 +75,13 @@ def main():
         video_length=400,
     )
 
-    model = DQN(
+    model = SAC(
         env=env,
         policy=train_conf.policy,
         buffer_size=train_conf.buffer_size,
         learning_starts=train_conf.learning_starts,
         verbose=1,
         tensorboard_log=f"runs/{run.id}",
-        exploration_final_eps=train_conf.exploration_final_epsilon,
         learning_rate=0.00005,
     )
     model.learn(
@@ -100,7 +98,7 @@ def main():
 def setup_env(
     config: GameConfiguration, reward_conf: RewardConfig, obs_conf: ObservationConfig
 ) -> gym.Env:
-    interface = from_config(config, KeyboardController)
+    interface = from_config(config, GamepadController)
 
     final_st_det = FinalStateDetector(
         [
@@ -120,18 +118,9 @@ def setup_env(
         final_state_detector=final_st_det,
     )
 
-    available_actions = [
-        {"FORWARD"},
-        {"FORWARD", "LEFT"},
-        {"FORWARD", "RIGHT"},
-        {"LEFT"},
-        {"RIGHT"},
-        set(),
-    ]
+    # FORWARD if first value of action is positive, else BREAK
+    env = SplitBySignActionWrapper(env, 0)
 
-    env = DiscreteActionToVectorWrapper(
-        env, available_actions, interface.get_possible_actions()
-    )
     env = reward_wrappers(env, reward_conf)
     env = observation_wrappers(env, obs_conf)
     env = TimeLimit(env, 1_000)

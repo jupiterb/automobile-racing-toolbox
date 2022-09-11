@@ -4,7 +4,6 @@ import numpy as np
 from PIL import Image
 import pandas as pd
 
-from interface.models import SteeringAction
 from recorderapp.dataservice import RecorderDataService
 from recorderapp.exceptions import RecordindExists
 
@@ -36,7 +35,7 @@ class InMemoryDataService(RecorderDataService):
         self,
         image: np.ndarray,
         numerical_data: dict[str, float],
-        discrete_actions: set[SteeringAction],
+        actions_values: dict[str, float],
     ) -> None:
         if self._data_frame is None:
             return
@@ -45,9 +44,9 @@ class InMemoryDataService(RecorderDataService):
             {"id": [self._sequence_number], "screenshot": [image_name]}
         )
         for name, value in numerical_data.items():
-            datarow[name] = [value]
-        for action in list(SteeringAction):
-            datarow[f"action{action}"] = [action in discrete_actions]
+            datarow[name] = value
+        for action, value in actions_values.items():
+            datarow[action] = value
         self._data_frame = pd.concat(
             [self._data_frame, datarow], ignore_index=True, axis=0
         )

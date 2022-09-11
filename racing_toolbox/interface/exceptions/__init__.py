@@ -1,1 +1,2 @@
 from interface.exceptions.window_not_found import WindowNotFound
+from interface.exceptions.joystick_not_found import JoystickNotFound

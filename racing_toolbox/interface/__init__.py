@@ -1,3 +1,2 @@
-from interface.abstract import GameInterface
-from interface.training_local import TrainingLocalGameInterface
-from interface.full_local import FullLocalGameInterface
+from interface.interface import GameInterface
+from interface.constructor import from_config
