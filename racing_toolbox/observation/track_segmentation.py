@@ -34,7 +34,9 @@ class TrackSegmenter:
         upper = np.array(self._config.track_color) + self._config.tolerance
         mask = cv2.inRange(filtered, lower, upper)
         # another noise reduction
+        n = mask.shape[0] // 2 - 30
         closed_mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+        closed_mask[n:, :] = cv2.morphologyEx(closed_mask[n:, :], cv2.MORPH_CLOSE, np.ones((30, 60)))
         return closed_mask
 
     def _perform_segmentation(self, image: np.ndarray) -> np.ndarray:
