@@ -50,7 +50,7 @@ if __name__ == "__main__":
     # Note that no config is needed in this script as it will be defined
     # on and sent from the server.
     client = PolicyClient(
-        f"http://localhost:{args.port}", inference_mode=args.inference_mode
+        f"http://192.168.0.157:{args.port}", inference_mode=args.inference_mode
     )
 
     # In the following, we will use our external environment (the CartPole
