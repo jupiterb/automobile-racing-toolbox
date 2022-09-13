@@ -133,7 +133,7 @@ def setup_env(
     env = observation_wrappers(env, obs_conf)
     env = TimeLimit(env, 1_000)
     env = Monitor(env)
-    env = WandbWrapper(env, 5)
+    # env = WandbWrapper(env, 5)
     return env
 
 

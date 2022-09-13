@@ -9,11 +9,11 @@ from ray.rllib.env.policy_server_input import PolicyServerInput
 from ray.rllib.examples.custom_metrics_and_callbacks import MyCallbacks
 from ray.tune.logger import pretty_print
 
-SERVER_ADDRESS = "localhost"
+SERVER_ADDRESS = "0.0.0.0"
 # In this example, the user can run the policy server with
 # n workers, opening up listen ports 9900 - 990n (n = num_workers - 1)
 # to each of which different clients may connect.
-SERVER_BASE_PORT = 9900  # + worker-idx - 1
+SERVER_BASE_PORT = 8000  # + worker-idx - 1
 
 CHECKPOINT_FILE = "last_checkpoint_{}.out"
 
@@ -38,7 +38,7 @@ def get_cli_args():
     parser.add_argument(
         "--num-workers",
         type=int,
-        default=2,
+        default=3,
         help="The number of workers to use. Each worker will create "
         "its own listening socket for incoming experiences.",
     )
@@ -52,8 +52,8 @@ def get_cli_args():
     # General args.
     parser.add_argument(
         "--run",
-        default="PPO",
-        choices=["APEX", "DQN", "IMPALA", "PPO", "R2D2"],
+        default="DQN",
+        choices=["DQN"],
         help="The RLlib-registered algorithm to use.",
     )
     parser.add_argument("--num-cpus", type=int, default=3)
@@ -132,8 +132,6 @@ if __name__ == "__main__":
         # Indicate that the Algorithm we setup here doesn't need an actual env.
         # Allow spaces to be determined by user (see below).
         "env": None,
-        # TODO: (sven) make these settings unnecessary and get the information
-        #  about the env spaces from the client.
         "observation_space": gym.spaces.Box(0, 1, (84, 84, 4)),
         "action_space": gym.spaces.Discrete(6),
         # Use the `PolicyServerInput` to generate experiences.
@@ -152,42 +150,21 @@ if __name__ == "__main__":
     }
 
     # DQN.
-    if args.run == "DQN" or args.run == "APEX" or args.run == "R2D2":
-        # Example of using DQN (supports off-policy actions).
+    if args.run == "DQN":
         config.update(
             {
                 "num_steps_sampled_before_learning_starts": 100,
-                "min_sample_timesteps_per_iteration": 200,
-                "n_step": 3,
-                "rollout_fragment_length": 4,
-                "train_batch_size": 8,
+                "rollout_fragment_length": 64,
+                "train_batch_size": 128,
+                "double_q": True,
+                "v_min": -100,
+                "v_max": 100
             }
         )
         config["model"] = {
-            "fcnet_hiddens": [64],
+            "fcnet_hiddens": [256, 64, 32],
             "fcnet_activation": "linear",
         }
-        if args.run == "R2D2":
-            config["model"]["use_lstm"] = args.use_lstm
-
-    elif args.run == "IMPALA":
-        config.update(
-            {
-                "num_gpus": 0,
-                "model": {"use_lstm": args.use_lstm},
-            }
-        )
-
-    # PPO.
-    else:
-        # Example of using PPO (does NOT support off-policy actions).
-        config.update(
-            {
-                "rollout_fragment_length": 1000,
-                "train_batch_size": 4000,
-                "model": {"use_lstm": args.use_lstm},
-            }
-        )
 
     checkpoint_path = CHECKPOINT_FILE.format(args.run)
     # Attempt to restore from checkpoint, if possible.
