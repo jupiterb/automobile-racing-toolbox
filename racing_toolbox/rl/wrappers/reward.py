@@ -12,6 +12,8 @@ class OffTrackPunishment(gym.RewardWrapper):
 
     def step(self, action):
         observation, reward, done, info = self.env.step(action)
+        if self._is_off_track(observation):
+            return observation, 0, True, info
         return observation, self.reward(reward, observation), done, info
 
     def reward(self, reward, observation):
