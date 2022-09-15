@@ -9,6 +9,24 @@ class ReplayBufferConfig(BaseModel):
     capacity: PositiveInt = 50_000
 
 
+class ModelConfig(BaseModel):
+    fcnet_hiddens: list[int]  # number of units in hidden layers
+    fcnet_activation: str
+
+
+class AlgorithmConfig(BaseModel):
+    pass
+
+
+class DQNConfig(AlgorithmConfig):
+    v_min: float = -10
+    v_max: float = 10
+    dueling: bool = True
+    double_q: bool = True
+    hiddens: list[int] = [256]  # is this the same as model fcnet_hiddens?
+    replay_buffer_config: ReplayBufferConfig
+
+
 class TrainingConfig(BaseModel):
     class Config:
         arbitrary_types_allowed = True
@@ -43,21 +61,3 @@ class TrainingConfig(BaseModel):
         if not hasattr(v, "action_space"):
             raise ValueError("given env dosnt have action_space defined")
         return v
-
-
-class ModelConfig(BaseModel):
-    fcnet_hiddens: list[int]  # number of units in hidden layers
-    fcnet_activation: str
-
-
-class AlgorithmConfig(BaseModel):
-    pass
-
-
-class DQNConfig(AlgorithmConfig):
-    v_min: float = -10
-    v_max: float = 10
-    dueling: bool = True
-    double_q: bool = True
-    hiddens: list[int] = [256]  # is this the same as model fcnet_hiddens?
-    replay_buffer_config: ReplayBufferConfig

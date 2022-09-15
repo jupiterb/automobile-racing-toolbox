@@ -7,7 +7,7 @@ from enviroment.config import (
     FinalValueDetectionParameters,
 )
 from interface.training_local import TrainingLocalGameInterface
-from interface.models.game_configuration import GameConfiguration
+from interface.config import GameConfiguration
 from enviroment.final_state.detector import FinalStateDetector
 from enviroment.config.env import EnvConfig
 

@@ -44,14 +44,13 @@ def main():
         num_workers=args.num_workers,
         rollout_fragment_length=BATCH // args.num_workers,
         train_batch_size=BATCH,
-        max_iterations=args.max_iterations,
+        max_iterations=args.stop_iters,
         algorithm=algo_config,
         model=model_config,
     )
 
     training = Trainer(training_config)
-    training.start()
-    training.join()
+    training.run()
 
 
 def get_env_config() -> EnvConfig:

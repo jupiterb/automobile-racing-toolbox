@@ -1,6 +1,2 @@
-from interface.models.game_configuration import (
-    GameConfiguration,
-    SteeringAction,
-    ScreenFrame,
-    OcrConfiguration
-)
+from interface.models.screen_frame import ScreenFrame
+from interface.models.steereing_actions import SteeringAction

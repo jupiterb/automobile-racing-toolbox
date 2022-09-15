@@ -1,7 +1,8 @@
 import numpy as np
 
 from interface import GameInterface
-from interface.models import GameConfiguration, SteeringAction
+from interface.models import SteeringAction
+from interface.config import GameConfiguration
 from interface.components import KeyboardController, Screen
 from interface.ocr import SevenSegmentsOcr
 import time
@@ -22,6 +23,16 @@ class TrainingLocalGameInterface(GameInterface):
             for name, (frame, ocr_configuration) in configuration.ocrs.items()
         ]
 
+    @property
+    def screen_shape(self) -> tuple[int, int, int]:
+        height, width, channels = self._screen.shape
+        screen_frame = self._configuration.observation_frame
+        return (
+            int(height * screen_frame.bottom) - int(height * screen_frame.top),
+            int(width * screen_frame.right) - int(width * screen_frame.left),
+            channels,
+        )
+
     def name(self) -> str:
         return self._configuration.game_id
 
@@ -31,7 +42,7 @@ class TrainingLocalGameInterface(GameInterface):
         time.sleep(self._configuration.reset_seconds)
 
     def grab_image(self) -> np.ndarray:
-        return self._screen.grab_image(self._configuration.obervation_frame)
+        return self._screen.grab_image(self._configuration.observation_frame)
 
     def perform_ocr(self, on_last_image: bool = True) -> dict[str, float]:
         return {

@@ -1,5 +1,6 @@
 from multiprocessing import Process
 import itertools as it
+from typing import Optional
 from ray.rllib.algorithms import Algorithm
 from ray.tune.logger import pretty_print
 import gym
@@ -7,14 +8,16 @@ import gym
 from trainer import config
 
 
-class Trainer(Process):
+class Trainer:
     def __init__(self, config):
         self.config = config
+        # lazy values
+        self._algorithm: Optional[Algorithm] = None
 
     @property
     def algorithm(self) -> Algorithm:
         if self._algorithm is None:
-            self._algorithm = self._setup_algorithm(self.config.algorithm)
+            self._algorithm = self._setup_algorithm()
         return self.__algorithm
 
     def run(self) -> None:
@@ -35,22 +38,30 @@ class Trainer(Process):
             or iter >= self._max_iterations
         )
 
-    def _setup_algorithm(self, conf: config.AlgorithmConfig) -> Algorithm:
+    def _setup_algorithm(self) -> Algorithm:
         "initialize algorithm object from configuration"
-        if isinstance(config, config.DQNConfig):
+        if isinstance(self.config.algorithm, config.DQNConfig):
             from ray.rllib.algorithms import dqn
 
-            dqn_conf = dqn.DQNConfig
+            algo_conf = self.config.algorithm
+
+            dqn_conf = dqn.DQNConfig()
             buffer_config = dqn_conf.replay_buffer_config.update(
-                conf.replay_buffer_config
+                algo_conf.replay_buffer_config
             )
-            dqn_conf.training(
-                **conf.dict(exclude={"replay_buffer_config"}),
-                replay_buffer_config=buffer_config
-            ).environment(self._env)
-            return dqn.DQN(dqn_conf)
+            return (
+                dqn_conf.training(
+                    **algo_conf.dict(exclude={"replay_buffer_config"}),
+                    replay_buffer_config=buffer_config
+                )
+                .environment(
+                    observation_space=self.config.env.observation_space,
+                    action_space=self.config.env.action_space,
+                )
+                .build()
+            )
         else:
-            raise NotImplementedError
+            raise NotImplementedError(type(self.config.algorithm))
 
     def _cleanup(self) -> bool:
         "make sure proper checkpoints were saved"

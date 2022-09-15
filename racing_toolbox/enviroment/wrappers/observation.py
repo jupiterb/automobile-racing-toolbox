@@ -17,6 +17,10 @@ class SqueezingWrapper(gym.ObservationWrapper):
 
 
 class RescaleWrapper(gym.ObservationWrapper):
+    def __init__(self, env: gym.Env) -> None:
+        super().__init__(env)
+        self.observation_space = gym.spaces.Box(0, 1, env.observation_space.shape)
+
     def observation(self, observation: np.ndarray):
         return observation / 255.0
 
@@ -25,7 +29,9 @@ class LidarWrapper(gym.ObservationWrapper):
     def __init__(self, env: gym.Env, config: LidarConfig) -> None:
         super().__init__(env)
         self._lidar = Lidar(config)
-        self.observation_space = gym.spaces.Box(0, 255, (len(range(*config.angles_range)) + 1, config.depth))
+        self.observation_space = gym.spaces.Box(
+            0, 1, (len(range(*config.angles_range)) + 1, config.depth)
+        )
 
     def observation(self, observation: np.ndarray):
         return self._lidar.scan_2d(observation)[0]

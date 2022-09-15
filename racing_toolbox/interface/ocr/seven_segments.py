@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 
 from interface.ocr.abstract import AbstractOcr
-from interface.models import OcrConfiguration
+from interface.config import OcrConfiguration
 
 
 class SevenSegmentsOcr(AbstractOcr):

@@ -1,5 +1,6 @@
 from interface import TrainingLocalGameInterface
-from interface.models import GameConfiguration, SteeringAction
+from interface.models import SteeringAction
+from interface.config import GameConfiguration
 from interface.components import KeyboardCapturing
 
 

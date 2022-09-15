@@ -19,6 +19,10 @@ class Screen:
         user32 = windll.user32
         user32.SetProcessDPIAware()
 
+    @property
+    def shape(self) -> tuple[int, int, int]:
+        return *self._window_size, 3
+
     def grab_image(
         self, screen_frame: ScreenFrame, on_last: bool = False
     ) -> np.ndarray:

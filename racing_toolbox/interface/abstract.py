@@ -1,10 +1,14 @@
-from abc import ABC, abstractmethod
+from abc import ABC, abstractmethod, abstractproperty
 import numpy as np
 
 from interface.models import SteeringAction
 
 
 class GameInterface(ABC):
+    @abstractproperty
+    def screen_shape(self) -> tuple[int, int, int]:
+        pass
+
     @abstractmethod
     def name(self) -> str:
         pass
