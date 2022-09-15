@@ -1,15 +1,14 @@
-from multiprocessing import Process
 import itertools as it
 from typing import Optional
 from ray.rllib.algorithms import Algorithm
 from ray.tune.logger import pretty_print
 import gym
 
-from trainer import config
+from trainer.config import TrainingConfig, DQNConfig, ReplayBufferConfig, ModelConfig
 
 
 class Trainer:
-    def __init__(self, config):
+    def __init__(self, config: TrainingConfig):
         self.config = config
         # lazy values
         self._algorithm: Optional[Algorithm] = None
@@ -18,7 +17,7 @@ class Trainer:
     def algorithm(self) -> Algorithm:
         if self._algorithm is None:
             self._algorithm = self._setup_algorithm()
-        return self.__algorithm
+        return self._algorithm
 
     def run(self) -> None:
         "training loop"
@@ -40,7 +39,7 @@ class Trainer:
 
     def _setup_algorithm(self) -> Algorithm:
         "initialize algorithm object from configuration"
-        if isinstance(self.config.algorithm, config.DQNConfig):
+        if isinstance(self.config.algorithm, DQNConfig):
             from ray.rllib.algorithms import dqn
 
             algo_conf = self.config.algorithm
@@ -49,17 +48,14 @@ class Trainer:
             buffer_config = dqn_conf.replay_buffer_config.update(
                 algo_conf.replay_buffer_config
             )
-            return (
-                dqn_conf.training(
-                    **algo_conf.dict(exclude={"replay_buffer_config"}),
-                    replay_buffer_config=buffer_config
-                )
-                .environment(
-                    observation_space=self.config.env.observation_space,
-                    action_space=self.config.env.action_space,
-                )
-                .build()
+            print(self.config.env.observation_space)
+            c = dict(
+                **self.config.dict(exclude={"algorithm", "env", "max_iterations"}),
+                **self.config.algorithm.dict(),
+                observation_space=self.config.env.observation_space,
+                action_space=self.config.env.action_space
             )
+            return dqn.DQN(c)
         else:
             raise NotImplementedError(type(self.config.algorithm))
 

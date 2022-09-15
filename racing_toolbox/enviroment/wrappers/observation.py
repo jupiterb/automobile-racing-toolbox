@@ -11,9 +11,16 @@ import gym.spaces
 class SqueezingWrapper(gym.ObservationWrapper):
     """This wrapper applies np.squeeze to make shape of observation compatible with stb3"""
 
+    def __init__(self, env: gym.Env) -> None:
+        super().__init__(env)
+        self.move_axis = lambda obs: np.moveaxis(obs, 0, -1)
+        self.observation_space = gym.spaces.Box(
+            0, 1, self.move_axis(env.observation_space.sample()).shape
+        )
+
     def observation(self, observation: np.ndarray):
         observation = np.squeeze(observation)
-        return np.moveaxis(observation, 0, -1)
+        return self.move_axis(observation)
 
 
 class RescaleWrapper(gym.ObservationWrapper):
