@@ -11,11 +11,11 @@ from interface.training_local import TrainingLocalGameInterface
 from interface.models.game_configuration import GameConfiguration
 from observation.config.lidar_config import LidarConfig
 from observation.config.track_segmentation_config import TrackSegmentationConfig
-from rl.config.training import DQNConfig
-from rl.wrappers.stats import WandbWrapper
-from rl.final_state.detector import FinalStateDetector
-from rl.config import FinalValueDetectionParameters, RewardConfig, ObservationConfig
-from rl.builder import reward_wrappers, observation_wrappers
+from enviroment.wrappers.stats import WandbWrapper
+from enviroment.final_state.detector import FinalStateDetector
+from enviroment.config import FinalValueDetectionParameters, RewardConfig, ObservationConfig
+from enviroment.builder import reward_wrappers, observation_wrappers
+from trainer.config import DQNConfig
 
 
 def get_configuration() -> tuple[

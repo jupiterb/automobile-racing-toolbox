@@ -1,16 +1,19 @@
 from gym.wrappers import GrayScaleObservation, ResizeObservation, FrameStack, TimeLimit
 import gym
-from rl.wrappers import *
-from rl.config import RewardConfig, ObservationConfig, FinalValueDetectionParameters
+from enviroment.wrappers import *
+from enviroment.config import (
+    RewardConfig,
+    ObservationConfig,
+    FinalValueDetectionParameters,
+)
 from interface.training_local import TrainingLocalGameInterface
 from interface.models.game_configuration import GameConfiguration
-from rl.final_state.detector import FinalStateDetector
+from enviroment.final_state.detector import FinalStateDetector
+from enviroment.config.env import EnvConfig
 
 
-def setup_env(
-    config: GameConfiguration, reward_conf: RewardConfig, obs_conf: ObservationConfig
-) -> gym.Env:
-    interface = TrainingLocalGameInterface(config)
+def setup_env(game_config: GameConfiguration, env_config: EnvConfig) -> gym.Env:
+    interface = TrainingLocalGameInterface(game_config)
     final_st_det = FinalStateDetector(
         [
             FinalValueDetectionParameters(
@@ -28,9 +31,9 @@ def setup_env(
         game_interface=interface,
         final_state_detector=final_st_det,
     )
-    env = reward_wrappers(env, reward_conf)
-    env = observation_wrappers(env, obs_conf)
-    env = TimeLimit(env, config.max_episode_length)
+    env = reward_wrappers(env, env_config.reward_config)
+    env = observation_wrappers(env, env_config.observation_config)
+    env = TimeLimit(env, env_config.max_episode_length)
     return env
 
 

@@ -4,7 +4,7 @@ from typing import Optional
 
 from interface import GameInterface
 from interface.models import SteeringAction
-from rl.final_state import FinalStateDetector
+from enviroment.final_state import FinalStateDetector
 
 Frame = Optional[np.ndarray]
 

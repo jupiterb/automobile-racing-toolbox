@@ -1,10 +1,10 @@
-from rl.wrappers.observation import (
+from enviroment.wrappers.observation import (
     SqueezingWrapper,
     RescaleWrapper,
     LidarWrapper,
     TrackSegmentationWrapper,
 )
-from rl.wrappers.reward import (
+from enviroment.wrappers.reward import (
     OffTrackPunishment,
     SpeedDropPunishment,
     ClipReward,

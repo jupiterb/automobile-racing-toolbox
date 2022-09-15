@@ -1,4 +1,4 @@
-from rl.enviroment import RealTimeEnviroment
+from enviroment.real_time import RealTimeEnviroment
 from gym.envs.registration import register
 from inspect import getmodule
 

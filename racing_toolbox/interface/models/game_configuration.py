@@ -16,5 +16,3 @@ class GameConfiguration(BaseModel):
     reset_seconds: int
     reset_keys_sequence: list[Key]
     frequency_per_second: int
-    max_episode_length: int
-    
