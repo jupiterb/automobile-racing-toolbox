@@ -47,19 +47,23 @@ class SpeedDropPunishment(gym.RewardWrapper):
         self.reward_history = deque([0], maxlen=memory_length)
         self.threshold = diff_thresh
         self.metric = metric
-        self.only_diff = only_diff
+
+        if only_diff:
+            self.get_base_reward = lambda r: 0
+        else:
+            self.get_base_reward = lambda r: r
 
     @log_reward(__name__)
     def reward(self, reward: float) -> float:
         baseline = np.mean(self.reward_history)
         self.reward_history.append(reward)
         diff = reward - baseline
-        reward = (
-            0 if self.only_diff else reward
+        base = self.get_base_reward(
+            reward
         )  # skip speed itself and praise/punish only deviations
         if abs(diff) < self.threshold or diff == 0:
-            return reward
-        r = reward + math.copysign(self.metric(abs(diff)), diff)
+            return base
+        r = base + math.copysign(self.metric(abs(diff)), diff)
         return r
 
 
