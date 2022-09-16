@@ -1,12 +1,15 @@
 import pytest
+from os import listdir
 import numpy as np
 from PIL import Image
 
-from racing_toolbox.interface import TrainingLocalGameInterface
-from racing_toolbox.interface.components import Screen
 from racing_toolbox.rl.final_state import FinalStateDetector
 from racing_toolbox.rl.config import FinalValueDetectionParameters
 from racing_toolbox.conf import get_game_config
+from racing_toolbox.interface import from_config
+from racing_toolbox.interface.screen import LocalScreen
+from racing_toolbox.rl.final_state import FinalStateDetector
+from racing_toolbox.rl.config import FinalValueDetectionParameters
 
 
 def test_detector_not_accept_unvalid_values_ranges() -> None:
@@ -75,8 +78,9 @@ def test_integration_with_ocr(monkeypatch) -> None:
 
     assert not detector.is_final()
 
+    interface = from_config(get_game_config())
+
     end_of_race_detected = False
-    interface = TrainingLocalGameInterface(get_game_config())
 
     path_to_images = "assets/screenshots/end_of_race"
     for image_name in listdir(path_to_images):
@@ -84,9 +88,7 @@ def test_integration_with_ocr(monkeypatch) -> None:
         def mock_get_screenshot(*args, **kwargs):
             return np.array(Image.open(f"{path_to_images}/{image_name}"))
 
-        monkeypatch.setattr(Screen, "_get_screenshot", mock_get_screenshot)
-        end_of_race_detected = detector.is_final(
-            interface.perform_ocr(on_last_image=False)
-        )
+        monkeypatch.setattr(LocalScreen, "_grab_image", mock_get_screenshot)
+        end_of_race_detected = detector.is_final(interface.perform_ocr(on_last=False))
 
     assert end_of_race_detected

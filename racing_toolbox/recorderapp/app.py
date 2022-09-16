@@ -9,8 +9,12 @@ from os import path
 
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
-from racing_toolbox.interface import FullLocalGameInterface
 from racing_toolbox.recorderapp import EpisodeRecordingManager
+from racing_toolbox.conf import get_game_config
+from racing_toolbox.interface import from_config
+from racing_toolbox.interface.controllers import KeyboardController
+from racing_toolbox.interface.capturing import KeyboardCapturing
+
 from racing_toolbox.conf import get_game_config
 
 
@@ -41,8 +45,11 @@ class RecorderScreen(GridLayout):
             self._recording_manager.release()
             self._start_save_button.text = "Start recording"
         else:
+            interface = from_config(
+                get_game_config(), KeyboardController, KeyboardCapturing
+            )
             self._recording_manager.start(
-                FullLocalGameInterface(get_game_config()),
+                interface,
                 self._user_name.text,
                 self._recording_name.text,
                 get_game_config().frequency_per_second,

@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 
-from racing_toolbox.interface.ocr.abstract import AbstractOcr
+from racing_toolbox.interface.ocr.abstract import Ocr
 from racing_toolbox.interface.models import OcrConfiguration
 
 import logging
@@ -9,7 +9,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class SevenSegmentsOcr(AbstractOcr):
+class SevenSegmentsOcr(Ocr):
 
     _segment_threshold: float = 0.8
     _digits_segments: list[set[int]] = [

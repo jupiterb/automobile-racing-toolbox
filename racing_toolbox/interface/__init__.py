@@ -1,3 +1,5 @@
 from racing_toolbox.interface.abstract import GameInterface
 from racing_toolbox.interface.training_local import TrainingLocalGameInterface
 from racing_toolbox.interface.full_local import FullLocalGameInterface
+from interface.interface import GameInterface
+from interface.constructor import from_config

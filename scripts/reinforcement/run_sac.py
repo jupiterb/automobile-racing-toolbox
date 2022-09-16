@@ -1,41 +1,32 @@
 import gym
 import wandb
-from stable_baselines3 import DQN
+from stable_baselines3 import SAC
 from wandb.integration.sb3 import WandbCallback
 from stable_baselines3.common.vec_env import DummyVecEnv, VecVideoRecorder
 from stable_baselines3.common.monitor import Monitor
 from gym.wrappers import TimeLimit
 
-from racing_toolbox.conf.example_configuration import get_game_config
-from racing_toolbox.interface.models.game_configuration import GameConfiguration
-from racing_toolbox.rl.config.training import DQNConfig
-from racing_toolbox.rl.wrappers.stats import WandbWrapper, LoggingWrapper
-from racing_toolbox.rl.final_state.detector import FinalStateDetector
-from racing_toolbox.rl.config import (
-    FinalValueDetectionParameters,
-    RewardConfig,
-    ObservationConfig,
-)
-from racing_toolbox.rl.builder import reward_wrappers, observation_wrappers
-
-import logging
-
-logging.basicConfig(level=logging.INFO)
-
-from racing_toolbox.interface import from_config
-from racing_toolbox.interface.controllers import KeyboardController
-from racing_toolbox.rl.wrappers import DiscreteActionToVectorWrapper
+from conf.example_configuration import get_game_config
+from interface import from_config
+from interface.models import GameConfiguration
+from interface.controllers import GamepadController
+from rl.config.training import SACConfig
+from rl.wrappers import SplitBySignActionWrapper
+from rl.wrappers.stats import WandbWrapper
+from rl.final_state.detector import FinalStateDetector
+from rl.config import FinalValueDetectionParameters, RewardConfig, ObservationConfig
+from rl.builder import reward_wrappers, observation_wrappers
 
 
 def get_configuration() -> tuple[
-    GameConfiguration, ObservationConfig, RewardConfig, DQNConfig
+    GameConfiguration, ObservationConfig, RewardConfig, SACConfig
 ]:
     game_conf = get_game_config()
 
     reward_conf = RewardConfig(
         speed_diff_thresh=3,
-        memory_length=5,
-        speed_diff_trans=lambda x: float(x) ** 1.3,
+        memory_length=1,
+        speed_diff_trans=lambda x: float(x) ** 2,
         off_track_reward_trans=lambda reward: -abs(reward) - 400,
         clip_range=(-400, 400),
         baseline=0,
@@ -46,14 +37,13 @@ def get_configuration() -> tuple[
         shape=(50, 100), stack_size=4, lidar_config=None, track_segmentation_config=None
     )
 
-    train_conf = DQNConfig(
+    train_conf = SACConfig(
         policy="CnnPolicy",
         total_timesteps=500_000,
-        buffer_size=500_000,
+        buffer_size=100_000,
         learning_starts=50_00,
         gamma=0.99,
-        exploration_final_epsilon=0.1,
-        learning_rate=1e-4,
+        learning_rate=1e-5,
     )
 
     return game_conf, observation_conf, reward_conf, train_conf
@@ -85,16 +75,14 @@ def main():
         video_length=400,
     )
 
-    model = DQN(
+    model = SAC(
         env=env,
         policy=train_conf.policy,
         buffer_size=train_conf.buffer_size,
         learning_starts=train_conf.learning_starts,
         verbose=1,
         tensorboard_log=f"runs/{run.id}",
-        exploration_final_eps=train_conf.exploration_final_epsilon,
-        learning_rate=train_conf.learning_rate,
-        batch_size=256,
+        learning_rate=0.00005,
     )
     model.learn(
         total_timesteps=train_conf.total_timesteps,
@@ -110,7 +98,7 @@ def main():
 def setup_env(
     config: GameConfiguration, reward_conf: RewardConfig, obs_conf: ObservationConfig
 ) -> gym.Env:
-    interface = from_config(config, KeyboardController)
+    interface = from_config(config, GamepadController)
 
     final_st_det = FinalStateDetector(
         [
@@ -130,24 +118,14 @@ def setup_env(
         final_state_detector=final_st_det,
     )
 
-    available_actions = [
-        {"FORWARD"},
-        {"FORWARD", "LEFT"},
-        {"FORWARD", "RIGHT"},
-        {"LEFT"},
-        {"RIGHT"},
-        set(),
-    ]
+    # FORWARD if first value of action is positive, else BREAK
+    env = SplitBySignActionWrapper(env, 0)
 
-    env = DiscreteActionToVectorWrapper(
-        env, available_actions, interface.get_possible_actions()
-    )
     env = reward_wrappers(env, reward_conf)
     env = observation_wrappers(env, obs_conf)
     env = TimeLimit(env, 1_000)
     env = Monitor(env)
     env = WandbWrapper(env, 5)
-    env = LoggingWrapper(env)
 
     print("PRESS S if your game is ready for training!")
     while True:
@@ -158,15 +136,18 @@ def setup_env(
 
 
 def debug():
-
-    game_conf, obs_conf, rew_conf, train_conf = get_configuration()
-    env = setup_env(game_conf, rew_conf, obs_conf)
+    env = setup_env()
     env.reset()
+    episode_len = 0
     for _ in range(10000):
+        episode_len += 1
         _, r, done, info = env.step(-1)
-        # print(r)
+        # print(f"rewrd {r}")
         if done:
             env.reset()
+            print(f"episode length: {episode_len}")
+            episode_len = 0
+            print(info)
 
 
 if __name__ == "__main__":
