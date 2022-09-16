@@ -1,8 +1,12 @@
 import numpy as np
 import cv2
 
-from interface.ocr.abstract import Ocr
-from interface.models import OcrConfiguration
+from racing_toolbox.interface.ocr.abstract import Ocr
+from racing_toolbox.interface.models import OcrConfiguration
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class SevenSegmentsOcr(Ocr):
@@ -39,8 +43,8 @@ class SevenSegmentsOcr(Ocr):
             digits.reverse()
             self.last_vel = sum([digit * 10**i for i, digit in enumerate(digits)])
         except ValueError:
-            # print(f"Error: unknown segments: {digits_segments}")
-            pass
+            logging.warning(f"Error: unknown segments: {digits_segments}")
+
         return self.last_vel
 
     def _preprocess_image(self, image: np.ndarray) -> np.ndarray:

@@ -1,17 +1,12 @@
-import sys
-from os import path
-
-sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
-
 import numpy as np
 from PIL import Image
 from time import sleep
 
-from interface import from_config
-from interface.screen import LocalScreen
-from interface.controllers import KeyboardController
-from interface.capturing import KeyboardCapturing
-from conf import get_game_config
+from racing_toolbox.interface import from_config
+from racing_toolbox.interface.screen import LocalScreen
+from racing_toolbox.interface.controllers import KeyboardController
+from racing_toolbox.interface.capturing import KeyboardCapturing
+from racing_toolbox.conf import get_game_config
 
 
 interface = from_config(get_game_config(), KeyboardController, KeyboardCapturing)

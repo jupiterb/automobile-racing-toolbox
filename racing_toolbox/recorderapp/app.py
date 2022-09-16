@@ -9,12 +9,13 @@ from os import path
 
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
-from interface import from_config
-from interface.controllers import KeyboardController
-from interface.capturing import KeyboardCapturing
+from racing_toolbox.recorderapp import EpisodeRecordingManager
+from racing_toolbox.conf import get_game_config
+from racing_toolbox.interface import from_config
+from racing_toolbox.interface.controllers import KeyboardController
+from racing_toolbox.interface.capturing import KeyboardCapturing
 
-from recorderapp import EpisodeRecordingManager
-from conf import get_game_config
+from racing_toolbox.conf import get_game_config
 
 
 class RecorderScreen(GridLayout):

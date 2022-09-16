@@ -1,2 +1,2 @@
-from interface.interface import GameInterface
-from interface.constructor import from_config
+from racing_toolbox.interface.interface import GameInterface
+from racing_toolbox.interface.constructor import from_config

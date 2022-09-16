@@ -1,24 +1,20 @@
-import sys
-from os import path
 import pytest
-
-sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
-
 from stable_baselines3.common.env_checker import check_env
 import numpy as np
 import gym
 from PIL import Image
 
-from interface import from_config, GameInterface
-from interface.screen import LocalScreen
-from interface.controllers import KeyboardController
-
-from rl import RealTimeEnviroment
-from rl.final_state import FinalStateDetector
-from rl.config import FinalValueDetectionParameters
-from rl.wrappers import DiscreteActionToVectorWrapper, SplitBySignActionWrapper
-
-from conf import get_game_config
+from racing_toolbox.rl import RealTimeEnviroment
+from racing_toolbox.rl.final_state import FinalStateDetector
+from racing_toolbox.rl.config import FinalValueDetectionParameters
+from racing_toolbox.conf import get_game_config
+from racing_toolbox.interface import from_config, GameInterface
+from racing_toolbox.interface.screen import LocalScreen
+from racing_toolbox.interface.controllers import KeyboardController
+from racing_toolbox.rl.wrappers.action import (
+    DiscreteActionToVectorWrapper,
+    SplitBySignActionWrapper,
+)
 
 
 @pytest.fixture

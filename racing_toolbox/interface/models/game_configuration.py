@@ -2,9 +2,9 @@ from pydantic import BaseModel
 from pynput.keyboard import Key
 from enum import Enum
 
-from interface.models.screen_frame import ScreenFrame
-from interface.models.ocr_configuration import OcrConfiguration
-from interface.models.gamepad_action import GamepadAction
+from racing_toolbox.interface.models.screen_frame import ScreenFrame
+from racing_toolbox.interface.models.ocr_configuration import OcrConfiguration
+from racing_toolbox.interface.models.gamepad_action import GamepadAction
 
 
 class GameConfiguration(BaseModel):
@@ -19,4 +19,3 @@ class GameConfiguration(BaseModel):
     reset_keys_sequence: list[Key]
     reset_gamepad_sequence: list[GamepadAction]
     frequency_per_second: int
-    

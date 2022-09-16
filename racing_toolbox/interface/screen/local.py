@@ -5,9 +5,9 @@ from ctypes import windll
 import numpy as np
 from PIL import ImageGrab
 
-from interface.screen.abstract import ScreenProvider
-from interface.exceptions import WindowNotFound
-from interface.models import ScreenFrame
+from racing_toolbox.interface.screen.abstract import ScreenProvider
+from racing_toolbox.interface.exceptions import WindowNotFound
+from racing_toolbox.interface.models import ScreenFrame
 
 
 class LocalScreen(ScreenProvider):

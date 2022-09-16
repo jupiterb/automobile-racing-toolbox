@@ -2,8 +2,8 @@ import gym
 import numpy as np
 from typing import Optional
 
-from interface import GameInterface
-from rl.final_state import FinalStateDetector
+from racing_toolbox.interface import GameInterface
+from racing_toolbox.rl.final_state import FinalStateDetector
 
 Frame = Optional[np.ndarray]
 

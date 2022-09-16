@@ -1,3 +1,3 @@
-from interface.capturing.abstract import GameActionCapturing
-from interface.capturing.keyboard import KeyboardCapturing
-from interface.capturing.gamepad import GamepadCapturing
+from racing_toolbox.interface.capturing.abstract import GameActionCapturing
+from racing_toolbox.interface.capturing.keyboard import KeyboardCapturing
+from racing_toolbox.interface.capturing.gamepad import GamepadCapturing

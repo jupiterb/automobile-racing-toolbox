@@ -2,11 +2,11 @@ from typing import NamedTuple
 import numpy as np
 import time
 
-from interface.screen import ScreenProvider
-from interface.capturing import GameActionCapturing
-from interface.controllers import GameActionController
-from interface.ocr import Ocr
-from interface.models.screen_frame import ScreenFrame
+from racing_toolbox.interface.screen import ScreenProvider
+from racing_toolbox.interface.capturing import GameActionCapturing
+from racing_toolbox.interface.controllers import GameActionController
+from racing_toolbox.interface.ocr import Ocr
+from racing_toolbox.interface.models.screen_frame import ScreenFrame
 
 
 class FramedOcr(NamedTuple):

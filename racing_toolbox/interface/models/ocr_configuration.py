@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from interface.models.screen_frame import ScreenFrame
+from racing_toolbox.interface.models.screen_frame import ScreenFrame
 
 
 class OcrConfiguration(BaseModel):

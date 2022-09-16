@@ -1,1 +1,1 @@
-from recorderapp.recording_manager import EpisodeRecordingManager
+from racing_toolbox.recorderapp.recording_manager import EpisodeRecordingManager

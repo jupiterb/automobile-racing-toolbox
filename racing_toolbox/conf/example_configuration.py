@@ -1,11 +1,11 @@
 from pynput.keyboard import Key
 from vgamepad import XUSB_BUTTON
-from interface.models import (
+from racing_toolbox.interface.models import (
     GameConfiguration,
     ScreenFrame,
     OcrConfiguration,
 )
-from interface.models.gamepad_action import GamepadControl
+from racing_toolbox.interface.models.gamepad_action import GamepadControl
 
 
 def get_game_config() -> GameConfiguration:
@@ -34,7 +34,7 @@ def get_game_config() -> GameConfiguration:
             "speed": (
                 ScreenFrame(top=0.945, bottom=0.9875, left=0.918, right=0.9825),
                 OcrConfiguration(
-                    threshold=205,
+                    threshold=190,
                     max_digits=3,
                     segemnts_definitions={
                         0: ScreenFrame(top=0, bottom=0.09, left=0.42, right=0.60),

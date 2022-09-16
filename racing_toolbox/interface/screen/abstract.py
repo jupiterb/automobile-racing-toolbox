@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 import numpy as np
 
-from interface.models import ScreenFrame
-from interface.exceptions import WindowNotFound
+from racing_toolbox.interface.models import ScreenFrame
+from racing_toolbox.interface.exceptions import WindowNotFound
 
 
 class ScreenProvider(ABC):

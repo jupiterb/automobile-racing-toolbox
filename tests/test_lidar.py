@@ -1,12 +1,8 @@
-import sys
-from os import path
 import numpy as np
 import cv2
 
-sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
-
-from observation.config import LidarConfig, TrackSegmentationConfig
-from observation import Lidar, TrackSegmenter
+from racing_toolbox.observation.config import LidarConfig, TrackSegmentationConfig
+from racing_toolbox.observation import Lidar, TrackSegmenter
 
 
 class LidarWithTrackSegmentation(Lidar):

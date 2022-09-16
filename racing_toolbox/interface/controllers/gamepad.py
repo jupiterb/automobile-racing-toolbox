@@ -1,8 +1,8 @@
 import vgamepad as vg
 
-from interface.controllers.abstract import GameActionController
-from interface.models import GamepadAction
-from interface.models.gamepad_action import GamepadControl
+from racing_toolbox.interface.controllers.abstract import GameActionController
+from racing_toolbox.interface.models import GamepadAction
+from racing_toolbox.interface.models.gamepad_action import GamepadControl
 
 
 class GamepadController(GameActionController):
