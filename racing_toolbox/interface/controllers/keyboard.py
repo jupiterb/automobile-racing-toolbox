@@ -1,9 +1,11 @@
 from pynput.keyboard import Controller, Key
-from interface.controllers.abstract import GameActionController
+from racing_toolbox.interface.controllers.abstract import GameActionController
 
 
 class KeyboardController(GameActionController):
-    def __init__(self, action_to_key_mapping: dict[str, Key], reset_sequence: list[Key]) -> None:
+    def __init__(
+        self, action_to_key_mapping: dict[str, Key], reset_sequence: list[Key]
+    ) -> None:
         self._action_to_key_mapping = action_to_key_mapping
         self._reset_sequence = reset_sequence
         self._controller = Controller()
@@ -15,8 +17,8 @@ class KeyboardController(GameActionController):
 
     def apply_actions(self, actions: dict[str, float]) -> None:
         actions_set = {
-            action 
-            for action, value in actions.items() 
+            action
+            for action, value in actions.items()
             if action in self._action_to_key_mapping and value > 0
         }
         for action in actions_set:
@@ -28,4 +30,3 @@ class KeyboardController(GameActionController):
 
     def get_possible_actions(self) -> list[str]:
         return list(self._action_to_key_mapping)
-        

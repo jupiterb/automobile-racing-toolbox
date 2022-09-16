@@ -1,15 +1,19 @@
 from typing import Type
 
-from interface.interface import GameInterface, FramedOcr
-from interface.models import GameConfiguration
-from interface.ocr import SevenSegmentsOcr
-from interface.capturing import GameActionCapturing, KeyboardCapturing, GamepadCapturing
-from interface.controllers import (
+from racing_toolbox.interface.interface import GameInterface, FramedOcr
+from racing_toolbox.interface.models import GameConfiguration
+from racing_toolbox.interface.ocr import SevenSegmentsOcr
+from racing_toolbox.interface.capturing import (
+    GameActionCapturing,
+    KeyboardCapturing,
+    GamepadCapturing,
+)
+from racing_toolbox.interface.controllers import (
     GameActionController,
     KeyboardController,
     GamepadController,
 )
-from interface.screen import LocalScreen
+from racing_toolbox.interface.screen import LocalScreen
 
 
 def from_config(

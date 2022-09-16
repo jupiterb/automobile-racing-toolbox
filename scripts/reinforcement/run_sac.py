@@ -6,16 +6,20 @@ from stable_baselines3.common.vec_env import DummyVecEnv, VecVideoRecorder
 from stable_baselines3.common.monitor import Monitor
 from gym.wrappers import TimeLimit
 
-from conf.example_configuration import get_game_config
+from racing_toolbox.conf.example_configuration import get_game_config
 from interface import from_config
-from interface.models import GameConfiguration
-from interface.controllers import GamepadController
-from rl.config.training import SACConfig
-from rl.wrappers import SplitBySignActionWrapper
-from rl.wrappers.stats import WandbWrapper
-from rl.final_state.detector import FinalStateDetector
-from rl.config import FinalValueDetectionParameters, RewardConfig, ObservationConfig
-from rl.builder import reward_wrappers, observation_wrappers
+from racing_toolbox.interface.models import GameConfiguration
+from racing_toolbox.interface.controllers import GamepadController
+from racing_toolbox.rl.config.training import SACConfig
+from racing_toolbox.rl.wrappers import SplitBySignActionWrapper
+from racing_toolbox.rl.wrappers.stats import WandbWrapper
+from racing_toolbox.rl.final_state.detector import FinalStateDetector
+from racing_toolbox.rl.config import (
+    FinalValueDetectionParameters,
+    RewardConfig,
+    ObservationConfig,
+)
+from racing_toolbox.rl.builder import reward_wrappers, observation_wrappers
 
 
 def get_configuration() -> tuple[

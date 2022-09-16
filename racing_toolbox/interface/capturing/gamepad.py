@@ -5,10 +5,10 @@ from pygame.joystick import Joystick
 
 import threading
 
-from interface.capturing.abstract import GameActionCapturing
-from interface.models import GamepadAction
-from interface.models.gamepad_action import GamepadControl
-from interface.exceptions import JoystickNotFound
+from racing_toolbox.interface.capturing.abstract import GameActionCapturing
+from racing_toolbox.interface.models import GamepadAction
+from racing_toolbox.interface.models.gamepad_action import GamepadControl
+from racing_toolbox.interface.exceptions import JoystickNotFound
 
 
 class GamepadCapturing(GameActionCapturing):

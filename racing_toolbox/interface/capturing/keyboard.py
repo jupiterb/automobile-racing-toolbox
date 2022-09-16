@@ -1,5 +1,5 @@
 from pynput.keyboard import Listener, Key
-from interface.capturing.abstract import GameActionCapturing
+from racing_toolbox.interface.capturing.abstract import GameActionCapturing
 
 
 class KeyboardCapturing(GameActionCapturing):

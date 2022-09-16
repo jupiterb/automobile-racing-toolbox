@@ -5,7 +5,7 @@ from racing_toolbox.interface.models import (
     ScreenFrame,
     OcrConfiguration,
 )
-from interface.models.gamepad_action import GamepadControl
+from racing_toolbox.interface.models.gamepad_action import GamepadControl
 
 
 def get_game_config() -> GameConfiguration:

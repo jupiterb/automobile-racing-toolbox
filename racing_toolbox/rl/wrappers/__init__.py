@@ -11,7 +11,7 @@ from racing_toolbox.rl.wrappers.reward import (
     StandarizeReward,
 )
 
-from rl.wrappers.action import (
+from racing_toolbox.rl.wrappers.action import (
     DiscreteActionToVectorWrapper,
     SplitBySignActionWrapper,
 )
