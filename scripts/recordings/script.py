@@ -1,9 +1,10 @@
 import sys
-from interface import from_config
+from racing_toolbox.interface import from_config
 from racing_toolbox.interface.controllers import KeyboardController, GamepadController
 from racing_toolbox.interface.capturing import KeyboardCapturing, GamepadCapturing
 from racing_toolbox.recorderapp import EpisodeRecordingManager
-from conf import get_game_config
+from racing_toolbox.datatool.recordings import BinaryFileRecordingsService
+from racing_toolbox.conf import get_game_config
 import time
 
 
@@ -29,7 +30,9 @@ def record(user_name: str, recording_name: str, controller_type: str) -> None:
             f"Cannot create game interface with {controller_type} controller"
         )
 
-    recording_manager = EpisodeRecordingManager()
+    recording_manager = EpisodeRecordingManager(
+        BinaryFileRecordingsService("./recordings")
+    )
     recording_manager.start(
         interface,
         user_name,

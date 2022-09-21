@@ -10,8 +10,10 @@ from racing_toolbox.datatool.recordings import (
 
 
 class EpisodeRecordingManager:
-    def __init__(self) -> None:
-        self.__dataservice: RecorderDataService = SeparateFilesRecordingsService()
+    def __init__(
+        self, dataservice: RecorderDataService = SeparateFilesRecordingsService()
+    ) -> None:
+        self.__dataservice: RecorderDataService = dataservice
         self.__recording_thread: Optional[threading.Thread] = None
         self.__capturing: bool = False
         self.__running: bool = True
@@ -40,9 +42,9 @@ class EpisodeRecordingManager:
     def release(self) -> None:
         self.__capturing = False
         self.__running = False
+        self.__dataservice.stop_streaming()
         if self.__recording_thread is not None:
             self.__recording_thread.join()
-        self.__dataservice.stop_streaming()
 
     def running(self) -> bool:
         return self.__running

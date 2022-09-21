@@ -18,3 +18,4 @@ vgamepad==0.0.8
 pygame==2.1.2
 pynput==1.7.6
 pydantic==1.10.2
+h5py==3.7.0
