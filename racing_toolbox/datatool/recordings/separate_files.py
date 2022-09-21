@@ -4,11 +4,12 @@ import numpy as np
 from PIL import Image
 import pandas as pd
 
-from racing_toolbox.recorderapp.dataservice import RecorderDataService
-from racing_toolbox.recorderapp.exceptions import RecordindExists
+from racing_toolbox.datatool.recordings import RecorderDataService
+from racing_toolbox.datatool.exceptions import ItemExists
+from racing_toolbox.datatool.models import Recording
 
 
-class InMemoryDataService(RecorderDataService):
+class SeparateFilesRecordingsService(RecorderDataService):
 
     _path_to_data = "/data"
 
@@ -20,9 +21,9 @@ class InMemoryDataService(RecorderDataService):
     def start_streaming(
         self, game_name: str, user_name: str, recording_name: str, fps: int
     ) -> None:
-        self._fullpath = f"{os.path.dirname(__file__)}/{InMemoryDataService._path_to_data}/{game_name}/{user_name}/{recording_name}"
+        self._fullpath = f"{os.path.dirname(__file__)}/{SeparateFilesRecordingsService._path_to_data}/{game_name}/{user_name}/{recording_name}"
         if os.path.exists(self._fullpath):
-            raise RecordindExists(game_name, user_name, recording_name)
+            raise ItemExists(game_name, user_name, recording_name)
         os.makedirs(self._fullpath)
         self._data_frame = pd.DataFrame()
         self._sequence_number = 0
@@ -51,6 +52,11 @@ class InMemoryDataService(RecorderDataService):
             [self._data_frame, datarow], ignore_index=True, axis=0
         )
         self._sequence_number += 1
+
+    def get_recording(
+        self, game_name: str, user_name: str, recording_name
+    ) -> Recording:
+        raise NotImplementedError()
 
     def _save_as_jpeg(self, image) -> str:
         name_with_extension = f"ss{self._sequence_number}.jpeg"

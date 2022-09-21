@@ -3,15 +3,15 @@ from typing import Optional
 import time
 
 from racing_toolbox.interface import GameInterface
-from racing_toolbox.recorderapp.dataservice import (
+from racing_toolbox.datatool.recordings import (
     RecorderDataService,
-    InMemoryDataService,
+    SeparateFilesRecordingsService,
 )
 
 
 class EpisodeRecordingManager:
     def __init__(self) -> None:
-        self.__dataservice: RecorderDataService = InMemoryDataService()
+        self.__dataservice: RecorderDataService = SeparateFilesRecordingsService()
         self.__recording_thread: Optional[threading.Thread] = None
         self.__capturing: bool = False
         self.__running: bool = True
