@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-from observation.config import TrackSegmentationConfig
+from racing_toolbox.observation.config import TrackSegmentationConfig
 
 
 class TrackSegmenter:

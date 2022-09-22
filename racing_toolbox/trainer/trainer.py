@@ -4,7 +4,12 @@ from ray.rllib.algorithms import Algorithm
 from ray.tune.logger import pretty_print
 import gym
 
-from trainer.config import TrainingConfig, DQNConfig, ReplayBufferConfig, ModelConfig
+from racing_toolbox.trainer.config import (
+    TrainingConfig,
+    DQNConfig,
+    ReplayBufferConfig,
+    ModelConfig,
+)
 
 
 class Trainer:
@@ -38,7 +43,7 @@ class Trainer:
         )
 
     def _setup_algorithm(self) -> Algorithm:
-        "initialize algorithm object from configuration"
+        "initialize algorithm object from racing_toolbox.configuration"
         if isinstance(self.config.algorithm, DQNConfig):
             from ray.rllib.algorithms import dqn
 

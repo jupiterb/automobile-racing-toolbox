@@ -3,13 +3,15 @@ from ray.rllib.env.policy_server_input import PolicyServerInput
 import ray
 import gym
 
-from trainer import Trainer, config
-from enviroment import builder
-from enviroment.config.env import EnvConfig
-from conf.example_configuration import get_game_config
-from observation.config.lidar_config import LidarConfig
-from observation.config.track_segmentation_config import TrackSegmentationConfig
-from enviroment.config import (
+from racing_toolbox.trainer import Trainer, config
+from racing_toolbox.enviroment import builder
+from racing_toolbox.enviroment.config.env import EnvConfig
+from racing_toolbox.conf.example_configuration import get_game_config
+from racing_toolbox.observation.config.lidar_config import LidarConfig
+from racing_toolbox.observation.config.track_segmentation_config import (
+    TrackSegmentationConfig,
+)
+from racing_toolbox.enviroment.config import (
     RewardConfig,
     ObservationConfig,
 )

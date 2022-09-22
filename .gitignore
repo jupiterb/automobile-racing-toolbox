@@ -132,5 +132,5 @@ dmypy.json
 wandb
 events*
 venv*
+*meta.json
 *.mp4
-*.meta.json

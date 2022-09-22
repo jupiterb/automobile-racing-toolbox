@@ -1,1 +1,1 @@
-from enviroment.final_state.detector import FinalStateDetector
+from racing_toolbox.enviroment.final_state.detector import FinalStateDetector

@@ -2,8 +2,11 @@ import threading
 from typing import Optional
 import time
 
-from interface import GameInterface
-from recorderapp.dataservice import RecorderDataService, InMemoryDataService
+from racing_toolbox.interface import GameInterface
+from racing_toolbox.recorderapp.dataservice import (
+    RecorderDataService,
+    InMemoryDataService,
+)
 
 
 class EpisodeRecordingManager:
@@ -52,11 +55,12 @@ class EpisodeRecordingManager:
         game_interface: GameInterface,
         fps: int,
     ) -> None:
-        _ = game_interface.reset()
+        game_interface.reset()
         while self.__running:
             if self.__capturing:
                 image = game_interface.grab_image()
                 from_ocr = game_interface.perform_ocr()
                 action = game_interface.read_action()
-                self.__dataservice.put_observation(image, from_ocr, set(action))
+                self.__dataservice.put_observation(image, from_ocr, action)
                 time.sleep(1 / fps)
+        game_interface.reset(False)

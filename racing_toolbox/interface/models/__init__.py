@@ -1,2 +1,2 @@
-from interface.models.screen_frame import ScreenFrame
-from interface.models.steereing_actions import SteeringAction
+from racing_toolbox.interface.models.screen_frame import ScreenFrame
+from racing_toolbox.interface.models.gamepad_action import GamepadAction

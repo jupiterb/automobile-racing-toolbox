@@ -1,15 +1,15 @@
 from gym.wrappers import GrayScaleObservation, ResizeObservation, FrameStack, TimeLimit
 import gym
-from enviroment.wrappers import *
-from enviroment.config import (
+from racing_toolbox.enviroment.wrappers import *
+from racing_toolbox.enviroment.config import (
     RewardConfig,
     ObservationConfig,
     FinalValueDetectionParameters,
 )
-from interface.training_local import TrainingLocalGameInterface
-from interface.config import GameConfiguration
-from enviroment.final_state.detector import FinalStateDetector
-from enviroment.config.env import EnvConfig
+from racing_toolbox.interface.training_local import TrainingLocalGameInterface
+from racing_toolbox.interface.config import GameConfiguration
+from racing_toolbox.enviroment.final_state.detector import FinalStateDetector
+from racing_toolbox.enviroment.config.env import EnvConfig
 
 
 def setup_env(game_config: GameConfiguration, env_config: EnvConfig) -> gym.Env:

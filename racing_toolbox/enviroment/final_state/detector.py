@@ -1,7 +1,7 @@
 from typing import Optional
 import numpy as np
 
-from enviroment.config import FinalValueDetectionParameters
+from racing_toolbox.enviroment.config import FinalValueDetectionParameters
 
 
 class FinalStateDetector:

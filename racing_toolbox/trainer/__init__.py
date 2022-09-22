@@ -1,1 +1,1 @@
-from trainer.trainer import Trainer
+from racing_toolbox.trainer.trainer import Trainer

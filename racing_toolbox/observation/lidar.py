@@ -2,7 +2,7 @@ from typing import Any
 import numpy as np
 import cv2
 
-from observation.config import LidarConfig
+from racing_toolbox.observation.config import LidarConfig
 
 
 class Lidar:

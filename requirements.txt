@@ -16,3 +16,5 @@ imageio-ffmpeg==0.4.7
 ray[rllib]
 pynput
 pydantic
+vgamepad==0.0.8
+pygame==2.1.2

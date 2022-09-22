@@ -1,6 +1,6 @@
 from pydantic import BaseModel, PositiveInt
-from observation.config import LidarConfig, TrackSegmentationConfig
-from typing import Optional 
+from typing import Optional
+from racing_toolbox.observation.config import LidarConfig, TrackSegmentationConfig
 
 
 class ObservationConfig(BaseModel):
