@@ -1,16 +1,19 @@
 import os
 import h5py
+import logging
 import numpy as np
-from torch import chunk
 
 from racing_toolbox.datatool.recordings import RecorderDataService
 from racing_toolbox.datatool.exceptions import ItemExists
 from racing_toolbox.datatool.models import Recording
 
 
+logger = logging.getLogger(__name__)
+
+
 class BinaryFileRecordingsService(RecorderDataService):
 
-    _max_size = 50_000
+    _max_size = 2500
 
     _file: h5py.File
 
@@ -29,14 +32,15 @@ class BinaryFileRecordingsService(RecorderDataService):
         if not os.path.exists(path):
             raise ValueError(f"{path} not found!")
         file = h5py.File(path, "r")
+        size = int(file["size"][0])
         return Recording(
             game=game_name,
             user=user_name,
             name=recording_name,
             fps=int(file["fps"][0]),
-            images=file["images"],
-            actions=file["actions"],
-            features=file["features"],
+            images=file["images"][:size, ...],
+            actions=file["actions"][:size, ...],
+            features=file["features"][:size, ...],
         )
 
     def put_observation(
@@ -66,11 +70,12 @@ class BinaryFileRecordingsService(RecorderDataService):
         self._index = 0
 
     def stop_streaming(self) -> None:
-        size = self._index
-        self._images.resize(size, 0)
-        self._features.resize(size, 0)
-        self._actions.resize(size, 0)
+        logger.info(
+            "Stopping streaming and saving data... It may take long (few minutes)"
+        )
+        self._file.create_dataset("size", data=np.array([self._index]))
         self._file.close()
+        logger.info("Recording saved successfully.")
 
     def _get_path_to_file(
         self, game_name: str, user_name: str, recording_name: str
@@ -85,11 +90,11 @@ class BinaryFileRecordingsService(RecorderDataService):
     ):
         limit = BinaryFileRecordingsService._max_size
         self._images = self._file.create_dataset(
-            "images", tuple([limit] + list(image.shape)), "i", chunks=True
+            "images", tuple([limit] + list(image.shape)), "i"
         )
         self._features = self._file.create_dataset(
-            "features", (limit, len(numerical_data)), chunks=True
+            "features", (limit, len(numerical_data))
         )
         self._actions = self._file.create_dataset(
-            "actions", (limit, len(actions_values)), chunks=True
+            "actions", (limit, len(actions_values))
         )

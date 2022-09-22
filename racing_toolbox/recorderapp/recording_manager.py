@@ -42,6 +42,7 @@ class EpisodeRecordingManager:
     def release(self) -> None:
         self.__capturing = False
         self.__running = False
+        time.sleep(1)
         self.__dataservice.stop_streaming()
         if self.__recording_thread is not None:
             self.__recording_thread.join()
