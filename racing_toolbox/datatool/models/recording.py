@@ -1,6 +1,5 @@
 from pydantic import BaseModel
 from h5py import Dataset
-from numpy import ndarray
 
 
 class Recording(BaseModel):
@@ -8,9 +7,9 @@ class Recording(BaseModel):
     user: str
     name: str
     fps: int
-    images: Dataset | ndarray
-    actions: Dataset | ndarray
-    features: Dataset | ndarray
+    images: Dataset
+    actions: Dataset
+    features: Dataset
 
     class Config:
         arbitrary_types_allowed = True
