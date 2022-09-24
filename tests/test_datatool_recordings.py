@@ -19,7 +19,7 @@ def my_service() -> RecorderDataService:
         shutil.rmtree(path)
     except FileNotFoundError:
         pass
-    return BinaryFileRecordingsService("./temp")
+    return BinaryFileRecordingsService("./temp", size_limit=200)
 
 
 @pytest.fixture
