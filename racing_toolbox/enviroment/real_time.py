@@ -32,7 +32,7 @@ class RealTimeEnviroment(gym.Env):
         self.observation_space = gym.spaces.Box(
             low=0,
             high=255,
-            shape=game_interface.screen_shape,
+            shape=game_interface.screen.shape,
             dtype=np.uint8,
         )
 

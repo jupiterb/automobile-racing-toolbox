@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 
 from racing_toolbox.interface.ocr.abstract import Ocr
-from racing_toolbox.interface.models import OcrConfiguration
+from racing_toolbox.interface.config import OcrConfiguration
 
 import logging
 

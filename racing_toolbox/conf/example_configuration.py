@@ -1,11 +1,10 @@
 from pynput.keyboard import Key
 from vgamepad import XUSB_BUTTON
 from racing_toolbox.interface.models import (
-    GameConfiguration,
+    GamepadControl,
     ScreenFrame,
 )
 from racing_toolbox.interface.config import GameConfiguration, OcrConfiguration
-from racing_toolbox.interface.models.gamepad_action import GamepadControl
 
 
 def get_game_config() -> GameConfiguration:

@@ -1,4 +1,4 @@
-from typing import NamedTuple
+from typing import NamedTuple, Optional
 import numpy as np
 import time
 
@@ -21,8 +21,8 @@ class GameInterface:
         game_id: str,
         reset_seconds: int,
         screen: ScreenProvider,
-        controller: GameActionController | None = None,
-        capturing: GameActionCapturing | None = None,
+        controller: Optional[GameActionController] = None,
+        capturing: Optional[GameActionCapturing] = None,
         ocrs: list[FramedOcr] = [],
     ) -> None:
         self._name = game_id
@@ -31,6 +31,10 @@ class GameInterface:
         self._controller = controller
         self._capturing = capturing
         self._ocrs = ocrs
+
+    @property
+    def screen(self) -> ScreenProvider:
+        return self._screen
 
     def name(self) -> str:
         return self._name

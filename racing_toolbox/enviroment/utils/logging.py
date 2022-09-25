@@ -1,6 +1,6 @@
 from logging import getLogger
 from numbers import Number
-from typing import Any, Callable
+from typing import Any, Callable, Union
 import numpy as np
 import inspect
 from gym.wrappers.frame_stack import LazyFrames
@@ -50,7 +50,7 @@ def callable_name(fn: Callable, args) -> str:
     return f"{args[0].__class__.__name__}.{fn.__name__}"
 
 
-def describe_observation(observation: np.ndarray | LazyFrames) -> str:
+def describe_observation(observation: Union[np.ndarray, LazyFrames]) -> str:
     if isinstance(observation, LazyFrames):
         return "<LazyFrame>"
     return f"shape={observation.shape}, min={observation.min():.2f}, max={observation.max():.2f}"

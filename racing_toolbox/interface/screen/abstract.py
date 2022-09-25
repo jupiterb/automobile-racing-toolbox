@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import numpy as np
-
+from typing import Optional
 from racing_toolbox.interface.models import ScreenFrame
 from racing_toolbox.interface.exceptions import WindowNotFound
 
@@ -14,8 +14,18 @@ class ScreenProvider(ABC):
         self.__last_image = self.__get_default_screen()
         self.__default_frame = default_frame
 
+    @property
+    def shape(self) -> tuple[int, int, int]:
+        height, width, channels = *self._screen_size, 3
+        screen_frame = self.__default_frame
+        return (
+            int(height * screen_frame.bottom) - int(height * screen_frame.top),
+            int(width * screen_frame.right) - int(width * screen_frame.left),
+            channels,
+        )
+
     def grab_image(
-        self, screen_frame: ScreenFrame | None = None, on_last: bool = False
+        self, screen_frame: Optional[ScreenFrame] = None, on_last: bool = False
     ) -> np.ndarray:
         frame = screen_frame if screen_frame else self.__default_frame
         try:

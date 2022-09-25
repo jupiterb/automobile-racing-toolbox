@@ -6,14 +6,17 @@ from racing_toolbox.enviroment.config import (
     ObservationConfig,
     FinalValueDetectionParameters,
 )
-from racing_toolbox.interface.training_local import TrainingLocalGameInterface
+from racing_toolbox.interface.controllers.keyboard import KeyboardController
+
 from racing_toolbox.interface.config import GameConfiguration
 from racing_toolbox.enviroment.final_state.detector import FinalStateDetector
 from racing_toolbox.enviroment.config.env import EnvConfig
+from racing_toolbox.interface import from_config
 
 
 def setup_env(game_config: GameConfiguration, env_config: EnvConfig) -> gym.Env:
-    interface = TrainingLocalGameInterface(game_config)
+    interface = from_config(game_config, KeyboardController)
+
     final_st_det = FinalStateDetector(
         [
             FinalValueDetectionParameters(
@@ -30,6 +33,19 @@ def setup_env(game_config: GameConfiguration, env_config: EnvConfig) -> gym.Env:
         "custom/real-time-v0",
         game_interface=interface,
         final_state_detector=final_st_det,
+    )
+
+    available_actions = [
+        {"FORWARD"},
+        {"FORWARD", "LEFT"},
+        {"FORWARD", "RIGHT"},
+        {"LEFT"},
+        {"RIGHT"},
+        set(),
+    ]
+
+    env = DiscreteActionToVectorWrapper(
+        env, available_actions, interface.get_possible_actions()
     )
     env = reward_wrappers(env, env_config.reward_config)
     env = observation_wrappers(env, env_config.observation_config)
