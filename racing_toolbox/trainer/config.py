@@ -1,6 +1,6 @@
 from __future__ import annotations
-from typing import Callable, Any
-from pydantic import BaseModel, PositiveFloat, PositiveInt, validator
+from typing import Callable, Any, Optional, Union
+from pydantic import BaseModel, PositiveFloat, PositiveInt, validator, Field
 from ray.rllib.offline.input_reader import InputReader
 import gym
 
@@ -12,6 +12,7 @@ class ReplayBufferConfig(BaseModel):
 class ModelConfig(BaseModel):
     fcnet_hiddens: list[int]  # number of units in hidden layers
     fcnet_activation: str
+    conv_filters: list = []
 
 
 class AlgorithmConfig(BaseModel):
@@ -35,9 +36,9 @@ class TrainingConfig(BaseModel):
     # - Callbacks,
     # - test "remote_worker_envs" will it create env in client?,
     # - how to configure trigger for video recorder?
-    env: gym.Env
-    input: Callable[[Any], InputReader]
-    num_workers: PositiveInt
+    env: Union[gym.Env, str]
+    input: Optional[Callable[[Any], InputReader]]
+    num_workers: int = Field(ge=0)
 
     rollout_fragment_length: PositiveInt
     gamma: PositiveFloat = 0.99
@@ -54,6 +55,9 @@ class TrainingConfig(BaseModel):
 
     @validator("env")
     def check_env(cls, v):
+        if isinstance(v, str):
+            return v
+
         if not isinstance(v, gym.Env):
             raise ValueError
         if not hasattr(v, "observation_space"):

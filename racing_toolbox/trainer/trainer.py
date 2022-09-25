@@ -2,7 +2,6 @@ import itertools as it
 from typing import Optional
 from ray.rllib.algorithms import Algorithm
 from ray.tune.logger import pretty_print
-import gym
 
 from racing_toolbox.trainer.config import (
     TrainingConfig,
@@ -53,12 +52,11 @@ class Trainer:
             buffer_config = dqn_conf.replay_buffer_config.update(
                 algo_conf.replay_buffer_config
             )
-            print(self.config.env.observation_space)
             c = dict(
-                **self.config.dict(exclude={"algorithm", "env", "max_iterations"}),
+                **self.config.dict(
+                    exclude={"algorithm", "max_iterations"}, exclude_none=True
+                ),
                 **self.config.algorithm.dict(),
-                observation_space=self.config.env.observation_space,
-                action_space=self.config.env.action_space
             )
             return dqn.DQN(c)
         else:

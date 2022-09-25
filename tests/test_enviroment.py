@@ -4,14 +4,14 @@ import numpy as np
 import gym
 from PIL import Image
 
-from racing_toolbox.rl import RealTimeEnviroment
-from racing_toolbox.rl.final_state import FinalStateDetector
-from racing_toolbox.rl.config import FinalValueDetectionParameters
+from racing_toolbox.enviroment import RealTimeEnviroment
+from racing_toolbox.enviroment.final_state import FinalStateDetector
+from racing_toolbox.enviroment.config import FinalValueDetectionParameters
 from racing_toolbox.conf import get_game_config
 from racing_toolbox.interface import from_config, GameInterface
 from racing_toolbox.interface.screen import LocalScreen
 from racing_toolbox.interface.controllers import KeyboardController
-from racing_toolbox.rl.wrappers.action import (
+from racing_toolbox.enviroment.wrappers.action import (
     DiscreteActionToVectorWrapper,
     SplitBySignActionWrapper,
 )
