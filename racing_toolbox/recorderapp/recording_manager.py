@@ -1,19 +1,19 @@
 import threading
-from typing import Optional
+from typing import Optional, Callable
 import time
 
 from racing_toolbox.interface import GameInterface
-from racing_toolbox.datatool.recordings import (
-    RecorderDataService,
-    SeparateFilesRecordingsService,
+from racing_toolbox.datatool.services import (
+    InMemoryDatasetService,
+    AbstractDatasetService,
 )
 
 
 class EpisodeRecordingManager:
-    def __init__(
-        self, dataservice: RecorderDataService = SeparateFilesRecordingsService()
-    ) -> None:
-        self.__dataservice: RecorderDataService = dataservice
+
+    __get_dataservice: Callable[[], AbstractDatasetService]
+
+    def __init__(self) -> None:
         self.__recording_thread: Optional[threading.Thread] = None
         self.__capturing: bool = False
         self.__running: bool = True
@@ -25,7 +25,9 @@ class EpisodeRecordingManager:
         recording_name: str,
         fps: int,
     ):
-        self.__dataservice.start_streaming(interface.name(), user, recording_name, fps)
+        self.__get_dataservice = lambda: InMemoryDatasetService(
+            "./recordings", interface.name(), user, recording_name, fps
+        )
         self.__recording_thread = threading.Thread(
             target=self.__record, args=(interface, fps)
         )
@@ -42,8 +44,6 @@ class EpisodeRecordingManager:
     def release(self) -> None:
         self.__capturing = False
         self.__running = False
-        time.sleep(1)
-        self.__dataservice.stop_streaming()
         if self.__recording_thread is not None:
             self.__recording_thread.join()
 
@@ -59,11 +59,11 @@ class EpisodeRecordingManager:
         fps: int,
     ) -> None:
         game_interface.reset()
-        while self.__running:
-            if self.__capturing:
-                image = game_interface.grab_image()
-                from_ocr = game_interface.perform_ocr()
-                action = game_interface.read_action()
-                self.__dataservice.put_observation(image, from_ocr, action)
-                time.sleep(1 / fps)
+        with self.__get_dataservice() as service:
+            while self.__running:
+                if self.__capturing:
+                    image = game_interface.grab_image()
+                    action = game_interface.read_action()
+                    service.put(image, action)
+                    time.sleep(1 / fps)
         game_interface.reset(False)
