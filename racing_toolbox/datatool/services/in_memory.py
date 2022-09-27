@@ -2,12 +2,10 @@ import os
 import tables as tb
 import numpy as np
 
-from contextlib import contextmanager
 from types import TracebackType
-from typing import Type, Generator
+from typing import Type
 
 from racing_toolbox.datatool.exceptions import ItemExists
-from racing_toolbox.datatool.datasets import Dataset, DatasetModel
 from racing_toolbox.datatool.services import AbstractDatasetService
 
 
@@ -17,31 +15,10 @@ class InMemoryDatasetService(AbstractDatasetService):
     _observations: tb.EArray
     _actions: tb.EArray
 
-    class FromMemoryDataset(Dataset):
-        def __init__(self, path: str, game: str, user: str, name: str) -> None:
-            self._path = path
-            self._game = game
-            self._user = user
-            self._name = name
-
-        @contextmanager
-        def get(self) -> Generator[DatasetModel, None, None]:
-            if not os.path.exists(self._path):
-                raise ValueError(f"{self._path} not found!")
-            with tb.File(self._path, driver="H5FD_CORE") as file:
-                yield DatasetModel(
-                    game=self._game,
-                    user=self._user,
-                    name=self._name,
-                    fps=int(file.root.fps[0]),
-                    observations=file.root.observations,
-                    actions=file.root.actions,
-                )
-
     def __init__(
         self, destination: str, game: str, user: str, dataset: str, fps: int
     ) -> None:
-        self._path = InMemoryDatasetService._path_to_file(
+        self._path = InMemoryDatasetService.path_to_file(
             destination, game, user, dataset
         )
         if os.path.exists(self._path):
@@ -73,12 +50,7 @@ class InMemoryDatasetService(AbstractDatasetService):
         self._actions.append(np.array([actions_values]))
 
     @staticmethod
-    def get_dataset(source: str, game: str, user: str, dataset: str) -> Dataset:
-        path = InMemoryDatasetService._path_to_file(source, game, user, dataset)
-        return InMemoryDatasetService.FromMemoryDataset(path, game, user, dataset)
-
-    @staticmethod
-    def _path_to_file(
+    def path_to_file(
         root: str, game_name: str, user_name: str, dataset_name: str
     ) -> str:
         return f"{root}/{game_name}/{user_name}/{dataset_name}.h5"

@@ -3,7 +3,8 @@ import random
 import shutil
 import numpy as np
 
-from racing_toolbox.datatool.datasets import DatasetContainer
+from racing_toolbox.datatool import DatasetContainer
+from racing_toolbox.datatool.datasets import FromMemoryDataset
 from racing_toolbox.datatool.services import InMemoryDatasetService
 
 
@@ -53,7 +54,7 @@ def test_dataset_service(path, observations) -> None:
         for image, actions in observations:
             service.put(image, actions)
 
-    with InMemoryDatasetService.get_dataset(path, game, user, name).get() as dataset:
+    with FromMemoryDataset(path, game, user, name).get() as dataset:
         assert dataset.fps == fps
         assert len(dataset.observations) == len(observations)
         assert len(dataset.actions) == len(observations)
@@ -87,7 +88,7 @@ def test_adding_to_dataset_container(
         with InMemoryDatasetService(path, game, user, name, fps) as service:
             for image, actions in test_observations:
                 service.put(image, actions)
-        dataset = InMemoryDatasetService.get_dataset(path, game, user, name)
+        dataset = FromMemoryDataset(path, game, user, name)
         assert empty_dataset_container.can_be_added(dataset)
         assert increasing_dataset_container.try_add(dataset) == should_be_added
 
@@ -111,7 +112,7 @@ def test_iteration_over_dataset_container(
         with InMemoryDatasetService(path, game, user, name, fps) as service:
             for image, actions in test_observations:
                 service.put(image, actions)
-        dataset = InMemoryDatasetService.get_dataset(path, game, user, name)
+        dataset = FromMemoryDataset(path, game, user, name)
         dataset_container.try_add(dataset)
 
     expected_items_number = len(observations) + len(shuffled_observations)
