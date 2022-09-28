@@ -11,6 +11,7 @@ class AbstractDatasetService(AbstractContextManager, ABC):
         user_name: str,
         dataset_name: str,
         fps: int,
+        batch_size: int,
     ) -> None:
         super().__init__()
 

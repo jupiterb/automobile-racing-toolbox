@@ -31,7 +31,7 @@ class EpisodeRecordingManager:
         fps: int,
     ):
         self.__get_dataservice = lambda: InMemoryDatasetService(
-            "./recordings", interface.name(), user, recording_name, fps
+            "./recordings", interface.name(), user, recording_name, fps, batch_size=35
         )
         self.__recording_thread = threading.Thread(
             target=self.__record, args=(interface, fps)
