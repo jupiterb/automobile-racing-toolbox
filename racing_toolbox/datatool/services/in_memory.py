@@ -38,7 +38,6 @@ class InMemoryDatasetConsumer(AbstractContextManager):
         start = True
         item = self._queue.get()
         while item is not False:
-            print("New item!")
             observations, actions = item
             if start:
                 self._create_arrays(observations, actions)
