@@ -1,5 +1,5 @@
 import numpy as np
-from typing import Generator
+from typing import Generator, Optional
 
 from racing_toolbox.datatool.datasets import Dataset
 
@@ -22,6 +22,14 @@ class DatasetContainer:
             with dataset.get() as other:
                 result = representant.mergeable_with(other)
         return result
+
+    @property
+    def fps(self) -> Optional[int]:
+        if not any(self._datasets):
+            return None
+        with self._datasets[0].get() as representant:
+            fps = representant.fps
+        return fps
 
     def get_all(
         self,

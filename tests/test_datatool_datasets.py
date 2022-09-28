@@ -3,9 +3,11 @@ import random
 import shutil
 import numpy as np
 
-from racing_toolbox.datatool import DatasetContainer
+from racing_toolbox.datatool import DatasetContainer, preprocess
 from racing_toolbox.datatool.datasets import FromMemoryDataset
 from racing_toolbox.datatool.services import InMemoryDatasetService
+from racing_toolbox.rl.config import ObservationConfig
+from racing_toolbox.rl.builder import observation_wrappers
 
 
 @pytest.fixture
@@ -118,3 +120,48 @@ def test_iteration_over_dataset_container(
     expected_items_number = len(observations) + len(shuffled_observations)
     actual_items_number = len([item for item in dataset_container.get_all()])
     assert actual_items_number == expected_items_number
+
+
+def test_datasets_preprocessing(
+    path,
+    observations,
+    shuffled_observations,
+):
+    game = "trackmania"
+    user = "pytest"
+    preprocessed_name = "destination"
+    fps = 10
+
+    container = DatasetContainer()
+
+    for i, test_observations in enumerate([observations, shuffled_observations]):
+        name = f"test_{i}"
+        with InMemoryDatasetService(path, game, user, name, fps) as service:
+            for image, actions in test_observations:
+                service.put(image, actions)
+        dataset = FromMemoryDataset(path, game, user, name)
+        container.try_add(dataset)
+
+    fps = container.fps
+    assert fps is not None
+
+    revert_action = lambda action: {str(i): a for i, a in enumerate(action)}
+
+    observation_conf = ObservationConfig(
+        shape=(50, 100), stack_size=4, lidar_config=None, track_segmentation_config=None
+    )
+    wrapp_observations = lambda env: observation_wrappers(env, observation_conf)
+
+    with InMemoryDatasetService(path, game, user, preprocessed_name, fps) as service:
+        preprocess(container, service, revert_action, wrapp_observations)
+    dataset = FromMemoryDataset(path, game, user, preprocessed_name)
+
+    stack_size = observation_conf.stack_size
+    expected_length = len([item for item in container.get_all()])
+    height, width = observation_conf.shape
+    possible_actions = len(observations[0][1])
+
+    with dataset.get() as result:
+        assert result.observations.shape == (expected_length, stack_size, height, width)
+        assert result.actions.shape == (expected_length, possible_actions)
+        assert result.fps == fps
