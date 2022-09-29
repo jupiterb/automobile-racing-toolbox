@@ -14,13 +14,19 @@ from racing_toolbox.datatool.services import AbstractDatasetService
 class InMemoryDatasetConsumer(AbstractContextManager):
 
     _file: tb.File
-    _observations: tb.EArray
-    _actions: tb.EArray
+    _observations_array: tb.EArray
+    _actions_array: tb.EArray
+    _observations_batch: np.ndarray
+    _actions_batch: np.ndarray
 
-    def __init__(self, path_to_file: str, fps: int, queue: mp.Queue) -> None:
+    def __init__(
+        self, path_to_file: str, fps: int, queue: mp.Queue, batch_size: int
+    ) -> None:
         self._path = path_to_file
         self._fps = fps
         self._queue = queue
+        self._batch_size = batch_size
+        self._index = 0
 
     def __enter__(self):
         self._file = tb.File(self._path, "w", driver="H5FD_CORE")
@@ -35,33 +41,37 @@ class InMemoryDatasetConsumer(AbstractContextManager):
         self._file.close()
 
     def consume(self):
-        start = True
         item = self._queue.get()
         while item is not False:
-            observations, actions = item
-            if start:
-                self._create_arrays(observations, actions)
-                start = False
-            self._observations.append(observations)
-            self._actions.append(actions)
+            observation, action = item
+            if not self._index:
+                self._init_arrays(observation.shape, action.shape)
+            self._update_batches(observation, action)
+            if not self._index % self._batch_size:
+                self._observations_array.append(self._observations_batch)
+                self._actions_array.append(self._actions_batch)
             item = self._queue.get()
 
-    def _create_arrays(self, observation: np.ndarray, actions: np.ndarray):
-        self._observations = self._file.create_earray(
-            self._file.root,
-            "observations",
-            tb.Int8Atom(),
-            tuple([0] + list(observation.shape)[1:]),
-            "Obs",
-            chunkshape=observation.shape,
+    def _update_batches(self, observation: np.ndarray, action: np.ndarray):
+        batch_index = self._index % self._batch_size
+        self._observations_batch[batch_index] = observation
+        self._actions_batch[batch_index] = action
+        self._index += 1
+
+    def _init_arrays(self, observation_shape: tuple, action_shape: tuple):
+        def create(shape: tuple, name: str, atom: tb.Atom):
+            batch = np.zeros(tuple([self._batch_size] + list(shape)))
+            array_shape = tuple([0] + list(shape))
+            array = self._file.create_earray(
+                self._file.root, name, atom, array_shape, name, chunkshape=batch.shape
+            )
+            return batch, array
+
+        self._observations_batch, self._observations_array = create(
+            observation_shape, "observations", tb.Int8Atom()
         )
-        self._actions = self._file.create_earray(
-            self._file.root,
-            "actions",
-            tb.Float16Atom(),
-            tuple([0] + list(actions.shape)[1:]),
-            "Act",
-            chunkshape=actions.shape,
+        self._actions_batch, self._actions_array = create(
+            action_shape, "actions", tb.Float16Atom()
         )
         self._file.create_array(self._file.root, "fps", np.array([self._fps]))
 
@@ -69,8 +79,6 @@ class InMemoryDatasetConsumer(AbstractContextManager):
 class InMemoryDatasetService(AbstractDatasetService):
 
     _consumer: mp.Process
-    _observations: np.ndarray
-    _actions: np.ndarray
 
     def __init__(
         self,
@@ -86,7 +94,6 @@ class InMemoryDatasetService(AbstractDatasetService):
         )
         if os.path.exists(self._path):
             raise ItemExists(game, user, dataset)
-        self._index = 0
         self._queue = mp.Queue()
         self._fps = fps
         self._batch_size = batch_size
@@ -110,14 +117,7 @@ class InMemoryDatasetService(AbstractDatasetService):
 
     def put(self, observation: np.ndarray, actions: dict[str, float]) -> None:
         actions_values = np.array(list(actions.values()))
-        if not self._index:
-            self._create_batches(observation, actions_values)
-        self._observations[self._index] = observation
-        self._actions[self._index] = actions_values
-        self._index += 1
-        if self._index == self._batch_size:
-            self._queue.put((self._observations, self._actions))
-            self._index = 0
+        self._queue.put((observation, actions_values))
 
     @staticmethod
     def path_to_file(
@@ -126,11 +126,7 @@ class InMemoryDatasetService(AbstractDatasetService):
         return f"{root}/{game_name}/{user_name}/{dataset_name}.h5"
 
     def _consuming(self):
-        with InMemoryDatasetConsumer(self._path, self._fps, self._queue) as consumer:
+        with InMemoryDatasetConsumer(
+            self._path, self._fps, self._queue, self._batch_size
+        ) as consumer:
             consumer.consume()
-
-    def _create_batches(self, observation: np.ndarray, actions: np.ndarray) -> None:
-        self._observations = np.zeros(
-            tuple([self._batch_size] + list(observation.shape))
-        )
-        self._actions = np.zeros(tuple([self._batch_size] + list(actions.shape)))

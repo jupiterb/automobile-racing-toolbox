@@ -29,7 +29,7 @@ def get_game_config() -> GameConfiguration:
         reset_seconds=3,
         reset_keys_sequence=[Key.enter],
         reset_gamepad_sequence=[XUSB_BUTTON.XUSB_GAMEPAD_X],
-        frequency_per_second=5,
+        frequency_per_second=8,
         ocrs={
             "speed": (
                 ScreenFrame(top=0.945, bottom=0.9875, left=0.918, right=0.9825),
