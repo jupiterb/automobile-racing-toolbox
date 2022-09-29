@@ -1,8 +1,11 @@
 from __future__ import annotations
-from typing import Callable, Any, Optional, Union
+from typing import Callable, Any, Literal, Optional, Union
 from pydantic import BaseModel, PositiveFloat, PositiveInt, validator, Field
 from ray.rllib.offline.input_reader import InputReader
 import gym
+
+
+Activation = Literal["relu", "tanh", "sigmoid"]
 
 
 class ReplayBufferConfig(BaseModel):
@@ -13,6 +16,11 @@ class ModelConfig(BaseModel):
     fcnet_hiddens: list[int]  # number of units in hidden layers
     fcnet_activation: str
     conv_filters: list = []
+
+
+class MLPConfig(BaseModel):
+    fcnet_hiddens: list[int]
+    fcnet_activation: list[Activation] | Activation
 
 
 class AlgorithmConfig(BaseModel):
