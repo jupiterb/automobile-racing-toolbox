@@ -52,6 +52,7 @@ class EpisodeRecordingManager:
         if self.__recording_thread is not None:
             self.__recording_thread.join()
 
+    @property
     def running(self) -> bool:
         return self.__running
 
@@ -66,7 +67,7 @@ class EpisodeRecordingManager:
         game_interface.reset()
         expected_capture_duartion = 1 / fps
         with self.__get_dataservice() as service:
-            while self.__running:
+            while self.running:
                 self.__capture_if_needed(
                     game_interface, service, expected_capture_duartion
                 )

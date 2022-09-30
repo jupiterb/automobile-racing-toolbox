@@ -153,7 +153,9 @@ def test_datasets_preprocessing(
     wrapp_observations = lambda env: observation_wrappers(env, observation_conf)
 
     with InMemoryDatasetService(path, game, user, preprocessed_name, fps) as service:
-        preprocess(container, service, revert_action, wrapp_observations)
+        preprocessed = preprocess(container, revert_action, wrapp_observations)
+        for observation, actions in preprocessed:
+            service.put(observation, actions)
     dataset = FromMemoryDataset(path, game, user, preprocessed_name)
 
     stack_size = observation_conf.stack_size

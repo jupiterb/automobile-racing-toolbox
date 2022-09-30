@@ -5,7 +5,7 @@ import multiprocessing as mp
 
 from contextlib import AbstractContextManager
 from types import TracebackType
-from typing import Type
+from typing import Type, Optional
 
 from racing_toolbox.datatool.exceptions import ItemExists
 from racing_toolbox.datatool.services import AbstractDatasetService
@@ -34,9 +34,9 @@ class InMemoryDatasetConsumer(AbstractContextManager):
 
     def __exit__(
         self,
-        __exc_type: Type[BaseException] | None,
-        __exc_value: BaseException | None,
-        __traceback: TracebackType | None,
+        __exc_type: Optional[Type[BaseException]],
+        __exc_value: Optional[BaseException],
+        __traceback: Optional[TracebackType],
     ) -> bool | None:
         self._file.close()
 
