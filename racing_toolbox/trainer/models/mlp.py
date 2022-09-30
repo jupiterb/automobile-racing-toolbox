@@ -17,16 +17,19 @@ class KerasMLP(TFModelV2):
 
     def __init__(
         self,
-        obs_space: spaces.Discrete,
+        obs_space: spaces.Box,
         action_space: spaces.Discrete,
-        num_outputs: int,
         model_config: ModelConfig,
         name: str,
     ):
+        assert len(obs_space.shape) == 1, "Invalid observation shape for MLP net"
+        num_outputs = action_space.n
+
         super(KerasMLP, self).__init__(
-            obs_space, action_space, num_outputs, model_config, name
+            obs_space, action_space, num_outputs, model_config.dict(), name
         )
-        hidden_sizes = model_config.fcnet_hiddens
+
+        hidden_sizes = model_config.hiddens
         if isinstance(activations := model_config.activations, list):
             hidden_activations = activations
         else:
@@ -49,8 +52,12 @@ class KerasMLP(TFModelV2):
             kernel_initializer=normc_initializer(0.02),
         )(hidden)
 
-        self.base_model = tf.keras.Model(self.inputs, self.outputs)
+        self._base_model = tf.keras.Model(self.inputs, self.outputs)
+
+    @property
+    def model(self) -> tf.keras.Model:
+        return self._base_model
 
     def forward(self, input_dict, state, seq_lens):
-        model_out = self.base_model(input_dict["obs"])
-        return model_out
+        model_out = self.model(input_dict["obs"])
+        return model_out, state

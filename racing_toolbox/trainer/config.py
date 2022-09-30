@@ -19,8 +19,8 @@ class ModelConfig(BaseModel):
 
 
 class MLPConfig(BaseModel):
-    fcnet_hiddens: list[int]
-    fcnet_activation: list[Activation] | Activation
+    hiddens: list[int]
+    activations: Union[list[Activation], Activation]
 
 
 class AlgorithmConfig(BaseModel):
