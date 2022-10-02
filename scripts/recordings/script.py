@@ -1,9 +1,9 @@
 import sys
-from interface import from_config
+from racing_toolbox.interface import from_config
 from racing_toolbox.interface.controllers import KeyboardController, GamepadController
 from racing_toolbox.interface.capturing import KeyboardCapturing, GamepadCapturing
 from racing_toolbox.recorderapp import EpisodeRecordingManager
-from conf import get_game_config
+from racing_toolbox.conf import get_game_config
 import time
 
 

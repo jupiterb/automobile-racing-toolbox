@@ -12,7 +12,7 @@ def get_game_config() -> GameConfiguration:
     return GameConfiguration(
         game_id="trackmania",
         process_name="Trackmania Nations Forever",
-        window_size=(1000, 800),
+        window_size=(750, 600),
         obervation_frame=ScreenFrame(top=0.475, bottom=0.9125, left=0.01, right=0.99),
         discrete_actions_mapping={
             "FORWARD": Key.up,
@@ -29,7 +29,7 @@ def get_game_config() -> GameConfiguration:
         reset_seconds=3,
         reset_keys_sequence=[Key.enter],
         reset_gamepad_sequence=[XUSB_BUTTON.XUSB_GAMEPAD_X],
-        frequency_per_second=10,
+        frequency_per_second=8,
         ocrs={
             "speed": (
                 ScreenFrame(top=0.945, bottom=0.9875, left=0.918, right=0.9825),
