@@ -20,10 +20,10 @@ from gym.spaces import Box, Discrete
 def test_if_convolution_model_fit_to_obs_space(fake_env, model_config, dqn_config):
     conf = TrainingConfig(
         env=fake_env,
-        input=None,  # no need for remote setup - rllib will choose default worker
+        input_=None,  # no need for remote setup - rllib will choose default worker
         model=model_config,
         algorithm=dqn_config,
-        num_workers=0,
+        num_rollout_workers=0,
         rollout_fragment_length=10,
     )
     trainer = Trainer(conf)

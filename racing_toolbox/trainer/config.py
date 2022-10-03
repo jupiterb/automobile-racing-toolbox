@@ -1,4 +1,5 @@
 from __future__ import annotations
+from collections import namedtuple
 from typing import Callable, Any, Literal, Optional, Union
 from pydantic import BaseModel, PositiveFloat, PositiveInt, validator, Field
 from ray.rllib.offline.input_reader import InputReader
@@ -6,6 +7,7 @@ import gym
 
 
 Activation = Literal["relu", "tanh", "sigmoid"]
+ConvLayerTH = namedtuple("ConvLayerTH", ["out_channels", "kernel", "stride"])
 
 
 class ReplayBufferConfig(BaseModel):
@@ -15,12 +17,8 @@ class ReplayBufferConfig(BaseModel):
 class ModelConfig(BaseModel):
     fcnet_hiddens: list[int]  # number of units in hidden layers
     fcnet_activation: str
-    conv_filters: list = []
-
-
-class MLPConfig(BaseModel):
-    hiddens: list[int]
-    activations: Union[list[Activation], Activation]
+    conv_filters: list[ConvLayerTH] = []
+    conv_activation: list[Activation] = []
 
 
 class AlgorithmConfig(BaseModel):
@@ -32,7 +30,7 @@ class DQNConfig(AlgorithmConfig):
     v_max: float = 10
     dueling: bool = True
     double_q: bool = True
-    hiddens: list[int] = [256]  # is this the same as model fcnet_hiddens?
+    hiddens: list[int] = [256]
     replay_buffer_config: ReplayBufferConfig
 
 
@@ -45,10 +43,10 @@ class TrainingConfig(BaseModel):
     # - test "remote_worker_envs" will it create env in client?,
     # - how to configure trigger for video recorder?
     env: Union[gym.Env, str]
-    input: Optional[Callable[[Any], InputReader]]
-    num_workers: int = Field(ge=0)
-
+    input_: Optional[Callable[[Any], InputReader]]
+    num_rollout_workers: int = Field(ge=0)
     rollout_fragment_length: PositiveInt
+    compress_observations: bool = False
     gamma: PositiveFloat = 0.99
     lr: PositiveFloat = 1e-4
     train_batch_size: PositiveFloat = 200
@@ -59,7 +57,7 @@ class TrainingConfig(BaseModel):
     model: ModelConfig
 
     # in rllib algorithm config is flatten on this level, but for readability made it nested
-    algorithm: AlgorithmConfig
+    algorithm: DQNConfig  # TODO: when more algorithm will be available, make it union
 
     @validator("env")
     def check_env(cls, v):

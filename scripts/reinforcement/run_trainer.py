@@ -42,8 +42,8 @@ def main():
     model_config = config.ModelConfig(fcnet_hiddens=[512, 256], fcnet_activation="Relu")
     training_config = config.TrainingConfig(
         env=builder.setup_env(game_config, env_config),
-        input=_input,
-        num_workers=args.num_workers,
+        input_=_input,
+        num_rollout_workers=args.num_workers,
         rollout_fragment_length=BATCH // args.num_workers,
         train_batch_size=BATCH,
         max_iterations=args.stop_iters,
