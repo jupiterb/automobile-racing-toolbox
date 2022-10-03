@@ -15,6 +15,7 @@ from racing_toolbox.enviroment.config import (
     RewardConfig,
     ObservationConfig,
 )
+from racing_toolbox.trainer.config.params import TrainingParams
 
 PORT = 8000
 HOST = "0.0.0.0"
@@ -25,7 +26,7 @@ def main():
     args = get_cli_args()
     ray.init()
 
-    def _input(ioctx):
+    def input_(ioctx):
         if ioctx.worker_index > 0 or ioctx.worker.num_workers == 0:
             return PolicyServerInput(
                 ioctx,
@@ -38,11 +39,8 @@ def main():
     game_config = get_game_config()
     env_config = get_env_config()
     algo_config = get_algorithm_config(args.run)
-
     model_config = config.ModelConfig(fcnet_hiddens=[512, 256], fcnet_activation="Relu")
     training_config = config.TrainingConfig(
-        env=builder.setup_env(game_config, env_config),
-        input_=_input,
         num_rollout_workers=args.num_workers,
         rollout_fragment_length=BATCH // args.num_workers,
         train_batch_size=BATCH,
@@ -51,7 +49,12 @@ def main():
         model=model_config,
     )
 
-    training = Trainer(training_config)
+    trainer_params = TrainingParams(
+        **training_config.dict(),
+        env=builder.setup_env(game_config, env_config),
+        input_=input_,
+    )
+    training = Trainer(trainer_params, checkpoint_path=args.restore)
     training.run()
 
 
@@ -125,7 +128,7 @@ def get_cli_args():
     parser.add_argument(
         "--restore",
         type=str,
-        default="",
+        default=None,
         help="Restore algorithm state from given checkpoint",
     )
 

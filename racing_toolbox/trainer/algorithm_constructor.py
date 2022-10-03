@@ -1,13 +1,13 @@
-import inspect
 from ray.rllib.algorithms import Algorithm
 from ray.rllib.algorithms import dqn
 
-from racing_toolbox.trainer.config import DQNConfig, TrainingConfig
+from racing_toolbox.trainer.config import DQNConfig
+from racing_toolbox.trainer.config.params import TrainingParams
 
 __config_to_cls_map = {DQNConfig: dqn.DQNConfig}
 
 
-def construct_cls(config: TrainingConfig) -> Algorithm:
+def construct_cls(config: TrainingParams) -> Algorithm:
     conf_cls = __config_to_cls_map.get(type(config.algorithm))
     algo_conf = (
         conf_cls()
