@@ -41,7 +41,7 @@ class RecorderScreen(GridLayout):
         self.add_widget(self._stop_resume_button)
 
     def start_or_save(self, instance):
-        if self._recording_manager.running():
+        if self._recording_manager.running:
             self._recording_manager.release()
             self._start_save_button.text = "Start recording"
         else:
