@@ -12,7 +12,8 @@ def construct_cls(config: TrainingParams) -> Algorithm:
     algo_conf = (
         conf_cls()
         .environment(
-            env=config.env,
+            observation_space=config.env.observation_space,
+            action_space=config.env.action_space,
         )
         .framework(framework="torch")
         .rollouts(
@@ -27,10 +28,11 @@ def construct_cls(config: TrainingParams) -> Algorithm:
             **config.algorithm.dict(),
             model=config.model.dict()
         )
+        .offline_data(input_=config.input_)
     )
     if hasattr(algo_conf, "replay_buffer_config"):
         buffer_conf = algo_conf.replay_buffer_config.update(
             **config.algorithm.replay_buffer_config.dict()
         )
         algo_conf.training(replay_buffer_config=buffer_conf)
-    return conf_cls.build()
+    return algo_conf.build()

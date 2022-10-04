@@ -13,10 +13,10 @@ class ReplayBufferConfig(BaseModel):
 
 
 class ModelConfig(BaseModel):
-    fcnet_hiddens: list[int]  # number of units in hidden layers
+    fcnet_hiddens: list[int] = [100]  # number of units in hidden layers
     fcnet_activation: str
     conv_filters: list[ConvLayerTH] = []
-    conv_activation: list[Activation] = []
+    conv_activation: Activation = "relu"
 
 
 class AlgorithmConfig(BaseModel):

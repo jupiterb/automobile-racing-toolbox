@@ -29,7 +29,7 @@ class Trainer:
 
     def run(self) -> None:
         "training loop"
-        ray.init()
+        ray.init(ignore_reinit_error=True)
 
         for i in it.count(0, 1):
             results = self.algorithm.train()

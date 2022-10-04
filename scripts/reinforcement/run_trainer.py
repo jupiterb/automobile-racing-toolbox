@@ -20,7 +20,6 @@ BATCH = 256
 
 def main():
     args = get_cli_args()
-    ray.init()
 
     def input_(ioctx):
         if ioctx.worker_index > 0 or ioctx.worker.num_workers == 0:
@@ -35,7 +34,16 @@ def main():
     game_config = get_game_config()
     env_config = get_env_config()
     algo_config = get_algorithm_config(args.run)
-    model_config = config.ModelConfig(fcnet_hiddens=[512, 256], fcnet_activation="Relu")
+    model_config = config.ModelConfig(
+        fcnet_hiddens=[100, 256],
+        fcnet_activation="relu",
+        conv_filters=[
+            (32, 8, 4),
+            (64, 4, 2),
+            (64, 3, 1),
+            (64, 11, 1),
+        ],
+    )
     training_config = config.TrainingConfig(
         num_rollout_workers=args.num_workers,
         rollout_fragment_length=BATCH // args.num_workers,
