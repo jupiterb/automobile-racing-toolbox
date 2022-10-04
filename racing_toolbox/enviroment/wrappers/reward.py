@@ -8,13 +8,14 @@ from racing_toolbox.enviroment.utils.logging import log_reward
 
 
 class OffTrackPunishment(gym.RewardWrapper):
-    def __init__(self, env, metric: Callable[[float], float]):
+    def __init__(self, env, metric: Callable[[float], float], terminate: bool):
         super().__init__(env)
         self.metric = metric
+        self.terminate = terminate
 
     def step(self, action):
         observation, reward, done, info = self.env.step(action)
-        if self._is_off_track(observation):
+        if self.terminate and self._is_off_track(observation):
             return observation, 0, True, info
         return observation, self.reward(reward, observation), done, info
 
