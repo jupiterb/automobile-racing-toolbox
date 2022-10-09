@@ -164,6 +164,6 @@ def test_datasets_preprocessing(
     possible_actions = len(observations[0][1])
 
     with dataset.get() as result:
-        assert result.observations.shape == (expected_length, stack_size, height, width)
+        assert result.observations.shape == (expected_length, height, width, stack_size)
         assert result.actions.shape == (expected_length, possible_actions)
         assert result.fps == fps

@@ -7,7 +7,6 @@ from PIL import Image
 from racing_toolbox.environment import RealTimeEnviroment
 from racing_toolbox.environment.final_state import FinalStateDetector
 from racing_toolbox.environment.config import FinalValueDetectionParameters
-from racing_toolbox.conf import get_game_config
 from racing_toolbox.interface import from_config, GameInterface
 from racing_toolbox.interface.screen import LocalScreen
 from racing_toolbox.interface.controllers import KeyboardController
@@ -19,7 +18,7 @@ from tests import TEST_DIR
 
 
 @pytest.fixture
-def my_interface(monkeypatch) -> GameInterface:
+def my_interface(monkeypatch, game_conf) -> GameInterface:
     # take screeshot with speed = 0 and same shape like in configuration
     def mock_get_screenshot(*args, **kwargs):
         return np.array(
@@ -30,7 +29,7 @@ def my_interface(monkeypatch) -> GameInterface:
 
     monkeypatch.setattr(LocalScreen, "_grab_image", mock_get_screenshot)
 
-    config = get_game_config()
+    config = game_conf
     config.reset_keys_sequence = []
     config.reset_seconds = 0
 
