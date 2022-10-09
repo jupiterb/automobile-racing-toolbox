@@ -28,7 +28,7 @@ loggers:
     handlers: [console,file]
     propogate: false
 
-  racing_toolbox.rl.wrappers: 
+  racing_toolbox.enviroment.wrappers: 
     level: INFO
     handlers: [console, file]
     propagate: false 

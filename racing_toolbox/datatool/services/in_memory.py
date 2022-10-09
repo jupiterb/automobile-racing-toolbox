@@ -37,7 +37,7 @@ class InMemoryDatasetConsumer(AbstractContextManager):
         __exc_type: Optional[Type[BaseException]],
         __exc_value: Optional[BaseException],
         __traceback: Optional[TracebackType],
-    ) -> bool | None:
+    ) -> Optional[bool]:
         self._file.close()
 
     def consume(self):
@@ -108,10 +108,10 @@ class InMemoryDatasetService(AbstractDatasetService):
 
     def __exit__(
         self,
-        __exc_type: Type[BaseException] | None,
-        __exc_value: BaseException | None,
-        __traceback: TracebackType | None,
-    ) -> bool | None:
+        __exc_type: Optional[Type[BaseException]],
+        __exc_value: Optional[BaseException],
+        __traceback: Optional[TracebackType],
+    ) -> Optional[bool]:
         self._queue.put(False)
         self._consumer.join()
 

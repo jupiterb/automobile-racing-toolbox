@@ -3,7 +3,7 @@ import numpy as np
 from typing import Optional
 
 from racing_toolbox.interface import GameInterface
-from racing_toolbox.rl.final_state import FinalStateDetector
+from racing_toolbox.environment.final_state import FinalStateDetector
 
 Frame = Optional[np.ndarray]
 
@@ -32,7 +32,7 @@ class RealTimeEnviroment(gym.Env):
         self.observation_space = gym.spaces.Box(
             low=0,
             high=255,
-            shape=game_interface.grab_image().shape,
+            shape=game_interface.screen.shape,
             dtype=np.uint8,
         )
 

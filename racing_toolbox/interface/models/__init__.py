@@ -1,6 +1,2 @@
-from racing_toolbox.interface.models.game_configuration import (
-    GameConfiguration,
-    ScreenFrame,
-    OcrConfiguration,
-    GamepadAction,
-)
+from racing_toolbox.interface.models.screen_frame import ScreenFrame
+from racing_toolbox.interface.models.gamepad_action import GamepadAction, GamepadControl

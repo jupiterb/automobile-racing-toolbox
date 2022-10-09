@@ -3,13 +3,12 @@ from os import listdir
 import numpy as np
 from PIL import Image
 
-from racing_toolbox.rl.final_state import FinalStateDetector
-from racing_toolbox.rl.config import FinalValueDetectionParameters
+from racing_toolbox.environment.final_state import FinalStateDetector
+from racing_toolbox.environment.config import FinalValueDetectionParameters
 from racing_toolbox.conf import get_game_config
 from racing_toolbox.interface import from_config
 from racing_toolbox.interface.screen import LocalScreen
-from racing_toolbox.rl.final_state import FinalStateDetector
-from racing_toolbox.rl.config import FinalValueDetectionParameters
+from tests import TEST_DIR
 
 
 def test_detector_not_accept_unvalid_values_ranges() -> None:
@@ -82,7 +81,7 @@ def test_integration_with_ocr(monkeypatch) -> None:
 
     end_of_race_detected = False
 
-    path_to_images = "assets/screenshots/end_of_race"
+    path_to_images = TEST_DIR / "assets/screenshots/end_of_race"
     for image_name in listdir(path_to_images):
 
         def mock_get_screenshot(*args, **kwargs):

@@ -1,3 +1,4 @@
+import pytest
 from pynput.keyboard import Key
 from vgamepad import XUSB_BUTTON
 from racing_toolbox.interface.models import (
@@ -7,11 +8,12 @@ from racing_toolbox.interface.models import (
 from racing_toolbox.interface.config import GameConfiguration, OcrConfiguration
 
 
-def get_game_config() -> GameConfiguration:
+@pytest.fixture
+def game_conf():
     return GameConfiguration(
         game_id="trackmania",
         process_name="Trackmania Nations Forever",
-        window_size=(750, 600),
+        window_size=(800, 1000),
         observation_frame=ScreenFrame(top=0.475, bottom=0.9125, left=0.01, right=0.99),
         discrete_actions_mapping={
             "FORWARD": Key.up,

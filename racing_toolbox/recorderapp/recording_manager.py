@@ -1,7 +1,6 @@
 import logging
 import time
 import threading
-
 from contextlib import contextmanager
 from typing import Optional, Callable
 

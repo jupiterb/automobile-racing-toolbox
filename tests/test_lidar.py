@@ -3,6 +3,7 @@ import cv2
 
 from racing_toolbox.observation.config import LidarConfig, TrackSegmentationConfig
 from racing_toolbox.observation import Lidar, TrackSegmenter
+from tests import TEST_DIR
 
 
 class LidarWithTrackSegmentation(Lidar):
@@ -69,9 +70,15 @@ def test_values_of_lidar_result() -> None:
 
 
 def test_lidar_with_real_images() -> None:
-    in_the_middle = cv2.imread("assets/screenshots/cropped/car_in_the_middle.jpeg")
-    on_the_left = cv2.imread("assets/screenshots/cropped/car_on_the_left.jpeg")
-    on_the_edge = cv2.imread("assets/screenshots/cropped/car_on_the_edge.jpeg")
+    in_the_middle = cv2.imread(
+        str(TEST_DIR / "assets/screenshots/cropped/car_in_the_middle.jpeg")
+    )
+    on_the_left = cv2.imread(
+        str(TEST_DIR / "assets/screenshots/cropped/car_on_the_left.jpeg")
+    )
+    on_the_edge = cv2.imread(
+        str(TEST_DIR / "assets/screenshots/cropped/car_on_the_edge.jpeg")
+    )
 
     distances_from_the_middle, _ = lidar.scan_2d(in_the_middle)
     distances_from_the_left, _ = lidar.scan_2d(on_the_left)

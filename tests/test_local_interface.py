@@ -7,6 +7,7 @@ from racing_toolbox.interface.screen import LocalScreen
 from racing_toolbox.interface.controllers import KeyboardController
 from racing_toolbox.interface.capturing import KeyboardCapturing
 from racing_toolbox.conf import get_game_config
+from tests import TEST_DIR
 
 
 interface = from_config(get_game_config(), KeyboardController, KeyboardCapturing)
@@ -28,7 +29,9 @@ def test_perform_ocr(monkeypatch) -> None:
     for screenshot, value in test_cases.items():
 
         def mock_get_screenshot(*args, **kwargs):
-            return np.array(Image.open(f"assets/screenshots/random/{screenshot}.jpeg"))
+            return np.array(
+                Image.open(TEST_DIR / f"assets/screenshots/random/{screenshot}.jpeg")
+            )
 
         monkeypatch.setattr(LocalScreen, "_grab_image", mock_get_screenshot)
         ocr_result = interface.perform_ocr(on_last=False)

@@ -1,4 +1,4 @@
-from racing_toolbox.rl.enviroment import RealTimeEnviroment
+from racing_toolbox.environment.real_time import RealTimeEnviroment
 from gym.envs.registration import register
 from inspect import getmodule
 

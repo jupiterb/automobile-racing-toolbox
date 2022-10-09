@@ -6,8 +6,8 @@ import numpy as np
 from racing_toolbox.datatool import DatasetContainer, preprocess
 from racing_toolbox.datatool.datasets import FromMemoryDataset
 from racing_toolbox.datatool.services import InMemoryDatasetService
-from racing_toolbox.rl.config import ObservationConfig
-from racing_toolbox.rl.builder import observation_wrappers
+from racing_toolbox.environment.config import ObservationConfig
+from racing_toolbox.environment.builder import observation_wrappers
 
 
 @pytest.fixture
@@ -164,6 +164,6 @@ def test_datasets_preprocessing(
     possible_actions = len(observations[0][1])
 
     with dataset.get() as result:
-        assert result.observations.shape == (expected_length, stack_size, height, width)
+        assert result.observations.shape == (expected_length, height, width, stack_size)
         assert result.actions.shape == (expected_length, possible_actions)
         assert result.fps == fps

@@ -1,5 +1,6 @@
 from vgamepad import XUSB_BUTTON
 from enum import Enum
+from typing import Union
 
 
 max_xusb = max(XUSB_BUTTON)
@@ -14,4 +15,4 @@ class GamepadControl(Enum):
     RIGHT_JOYSTICK_Y = max_xusb + 6
 
 
-GamepadAction = GamepadControl | XUSB_BUTTON
+GamepadAction = Union[GamepadControl, XUSB_BUTTON]

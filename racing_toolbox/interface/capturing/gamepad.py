@@ -67,13 +67,12 @@ class GamepadCapturing(GameActionCapturing):
 
     def _handle_events(self) -> None:
         for event in pygame.event.get():
-            match event.type:
-                case pygame.JOYBUTTONUP:
-                    self._handle_button_event(event, False)
-                case pygame.JOYBUTTONDOWN:
-                    self._handle_button_event(event, True)
-                case pygame.JOYAXISMOTION:
-                    self._handle_axis_event(event)
+            if event.type == pygame.JOYBUTTONUP:
+                self._handle_button_event(event, False)
+            elif event.type == pygame.JOYBUTTONDOWN:
+                self._handle_button_event(event, True)
+            elif event.type == pygame.JOYAXISMOTION:
+                self._handle_axis_event(event)
 
     @staticmethod
     def _init_joysticks() -> list[Joystick]:

@@ -1,17 +1,17 @@
-from racing_toolbox.rl.wrappers.observation import (
+from racing_toolbox.environment.wrappers.observation import (
     SqueezingWrapper,
     RescaleWrapper,
     LidarWrapper,
     TrackSegmentationWrapper,
 )
-from racing_toolbox.rl.wrappers.reward import (
+from racing_toolbox.environment.wrappers.reward import (
     OffTrackPunishment,
     SpeedDropPunishment,
     ClipReward,
     StandarizeReward,
 )
 
-from racing_toolbox.rl.wrappers.action import (
+from racing_toolbox.environment.wrappers.action import (
     DiscreteActionToVectorWrapper,
     SplitBySignActionWrapper,
 )
