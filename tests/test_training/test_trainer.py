@@ -1,7 +1,7 @@
 import pytest
-from racing_toolbox.trainer import Trainer
-from racing_toolbox.trainer.algorithm_constructor import construct_cls
-from racing_toolbox.trainer.config import TrainingConfig, TrainingParams
+from racing_toolbox.training import Trainer
+from racing_toolbox.training.algorithm_constructor import construct_cls
+from racing_toolbox.training.config import TrainingConfig, TrainingParams
 from tests.test_training.conftest import SpaceParam
 from gym.spaces import Box, Discrete
 

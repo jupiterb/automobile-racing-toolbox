@@ -1,9 +1,9 @@
 from ray.rllib import algorithms as alg
 from ray.rllib.algorithms import dqn
 
-from racing_toolbox.trainer.config import DQNConfig
-from racing_toolbox.trainer.config.params import TrainingParams
-from racing_toolbox.trainer.config.user_defined import AlgorithmConfig
+from racing_toolbox.training.config import DQNConfig
+from racing_toolbox.training.config.params import TrainingParams
+from racing_toolbox.training.config.user_defined import AlgorithmConfig
 
 __config_to_cls_map: dict[type[AlgorithmConfig], type[alg.AlgorithmConfig]] = {
     DQNConfig: dqn.DQNConfig

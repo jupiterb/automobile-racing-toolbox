@@ -4,7 +4,7 @@ from pydantic import validator
 import gym
 from gym.envs.registration import spec
 
-from racing_toolbox.trainer.config.user_defined import TrainingConfig
+from racing_toolbox.training.config.user_defined import TrainingConfig
 
 
 class TrainingParams(TrainingConfig):

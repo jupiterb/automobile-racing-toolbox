@@ -10,7 +10,7 @@ from racing_toolbox.interface.models import (
 from racing_toolbox.interface.config import GameConfiguration, OcrConfiguration
 from racing_toolbox.environment.config import RewardConfig, ObservationConfig, EnvConfig
 from racing_toolbox.observation.config import TrackSegmentationConfig, LidarConfig
-from racing_toolbox.trainer.config import (
+from racing_toolbox.training.config import (
     TrainingConfig,
     ModelConfig,
     DQNConfig,

@@ -3,7 +3,7 @@ from ray.rllib.env.policy_server_input import PolicyServerInput
 import ray
 import gym
 
-from racing_toolbox.trainer import Trainer, config
+from racing_toolbox.training import Trainer, config
 from racing_toolbox.environment import builder
 from racing_toolbox.conf.example_configuration import get_game_config
 from racing_toolbox.observation.config.lidar_config import LidarConfig
@@ -11,7 +11,7 @@ from racing_toolbox.observation.config.track_segmentation_config import (
     TrackSegmentationConfig,
 )
 from racing_toolbox.environment.config import RewardConfig, ObservationConfig, EnvConfig
-from racing_toolbox.trainer.config.params import TrainingParams
+from racing_toolbox.training.config.params import TrainingParams
 
 PORT = 8000
 HOST = "0.0.0.0"

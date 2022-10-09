@@ -2,7 +2,7 @@ import pytest
 from pydantic import BaseModel
 from racing_toolbox.environment.config.env import EnvConfig
 from racing_toolbox.interface.config import GameConfiguration
-from racing_toolbox.trainer.config import TrainingConfig
+from racing_toolbox.training.config import TrainingConfig
 
 
 @pytest.mark.parametrize(
