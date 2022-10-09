@@ -3,7 +3,7 @@ import numpy as np
 from typing import Optional
 
 from racing_toolbox.interface import GameInterface
-from racing_toolbox.enviroment.final_state import FinalStateDetector
+from racing_toolbox.environment.final_state import FinalStateDetector
 
 Frame = Optional[np.ndarray]
 

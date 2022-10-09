@@ -21,7 +21,7 @@ class Trainer:
         self._algorithm: Algorithm = algo.construct_cls(config)
         if checkpoint_path:
             logger.info(f"restoring from checkpoint {checkpoint_path}")
-            self._algorithm.restore(checkpoint_path)
+            self._algorithm.restore(str(checkpoint_path))
 
     @property
     def algorithm(self) -> Algorithm:
@@ -36,13 +36,14 @@ class Trainer:
             self.make_checkpoint()
             self._log(results)
             if self._stop_criterion(results, i):
+                logger.info("Stop criterion satisfied. Exiting training loop.")
                 break
 
     def _stop_criterion(self, metrics, iter) -> bool:
         "decide wether to stop training loop"
         return (
-            metrics["episode_reward_mean"] >= self._stop_reward
-            or iter >= self._max_iterations
+            metrics["episode_reward_mean"] >= self.config.stop_reward
+            or iter >= self.config.max_iterations
         )
 
     def _log(self, raw_logs: dict) -> None:
@@ -71,6 +72,6 @@ class Trainer:
         return json.loads(cleaned)
 
     @staticmethod
-    def _filter_and_format_stats(stats: dict) -> dict:
+    def _filter_and_format_stats(stats: dict) -> str:
         rw_mean = stats.get("episode_reward_mean")
         return f"episode_reward_mean: {rw_mean}"

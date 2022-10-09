@@ -47,5 +47,4 @@ def get_game_config() -> GameConfiguration:
                 ),
             )
         },
-        max_episode_length=1_000,
     )

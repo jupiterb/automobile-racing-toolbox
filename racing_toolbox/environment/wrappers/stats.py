@@ -2,7 +2,7 @@ import wandb
 import gym
 import logging
 
-from racing_toolbox.enviroment.utils.logging import (
+from racing_toolbox.environment.utils.logging import (
     describe_observation,
     describe_reward,
 )

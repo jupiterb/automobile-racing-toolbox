@@ -1,7 +1,7 @@
 from gym.wrappers import GrayScaleObservation, ResizeObservation, FrameStack, TimeLimit
 import gym
-from racing_toolbox.enviroment.wrappers import *
-from racing_toolbox.enviroment.config import (
+from racing_toolbox.environment.wrappers import *
+from racing_toolbox.environment.config import (
     RewardConfig,
     ObservationConfig,
     FinalValueDetectionParameters,
@@ -9,8 +9,8 @@ from racing_toolbox.enviroment.config import (
 from racing_toolbox.interface.controllers.keyboard import KeyboardController
 
 from racing_toolbox.interface.config import GameConfiguration
-from racing_toolbox.enviroment.final_state.detector import FinalStateDetector
-from racing_toolbox.enviroment.config.env import EnvConfig
+from racing_toolbox.environment.final_state.detector import FinalStateDetector
+from racing_toolbox.environment.config.env import EnvConfig
 from racing_toolbox.interface import from_config
 
 

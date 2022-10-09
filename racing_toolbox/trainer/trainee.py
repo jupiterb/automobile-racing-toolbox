@@ -1,8 +1,8 @@
 import logging
 from collections import namedtuple
 from ray.rllib.env.policy_client import PolicyClient
-from racing_toolbox.enviroment.builder import setup_env
-from racing_toolbox.enviroment.config.env import EnvConfig
+from racing_toolbox.environment.builder import setup_env
+from racing_toolbox.environment.config.env import EnvConfig
 from racing_toolbox.interface.config import GameConfiguration
 
 logger = logging.getLogger(__name__)

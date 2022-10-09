@@ -8,15 +8,15 @@ from gym.wrappers import TimeLimit
 
 from racing_toolbox.conf.example_configuration import get_game_config
 from racing_toolbox.interface.models.game_configuration import GameConfiguration
-from racing_toolbox.enviroment.config.training import DQNConfig
-from racing_toolbox.enviroment.wrappers.stats import WandbWrapper, LoggingWrapper
-from racing_toolbox.enviroment.final_state.detector import FinalStateDetector
-from racing_toolbox.enviroment.config import (
+from racing_toolbox.environment.config.training import DQNConfig
+from racing_toolbox.environment.wrappers.stats import WandbWrapper, LoggingWrapper
+from racing_toolbox.environment.final_state.detector import FinalStateDetector
+from racing_toolbox.environment.config import (
     FinalValueDetectionParameters,
     RewardConfig,
     ObservationConfig,
 )
-from racing_toolbox.enviroment.builder import reward_wrappers, observation_wrappers
+from racing_toolbox.environment.builder import reward_wrappers, observation_wrappers
 
 import logging
 
@@ -24,7 +24,7 @@ logging.basicConfig(level=logging.INFO)
 
 from racing_toolbox.interface import from_config
 from racing_toolbox.interface.controllers import KeyboardController
-from racing_toolbox.enviroment.wrappers import DiscreteActionToVectorWrapper
+from racing_toolbox.environment.wrappers import DiscreteActionToVectorWrapper
 
 
 def get_configuration() -> tuple[

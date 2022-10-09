@@ -11,18 +11,11 @@ class TrainingParams(TrainingConfig):
     class Config:
         arbitrary_types_allowed = True
 
-    env: Union[gym.Env, str]
+    env: gym.Env
     input_: Optional[Callable[[Any], InputReader]] = None
 
     @validator("env")
     def check_env(cls, v):
-        if isinstance(v, str):
-            try:
-                _ = spec(v)
-            except gym.error.Error as exc:
-                raise ValueError(f"invalid env: {exc}")
-            return v
-
         if not isinstance(v, gym.Env):
             raise ValueError
         if not hasattr(v, "observation_space"):

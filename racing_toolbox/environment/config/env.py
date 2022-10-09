@@ -1,7 +1,7 @@
 from pydantic import BaseModel, PositiveInt
 
-from racing_toolbox.enviroment.config.reward import RewardConfig
-from racing_toolbox.enviroment.config.observation import ObservationConfig
+from racing_toolbox.environment.config.reward import RewardConfig
+from racing_toolbox.environment.config.observation import ObservationConfig
 
 
 class EnvConfig(BaseModel):

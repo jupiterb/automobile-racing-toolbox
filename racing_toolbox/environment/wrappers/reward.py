@@ -4,7 +4,7 @@ import math
 import numpy as np
 from collections import deque
 from typing import Callable
-from racing_toolbox.enviroment.utils.logging import log_reward
+from racing_toolbox.environment.utils.logging import log_reward
 
 
 class OffTrackPunishment(gym.RewardWrapper):

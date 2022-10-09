@@ -48,8 +48,9 @@ class TrainingConfig(BaseModel):
     compress_observations: bool = False
     gamma: PositiveFloat = 0.99
     lr: PositiveFloat = 1e-4
-    train_batch_size: PositiveFloat = 200
-    max_iterations: PositiveInt = float("inf")
+    train_batch_size: PositiveInt = 200
+    max_iterations: PositiveInt = 100
+    stop_reward: float = float("inf")
 
     log_level: str = "INFO"
     model: ModelConfig

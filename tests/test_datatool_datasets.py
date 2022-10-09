@@ -6,8 +6,8 @@ import numpy as np
 from racing_toolbox.datatool import DatasetContainer, preprocess
 from racing_toolbox.datatool.datasets import FromMemoryDataset
 from racing_toolbox.datatool.services import InMemoryDatasetService
-from racing_toolbox.enviroment.config import ObservationConfig
-from racing_toolbox.enviroment.builder import observation_wrappers
+from racing_toolbox.environment.config import ObservationConfig
+from racing_toolbox.environment.builder import observation_wrappers
 
 
 @pytest.fixture

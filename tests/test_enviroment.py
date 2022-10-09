@@ -4,17 +4,18 @@ import numpy as np
 import gym
 from PIL import Image
 
-from racing_toolbox.enviroment import RealTimeEnviroment
-from racing_toolbox.enviroment.final_state import FinalStateDetector
-from racing_toolbox.enviroment.config import FinalValueDetectionParameters
+from racing_toolbox.environment import RealTimeEnviroment
+from racing_toolbox.environment.final_state import FinalStateDetector
+from racing_toolbox.environment.config import FinalValueDetectionParameters
 from racing_toolbox.conf import get_game_config
 from racing_toolbox.interface import from_config, GameInterface
 from racing_toolbox.interface.screen import LocalScreen
 from racing_toolbox.interface.controllers import KeyboardController
-from racing_toolbox.enviroment.wrappers.action import (
+from racing_toolbox.environment.wrappers.action import (
     DiscreteActionToVectorWrapper,
     SplitBySignActionWrapper,
 )
+from tests import TEST_DIR
 
 
 @pytest.fixture
@@ -22,7 +23,9 @@ def my_interface(monkeypatch) -> GameInterface:
     # take screeshot with speed = 0 and same shape like in configuration
     def mock_get_screenshot(*args, **kwargs):
         return np.array(
-            Image.open(f"assets/screenshots/random/trackmania_1000x800_0.jpeg")
+            Image.open(
+                TEST_DIR / f"assets/screenshots/random/trackmania_1000x800_0.jpeg"
+            )
         )
 
     monkeypatch.setattr(LocalScreen, "_grab_image", mock_get_screenshot)

@@ -6,7 +6,7 @@ from racing_toolbox.observation.config import LidarConfig, TrackSegmentationConf
 import gym.spaces
 from racing_toolbox.observation.lidar import Lidar
 from racing_toolbox.observation.track_segmentation import TrackSegmenter
-from racing_toolbox.enviroment.utils.logging import log_observation
+from racing_toolbox.environment.utils.logging import log_observation
 
 
 class SqueezingWrapper(gym.ObservationWrapper):
