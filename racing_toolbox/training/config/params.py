@@ -14,7 +14,7 @@ class TrainingParams(TrainingConfig):
     env: gym.Env
     input_: Optional[Callable[[Any], InputReader]] = None
 
-    @validator("env")
+    @validator("env", allow_reuse=True)
     def check_env(cls, v):
         if not isinstance(v, gym.Env):
             raise ValueError
