@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 Address = namedtuple("Address", ["host", "port"])
 
 
-class Trainee:
+class Worker:
     def __init__(
         self, policy_address: Address, game_conf: GameConfiguration, env_conf: EnvConfig
     ):

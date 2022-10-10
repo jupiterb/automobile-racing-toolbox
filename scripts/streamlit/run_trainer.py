@@ -1,11 +1,10 @@
-from cgitb import enable
 import functools
+from http import HTTPStatus
 from pydantic import ValidationError
-import streamlit_pydantic as sp
 import streamlit as st
 import json
 import ipaddress
-import random
+import requests
 
 from racing_toolbox.environment.config.env import EnvConfig
 from racing_toolbox.interface.config import GameConfiguration
@@ -64,14 +63,26 @@ def syn_with_worker(c, i):
     Disable worker address input from changing, send request to worker,
     if not successfull show error msg and enable input
     """
+    if f"worker{i}_synced" not in st.session_state:
+        st.session_state[f"worker{i}_synced"] = False
+
     st.session_state[f"address{i}_disabled"] = True
     st.session_state[f"disable_sync{i}"] = True
-    if random.random() < 0.5:
+    address = st.session_state[f"address{i}"] + "/worker/sync"
+    response = requests.get(
+        address,
+        json={
+            "game_config": st.session_state["game_config"].json(),
+            "env_config": st.session_state["env_config"].json(),
+        },
+    )
+    if response.status_code == HTTPStatus.OK.value:
+        c.write("Synced succesfully")
+        st.session_state[f"worker{i}_synced"] = True
+    else:
         st.session_state[f"address{i}_disabled"] = False
         st.session_state[f"disable_sync{i}"] = False
-        c.write("unsuccessfull sync")
-    else:
-        c.write("Synced succesfully")
+        c.write(f"unsuccessfull sync: {response.content}, {response.status_code}")
 
 
 def setup_workers(cols):
@@ -113,15 +124,50 @@ def setup_workers(cols):
             )
 
 
+def training_panel():
+    def run_training():
+        st.session_state["training_running"] = True 
+        ... # TODO: start training in new process, iterate over each worker and send request with own address and port
+
+    address = st.text_input(
+        "trainer host",
+        key=f"trainer_host",
+        value="0.0.0.0",
+        disabled=st.session_state["training_running"],
+    )
+    port = st.number_input(
+        "trainer port",
+        key=f"trainer_port",
+        min_value=8000,
+        max_value=8100,
+        step=1,
+        value=8000,
+        disabled=st.session_state["training_running"],
+    )
+    if address and port:
+        try:
+            ip = ipaddress.ip_address(address)
+            setattr(st.session_state, f"trainer_address", f"{ip}:{port}")
+        except ValueError:
+            st.error("IP address {address} is not valid")
+    if "trainer_address" in st.session_state:
+        st.button("run_training", key="training_running", on_click=run_training)
+
+
 def main():
     get_files()
     if "training_config" in st.session_state:
         training_config = st.session_state["training_config"]
         cols = st.columns(training_config.num_rollout_workers)
+        synced_workers = 0
         for i, c in enumerate(cols):
             c.write(f"Worker {i}")
         if "env_config" in st.session_state:
             setup_workers(cols)
+        if st.session_state.get("worker{i}_synced"):
+            synced_workers += 1
+        if synced_workers == training_config.num_rollout_workers:
+
         "session:", st.session_state
 
 
