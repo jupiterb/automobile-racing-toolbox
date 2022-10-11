@@ -12,7 +12,7 @@ class TrainingParams(TrainingConfig):
         arbitrary_types_allowed = True
 
     env: gym.Env
-    input_: Optional[Callable[[Any], InputReader]] = None
+    input_: Optional[Callable[[Any], Optional[InputReader]]] = None
 
     @validator("env", allow_reuse=True)
     def check_env(cls, v):
