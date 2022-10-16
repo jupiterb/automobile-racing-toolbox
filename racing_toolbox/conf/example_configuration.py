@@ -9,7 +9,7 @@ def get_game_config() -> GameConfiguration:
     return GameConfiguration(
         game_id="trackmania",
         process_name="Trackmania Nations Forever",
-        window_size=(750, 600),
+        window_size=(900, 720),
         discrete_actions_mapping={
             "FORWARD": Key.up,
             "BREAK": Key.down,
