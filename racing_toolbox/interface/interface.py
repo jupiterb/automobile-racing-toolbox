@@ -1,18 +1,11 @@
-from typing import NamedTuple, Optional
+from typing import Optional
 import numpy as np
 import time
 
 from racing_toolbox.interface.screen import ScreenProvider
 from racing_toolbox.interface.capturing import GameActionCapturing
 from racing_toolbox.interface.controllers import GameActionController
-from racing_toolbox.interface.ocr import Ocr
-from racing_toolbox.interface.models.screen_frame import ScreenFrame
-
-
-class FramedOcr(NamedTuple):
-    name: str
-    frame: ScreenFrame
-    ocr: Ocr
+from racing_toolbox.observation.utils.screen_frame import ScreenFrame
 
 
 class GameInterface:
@@ -23,14 +16,12 @@ class GameInterface:
         screen: ScreenProvider,
         controller: Optional[GameActionController] = None,
         capturing: Optional[GameActionCapturing] = None,
-        ocrs: list[FramedOcr] = [],
     ) -> None:
         self._name = game_id
         self._screen = screen
         self._reset_seconds = reset_seconds
         self._controller = controller
         self._capturing = capturing
-        self._ocrs = ocrs
 
     @property
     def screen(self) -> ScreenProvider:
@@ -50,12 +41,6 @@ class GameInterface:
 
     def grab_image(self) -> np.ndarray:
         return self._screen.grab_image()
-
-    def perform_ocr(self, on_last=True) -> dict[str, float]:
-        return {
-            name: ocr.read_numer(self._screen.grab_image(frame, on_last))
-            for name, frame, ocr in self._ocrs
-        }
 
     def apply_action(self, actions: dict[str, float]) -> None:
         if self._controller:

@@ -6,16 +6,20 @@ from racing_toolbox.environment.config import (
     ObservationConfig,
     FinalValueDetectionParameters,
 )
+from racing_toolbox.environment.wrappers.observation import CutImageWrapper
 from racing_toolbox.interface.controllers.keyboard import KeyboardController
 
 from racing_toolbox.interface.config import GameConfiguration
 from racing_toolbox.environment.final_state.detector import FinalStateDetector
 from racing_toolbox.environment.config.env import EnvConfig
 from racing_toolbox.interface import from_config
+from racing_toolbox.observation.utils.ocr import OcrTool, SevenSegmentsOcr
 
 
 def setup_env(game_config: GameConfiguration, env_config: EnvConfig) -> gym.Env:
     interface = from_config(game_config, KeyboardController)
+
+    ocr_tool = OcrTool(game_config.ocrs, SevenSegmentsOcr)
 
     final_st_det = FinalStateDetector(
         [
@@ -32,6 +36,7 @@ def setup_env(game_config: GameConfiguration, env_config: EnvConfig) -> gym.Env:
     env = gym.make(
         "custom/real-time-v0",
         game_interface=interface,
+        ocr_tool=ocr_tool,
         final_state_detector=final_st_det,
     )
 
@@ -68,6 +73,7 @@ def reward_wrappers(env: gym.Env, config: RewardConfig) -> gym.Env:
 
 
 def observation_wrappers(env: gym.Env, config: ObservationConfig) -> gym.Env:
+    env = CutImageWrapper(env, config.frame)
     if config.track_segmentation_config:
         env = TrackSegmentationWrapper(env, config.track_segmentation_config)
         if config.lidar_config:

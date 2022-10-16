@@ -8,6 +8,7 @@ from racing_toolbox.datatool.datasets import FromMemoryDataset
 from racing_toolbox.datatool.services import InMemoryDatasetService
 from racing_toolbox.environment.config import ObservationConfig
 from racing_toolbox.environment.builder import observation_wrappers
+from racing_toolbox.observation.utils.screen_frame import ScreenFrame
 
 
 @pytest.fixture
@@ -148,7 +149,11 @@ def test_datasets_preprocessing(
     revert_action = lambda action: {str(i): a for i, a in enumerate(action)}
 
     observation_conf = ObservationConfig(
-        shape=(50, 100), stack_size=4, lidar_config=None, track_segmentation_config=None
+        frame=ScreenFrame(top=0.475, bottom=0.9125, left=0.01, right=0.99),
+        shape=(50, 100),
+        stack_size=4,
+        lidar_config=None,
+        track_segmentation_config=None,
     )
     wrapp_observations = lambda env: observation_wrappers(env, observation_conf)
 

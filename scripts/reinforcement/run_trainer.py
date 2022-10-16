@@ -10,6 +10,7 @@ from racing_toolbox.observation.config.lidar_config import LidarConfig
 from racing_toolbox.observation.config.track_segmentation_config import (
     TrackSegmentationConfig,
 )
+from racing_toolbox.observation.utils import ScreenFrame
 from racing_toolbox.environment.config import RewardConfig, ObservationConfig, EnvConfig
 from racing_toolbox.trainer.config.params import TrainingParams
 
@@ -85,7 +86,11 @@ def get_env_config() -> EnvConfig:
     )
 
     observation_conf = ObservationConfig(
-        shape=(84, 84), stack_size=4, lidar_config=None, track_segmentation_config=None
+        frame=ScreenFrame(top=0.475, bottom=0.9125, left=0.01, right=0.99),
+        shape=(84, 84),
+        stack_size=4,
+        lidar_config=None,
+        track_segmentation_config=None,
     )
 
     return EnvConfig(

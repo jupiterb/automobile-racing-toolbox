@@ -8,6 +8,7 @@ from racing_toolbox.environment.config import FinalValueDetectionParameters
 from racing_toolbox.conf import get_game_config
 from racing_toolbox.interface import from_config
 from racing_toolbox.interface.screen import LocalScreen
+from racing_toolbox.observation.utils.ocr import OcrTool, SevenSegmentsOcr
 from tests import TEST_DIR
 
 
@@ -77,7 +78,9 @@ def test_integration_with_ocr(monkeypatch) -> None:
 
     assert not detector.is_final()
 
-    interface = from_config(get_game_config())
+    config = get_game_config()
+    interface = from_config(config)
+    ocr_tool = OcrTool(config.ocrs, SevenSegmentsOcr)
 
     end_of_race_detected = False
 
@@ -88,6 +91,8 @@ def test_integration_with_ocr(monkeypatch) -> None:
             return np.array(Image.open(f"{path_to_images}/{image_name}"))
 
         monkeypatch.setattr(LocalScreen, "_grab_image", mock_get_screenshot)
-        end_of_race_detected = detector.is_final(interface.perform_ocr(on_last=False))
+        end_of_race_detected = detector.is_final(
+            ocr_tool.perform(interface.grab_image())
+        )
 
     assert end_of_race_detected

@@ -1,8 +1,8 @@
 import numpy as np
 import cv2
+from racing_toolbox.observation.utils.ocr.abstract import Ocr
+from racing_toolbox.observation.utils.ocr.config import OcrConfiguration
 
-from racing_toolbox.interface.ocr.abstract import Ocr
-from racing_toolbox.interface.config import OcrConfiguration
 
 import logging
 
@@ -29,7 +29,7 @@ class SevenSegmentsOcr(Ocr):
         self._config = configuration
         self.last_vel = 0
 
-    def read_numer(self, image: np.ndarray) -> int:
+    def read_number(self, image: np.ndarray) -> int:
         image = self._preprocess_image(image)
         digits_img = [
             SevenSegmentsOcr._move_left(digit) for digit in self._split_digits(image)

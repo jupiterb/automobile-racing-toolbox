@@ -7,14 +7,11 @@ from PIL import ImageGrab
 
 from racing_toolbox.interface.screen.abstract import ScreenProvider
 from racing_toolbox.interface.exceptions import WindowNotFound
-from racing_toolbox.interface.models import ScreenFrame
 
 
 class LocalScreen(ScreenProvider):
-    def __init__(
-        self, source: str, screen_size: tuple[int, int], default_frame: ScreenFrame
-    ) -> None:
-        super().__init__(source, screen_size, default_frame)
+    def __init__(self, source: str, screen_size: tuple[int, int]) -> None:
+        super().__init__(source, screen_size)
         user32 = windll.user32
         user32.SetProcessDPIAware()
 

@@ -1,8 +1,7 @@
 from typing import Type, Optional
 
-from racing_toolbox.interface.interface import GameInterface, FramedOcr
+from racing_toolbox.interface.interface import GameInterface
 from racing_toolbox.interface.config import GameConfiguration
-from racing_toolbox.interface.ocr import SevenSegmentsOcr
 from racing_toolbox.interface.capturing import (
     GameActionCapturing,
     KeyboardCapturing,
@@ -21,16 +20,7 @@ def from_config(
     controller_type: Optional[Type[GameActionController]] = None,
     capturing_type: Optional[Type[GameActionCapturing]] = None,
 ) -> GameInterface:
-    screen = LocalScreen(
-        config.process_name,
-        config.window_size,
-        config.observation_frame,
-    )
-
-    ocrs = [
-        FramedOcr(name, frame, SevenSegmentsOcr(ocr_config))
-        for name, (frame, ocr_config) in config.ocrs.items()
-    ]
+    screen = LocalScreen(config.process_name, config.window_size)
 
     controller = None
     if controller_type == KeyboardController:
@@ -58,5 +48,5 @@ def from_config(
         capturing = GamepadCapturing(gamepad_to_action_mapping)
 
     return GameInterface(
-        config.game_id, config.reset_seconds, screen, controller, capturing, ocrs
+        config.game_id, config.reset_seconds, screen, controller, capturing
     )

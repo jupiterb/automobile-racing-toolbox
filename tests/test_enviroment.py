@@ -3,6 +3,7 @@ from stable_baselines3.common.env_checker import check_env
 import numpy as np
 import gym
 from PIL import Image
+from racing_toolbox.conf.example_configuration import get_game_config
 
 from racing_toolbox.environment import RealTimeEnviroment
 from racing_toolbox.environment.final_state import FinalStateDetector
@@ -14,6 +15,7 @@ from racing_toolbox.environment.wrappers.action import (
     DiscreteActionToVectorWrapper,
     SplitBySignActionWrapper,
 )
+from racing_toolbox.observation.utils.ocr import OcrTool, SevenSegmentsOcr
 from tests import TEST_DIR
 
 
@@ -39,6 +41,8 @@ def my_interface(monkeypatch, game_conf) -> GameInterface:
 
 @pytest.fixture
 def my_env(my_interface) -> gym.Env:
+    ocr_tool = OcrTool(get_game_config().ocrs, SevenSegmentsOcr)
+
     detector = FinalStateDetector(
         [
             FinalValueDetectionParameters(
@@ -51,7 +55,7 @@ def my_env(my_interface) -> gym.Env:
         ]
     )
 
-    env = RealTimeEnviroment(my_interface, detector)
+    env = RealTimeEnviroment(my_interface, ocr_tool, detector)
     return env
 
 
