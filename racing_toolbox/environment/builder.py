@@ -2,6 +2,7 @@ from gym.wrappers import GrayScaleObservation, ResizeObservation, FrameStack, Ti
 import gym
 from racing_toolbox.environment.wrappers import *
 from racing_toolbox.environment.config import (
+    ActionConfig,
     RewardConfig,
     ObservationConfig,
     FinalValueDetectionParameters,
@@ -40,21 +41,21 @@ def setup_env(game_config: GameConfiguration, env_config: EnvConfig) -> gym.Env:
         final_state_detector=final_st_det,
     )
 
-    available_actions = [
-        {"FORWARD"},
-        {"FORWARD", "LEFT"},
-        {"FORWARD", "RIGHT"},
-        {"LEFT"},
-        {"RIGHT"},
-        set(),
-    ]
+    env = wrapp_env(env, env_config)
+    env = TimeLimit(env, env_config.max_episode_length)
+    return env
 
-    env = DiscreteActionToVectorWrapper(
-        env, available_actions, interface.get_possible_actions()
-    )
+
+def wrapp_env(env: gym.Env, env_config: EnvConfig) -> gym.Env:
+    env = action_wrappers(env, env_config.action_config)
     env = reward_wrappers(env, env_config.reward_config)
     env = observation_wrappers(env, env_config.observation_config)
-    env = TimeLimit(env, env_config.max_episode_length)
+    return env
+
+
+def action_wrappers(env: gym.Env, config: ActionConfig) -> gym.Env:
+    if config.available_actions is not None:
+        env = DiscreteActionToVectorWrapper(env, config.available_actions)
     return env
 
 

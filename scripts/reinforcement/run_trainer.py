@@ -11,7 +11,12 @@ from racing_toolbox.observation.config.track_segmentation_config import (
     TrackSegmentationConfig,
 )
 from racing_toolbox.observation.utils import ScreenFrame
-from racing_toolbox.environment.config import RewardConfig, ObservationConfig, EnvConfig
+from racing_toolbox.environment.config import (
+    ActionConfig,
+    RewardConfig,
+    ObservationConfig,
+    EnvConfig,
+)
 from racing_toolbox.trainer.config.params import TrainingParams
 
 PORT = 8000
@@ -64,6 +69,15 @@ def main():
 
 
 def get_env_config() -> EnvConfig:
+    action_config = ActionConfig(
+        available_actions={
+            "FORWARD": {0, 1, 2},
+            "BREAK": set(),
+            "RIGHT": {1, 3},
+            "LEFT": {2, 4},
+        }
+    )
+
     reward_conf = RewardConfig(
         speed_diff_thresh=3,
         memory_length=2,
@@ -94,6 +108,7 @@ def get_env_config() -> EnvConfig:
     )
 
     return EnvConfig(
+        action_config=action_config,
         reward_config=reward_conf,
         observation_config=observation_conf,
         max_episode_length=1_000,

@@ -3,18 +3,37 @@ import numpy as np
 
 
 class DiscreteActionToVectorWrapper(gym.ActionWrapper):
-    def __init__(
-        self, env: gym.Env, available_actions: list[set[str]], all_actions: list[str]
-    ) -> None:
+    def __init__(self, env: gym.Env, available_actions: dict[str, set[int]]) -> None:
         super().__init__(env)
-        self._available_actions = available_actions
-        self.action_space = gym.spaces.Discrete(len(self._available_actions))
-        self._all_actions = all_actions
+        actions_number = (
+            max([max(usages) for usages in available_actions.values() if any(usages)])
+            + 1
+        )
+        # for empty action:
+        actions_number += 1
+
+        self.action_space = gym.spaces.Discrete(actions_number)
+        self._actions = np.array(
+            [
+                [1.0 if action in usages else 0.0 for action in range(actions_number)]
+                for usages in available_actions.values()
+            ]
+        ).T
 
     def action(self, action: int) -> np.ndarray:
-        actions_set = self._available_actions[action]
-        return np.array(
-            [1.0 if action in actions_set else 0.0 for action in self._all_actions]
+        try:
+            return self._actions[action]
+        except IndexError:
+            raise ValueError(
+                f"Action {action} not supported. Supported actions are from 0 to {len(self._actions) - 1}"
+            )
+
+    def reverse_action(self, action: np.ndarray) -> int:
+        matches = [i for i, act in enumerate(self._actions) if (act == action).all()]
+        if len(matches):
+            return matches[0]
+        raise ValueError(
+            f"Action {action} not supported. Supported actions are {self._actions}"
         )
 
 

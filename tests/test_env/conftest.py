@@ -1,5 +1,4 @@
 import pytest
-from stable_baselines3.common.env_checker import check_env
 import numpy as np
 import gym
 from PIL import Image
@@ -11,10 +10,6 @@ from racing_toolbox.environment.config import FinalValueDetectionParameters
 from racing_toolbox.interface import from_config, GameInterface
 from racing_toolbox.interface.screen import LocalScreen
 from racing_toolbox.interface.controllers import KeyboardController
-from racing_toolbox.environment.wrappers.action import (
-    DiscreteActionToVectorWrapper,
-    SplitBySignActionWrapper,
-)
 from racing_toolbox.observation.utils.ocr import OcrTool, SevenSegmentsOcr
 from tests import TEST_DIR
 
@@ -57,27 +52,3 @@ def my_env(my_interface) -> gym.Env:
 
     env = RealTimeEnviroment(my_interface, ocr_tool, detector)
     return env
-
-
-def test_gym_implementation(my_env) -> None:
-    check_env(my_env)
-
-
-def test_env_for_gamepad(my_env) -> None:
-    env = SplitBySignActionWrapper(my_env, 0)
-    check_env(env)
-
-
-def test_env_for_keyboard(my_env, my_interface):
-    available_actions = [
-        {"FORWARD"},
-        {"FORWARD", "LEFT"},
-        {"FORWARD", "RIGHT"},
-        {"LEFT"},
-        {"RIGHT"},
-        set(),
-    ]
-    env = DiscreteActionToVectorWrapper(
-        my_env, available_actions, my_interface.get_possible_actions()
-    )
-    check_env(env)
