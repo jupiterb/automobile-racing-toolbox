@@ -5,6 +5,12 @@ from racing_toolbox.interface.models import GamepadControl
 from racing_toolbox.interface.config import GameConfiguration
 from racing_toolbox.observation.utils import ScreenFrame
 from racing_toolbox.observation.utils.ocr import OcrConfiguration
+from racing_toolbox.environment.config import (
+    EnvConfig,
+    ActionConfig,
+    ObservationConfig,
+    RewardConfig,
+)
 
 
 @pytest.fixture
@@ -47,4 +53,41 @@ def game_conf():
                 ),
             )
         },
+    )
+
+
+@pytest.fixture
+def env_config():
+    action_config = ActionConfig(
+        available_actions={
+            "FORWARD": {0, 1, 2},
+            "BREAK": set(),
+            "RIGHT": {1, 3},
+            "LEFT": {2, 4},
+        }
+    )
+
+    reward_conf = RewardConfig(
+        speed_diff_thresh=3,
+        memory_length=2,
+        speed_diff_trans=lambda x: float(x) ** 1.2,
+        off_track_reward_trans=lambda reward: -abs(reward) - 100,
+        clip_range=(-300, 300),
+        baseline=20,
+        scale=300,
+    )
+
+    observation_conf = ObservationConfig(
+        frame=ScreenFrame(top=0.475, bottom=0.9125, left=0.01, right=0.99),
+        shape=(84, 84),
+        stack_size=4,
+        lidar_config=None,
+        track_segmentation_config=None,
+    )
+
+    return EnvConfig(
+        action_config=action_config,
+        reward_config=reward_conf,
+        observation_config=observation_conf,
+        max_episode_length=1_000,
     )
