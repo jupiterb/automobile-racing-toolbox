@@ -10,14 +10,10 @@ class RewardConfig(BaseModel):
     memory_length: PositiveInt
 
     # function to be applied to the speed difference, to create reward boost/punishment
-    speed_diff_trans: Callable[[float], float] = Field(
-        default=lambda x: float(x) ** 1.2, exclude=True
-    )
+    speed_diff_exponent: float = 1.2
 
     # function to be applied to the reward when off-track
-    off_track_reward_trans: Callable[[float], float] = Field(
-        default=lambda reward: -abs(reward) - 100, exclude=True
-    )
+    off_track_reward: float = -1
 
     # wether to termiante when offtrack driving is detected
     off_track_termination: bool = True

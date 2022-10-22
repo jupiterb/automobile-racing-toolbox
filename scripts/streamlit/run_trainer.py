@@ -1,3 +1,4 @@
+import pickle
 import functools
 from http import HTTPStatus
 from multiprocessing import Process
@@ -181,7 +182,9 @@ def workers_panel() -> bool:
     )
 
 
-def _training_thread(game_config, env_config, training_config, host, port):
+def _training_thread(pickled_args):
+    game_config, env_config, training_config, host, port = pickle.loads(pickled_args)
+
     def input_(ioctx):
         if ioctx.worker_index > 0 or ioctx.worker.num_workers == 0:
             return PolicyServerInput(
@@ -192,9 +195,13 @@ def _training_thread(game_config, env_config, training_config, host, port):
         else:
             return None
 
+    print("INSIDE yooo")
+
     trainer_params = TrainingParams(
-        **training_config.dict(),
-        env=builder.setup_env(game_config, env_config),
+        **training_config,
+        env=builder.setup_env(
+            GameConfiguration(**game_config), EnvConfig(**env_config)
+        ),
         input_=input_,
     )
     trainer = Trainer(trainer_params)
@@ -202,22 +209,23 @@ def _training_thread(game_config, env_config, training_config, host, port):
 
 
 def training_panel():
-    def run_training():
+    def run_trainer():
         st.session_state["training_running"] = True
+        process_args = (
+            json.loads(st.session_state["game_config"].json()),
+            json.loads(st.session_state["env_config"].json()),
+            json.loads(st.session_state["training_config"].json()),
+            str(st.session_state["trainer_host"]),
+            int(st.session_state["trainer_port"]),
+        )
         trainer_process = Process(
             target=_training_thread,
-            args=(
-                st.session_state["game_config"],
-                st.session_state["env_config"],
-                st.session_state["training_config"],
-                st.session_state["trainer_host"],
-                st.session_state["trainer_port"],
-            ),
+            args=(pickle.dumps(process_args),),
         )
         st.session_state["trainer_process"] = trainer_process
         trainer_process.start()
 
-    def stop_training():
+    def stop_trainer():
         st.session_state["trainer_process"].kill()
         st.session_state["trainer_process"].join()
         st.session_state["training_running"] = False
@@ -228,16 +236,16 @@ def training_panel():
     if "trainer_process" not in st.session_state:
         st.session_state["trainer_process"] = None
 
-    st.button(
+    if st.button(
         "run_training",
         disabled=st.session_state["training_running"],
-        on_click=run_training,
-    )
-    st.button(
-        "stop training",
-        disabled=not st.session_state["training_running"],
-        on_click=stop_training,
-    )
+    ):
+        run_trainer()
+
+    if st.button("stop training", disabled=not st.session_state["training_running"]):
+        stop_trainer()
+
+    return st.session_state["training_running"]
 
 
 def main():
