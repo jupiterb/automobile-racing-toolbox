@@ -1,26 +1,28 @@
-import pickle
-import functools
-from http import HTTPStatus
 from multiprocessing import Process
 from pydantic import ValidationError
 import streamlit as st
 import json
 import ipaddress
-import requests
 
 from racing_toolbox.environment.config.env import EnvConfig
 from racing_toolbox.interface.config import GameConfiguration
-from racing_toolbox.training import Trainer, config, trainer
-from racing_toolbox.training.config.params import TrainingParams
 from racing_toolbox.training.config.user_defined import TrainingConfig
-from racing_toolbox.environment import builder
-from ray.rllib.env.policy_server_input import PolicyServerInput
+
+from scripts.streamlit.state_utils import (
+    SharedState,
+    Worker,
+    WorkerFailure,
+    start_trainer_process,
+)
+
+
+SHARED = SharedState()  # proxy for session state to get shared variables between panels
 
 
 def config_panel() -> bool:
     """loads game, training, env configs to session state. Returns True if its ready, False otherwise"""
     # TODO: make configs disappear from session_state after file was removed
-    with st.sidebar.header("Source data selection"):
+    with st.sidebar.header("Configuration"):
         st.sidebar.write("Game Configuration")
         game_data = st.sidebar.file_uploader(
             "Upload/select game config JSON data", type=["JSON"]
@@ -37,7 +39,7 @@ def config_panel() -> bool:
     if game_data:
         try:
             game_config = GameConfiguration(**json.load(game_data))
-            st.session_state["game_config"] = game_config
+            SHARED.game_config = game_config
         except ValidationError as e:
             st.error(f"Invalid game configuration. {e}")
     else:
@@ -46,7 +48,7 @@ def config_panel() -> bool:
     if env_data:
         try:
             env_config = EnvConfig(**json.load(env_data))
-            st.session_state["env_config"] = env_config
+            SHARED.env_config = env_config
         except ValidationError as e:
             st.error(f"Invalid env configuration. {e}")
     else:
@@ -55,15 +57,13 @@ def config_panel() -> bool:
     if training_data:
         try:
             training_config = TrainingConfig(**json.load(training_data))
-            st.session_state["training_config"] = training_config
+            SHARED.training_config = training_config
         except ValidationError as e:
             st.error(f"Invalid training configuration. {e}")
     else:
         st.error("Please select training config")
 
-    return all(
-        c in st.session_state for c in ["game_config", "training_config", "env_config"]
-    )
+    return SHARED.configs_ready
 
 
 def trainer_panel() -> bool:
@@ -85,11 +85,11 @@ def trainer_panel() -> bool:
     if address and port:
         try:
             ip = ipaddress.ip_address(address)
-            st.session_state[f"trainer_address"] = f"{ip}:{port}"
+            SHARED.trainer_address = f"{ip}:{port}"
         except ValueError:
             st.error("IP address {address} is not valid")
 
-    return "trainer_address" in st.session_state
+    return SHARED.trainer_ready
 
 
 def workers_panel() -> bool:
@@ -118,34 +118,6 @@ def workers_panel() -> bool:
             except ValueError:
                 c.error(f"IP address {address} is not valid")
 
-    def syn_with_worker(c, i):
-        """
-        Disable worker address input from changing, send request to worker,
-        if not successfull show error msg and enable input
-        """
-        address = "http://" + st.session_state[f"address{i}"] + "/worker/sync"
-        try:
-
-            response = requests.post(
-                address,
-                json={
-                    "game_config": json.loads(st.session_state["game_config"].json()),
-                    "env_config": json.loads(st.session_state["env_config"].json()),
-                    "policy_address": st.session_state["trainer_address"].split(":"),
-                },
-            )
-            if response.status_code == HTTPStatus.OK.value:
-                c.write("Synced succesfully")
-                return True
-            else:
-                c.write(
-                    f"unsuccessfull sync: {response.content}, {response.status_code}"
-                )
-                return False
-        except requests.ConnectionError as exc:
-            c.write(f"unable to establish connection with worker")
-            return False
-
     # setup shared state variables
     for i in range(st.session_state["training_config"].num_rollout_workers):
         if f"address{i}_disabled" not in st.session_state:
@@ -159,76 +131,59 @@ def workers_panel() -> bool:
     for i, c in enumerate(cols):
         c.write(f"Worker {i}")
         if address := get_address(c, i):
-            st.session_state[f"address{i}"] = address
+            if i not in SHARED.workerset._workers:
+                SHARED.workerset.add(Worker(address), i)
             st.session_state[f"disable_sync{i}"] = False
-        if (
-            c.button(
-                f"sync with {i}",
-                disabled=st.session_state[f"disable_sync{i}"],
-            )
-            and address
-        ):
             st.session_state[f"address{i}_disabled"] = True
-            st.session_state[f"disable_sync{i}"] = True
-            if syn_with_worker(c, i):
-                st.session_state[f"worker{i}_synced"] = True
-            else:
-                st.session_state[f"address{i}_disabled"] = False
-                st.session_state[f"disable_sync{i}"] = False
 
-    return all(
-        st.session_state[f"worker{i}_synced"]
-        for i in range(st.session_state["training_config"].num_rollout_workers)
+        if not st.session_state[f"disable_sync{i}"]:
+            if (
+                c.button(
+                    f"sync with {i}",
+                    disabled=st.session_state[f"disable_sync{i}"],
+                )
+                and address
+            ):
+                st.session_state[f"address{i}_disabled"] = True
+                st.session_state[f"disable_sync{i}"] = True
+                try:
+                    SHARED.workerset[i].sync(
+                        SHARED.game_config, SHARED.env_config, SHARED.trainer_address
+                    )
+                    st.session_state[f"worker{i}_synced"] = True
+                    c.write("Synced succesfully")
+                except WorkerFailure as exc:
+                    c.error(f"{exc.worker_address}: {exc.reason}")
+                    st.session_state[f"address{i}_disabled"] = False
+                    st.session_state[f"disable_sync{i}"] = False
+
+    return (
+        all(w.synced for w in SHARED.workerset.workers)
+        and len(SHARED.workerset) == SHARED.training_config.num_rollout_workers
     )
-
-
-def _training_thread(pickled_args):
-    game_config, env_config, training_config, host, port = pickle.loads(pickled_args)
-
-    def input_(ioctx):
-        if ioctx.worker_index > 0 or ioctx.worker.num_workers == 0:
-            return PolicyServerInput(
-                ioctx,
-                host,
-                port + ioctx.worker_index - (1 if ioctx.worker_index > 0 else 0),
-            )
-        else:
-            return None
-
-    print("INSIDE yooo")
-
-    trainer_params = TrainingParams(
-        **training_config,
-        env=builder.setup_env(
-            GameConfiguration(**game_config), EnvConfig(**env_config)
-        ),
-        input_=input_,
-    )
-    trainer = Trainer(trainer_params)
-    trainer.run()
 
 
 def training_panel():
     def run_trainer():
         st.session_state["training_running"] = True
         process_args = (
-            json.loads(st.session_state["game_config"].json()),
-            json.loads(st.session_state["env_config"].json()),
-            json.loads(st.session_state["training_config"].json()),
+            SHARED.game_config,
+            SHARED.env_config,
+            SHARED.training_config,
             str(st.session_state["trainer_host"]),
             int(st.session_state["trainer_port"]),
         )
         trainer_process = Process(
-            target=_training_thread,
-            args=(pickle.dumps(process_args),),
+            target=start_trainer_process,
+            args=process_args,
         )
         st.session_state["trainer_process"] = trainer_process
         trainer_process.start()
 
     def stop_trainer():
+        st.session_state["training_running"] = False
         st.session_state["trainer_process"].kill()
         st.session_state["trainer_process"].join()
-        st.session_state["training_running"] = False
 
     # initialize shared state attributes
     if "training_running" not in st.session_state:
@@ -241,9 +196,16 @@ def training_panel():
         disabled=st.session_state["training_running"],
     ):
         run_trainer()
+        for w in SHARED.workerset.workers:
+            w.start()
 
     if st.button("stop training", disabled=not st.session_state["training_running"]):
         stop_trainer()
+        for w in SHARED.workerset.workers:
+            try:
+                w.stop()
+            except WorkerFailure as f:
+                st.error(f"{f.worker_address}: {f.reason}: {f.details}")
 
     return st.session_state["training_running"]
 
@@ -253,7 +215,7 @@ def main():
     trainer_ready = trainer_panel() if configs_ready else False
     workers_ready = workers_panel() if trainer_ready else False
     training_ready = training_panel() if workers_ready and trainer_ready else False
-    "session:", st.session_state
+    # "session:", st.session_state
 
 
 if __name__ == "__main__":
