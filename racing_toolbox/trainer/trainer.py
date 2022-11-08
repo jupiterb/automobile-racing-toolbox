@@ -15,10 +15,17 @@ logger = logging.getLogger(__name__)
 
 
 class Trainer:
-    def __init__(self, config: TrainingParams, checkpoint_path: Optional[Path] = None):
+    def __init__(
+        self,
+        config: TrainingParams,
+        checkpoint_path: Optional[Path] = None,
+        pre_trained_weights: Optional[dict] = None,
+    ):
         self.config = config
         # lazy values
         self._algorithm: Algorithm = algo.construct_cls(config)
+        if pre_trained_weights:
+            self._algorithm.get_policy().set_weights(pre_trained_weights)
         if checkpoint_path:
             logger.info(f"restoring from checkpoint {checkpoint_path}")
             self._algorithm.restore(str(checkpoint_path))

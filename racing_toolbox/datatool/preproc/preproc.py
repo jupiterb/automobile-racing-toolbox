@@ -1,7 +1,10 @@
+import logging
+
 from racing_toolbox.datatool.utils import DatasetBasedEnv
 from racing_toolbox.environment.builder import wrapp_env
 from racing_toolbox.environment.config import EnvConfig
 
+logger = logging.getLogger(__name__)
 
 def preprocess(env: DatasetBasedEnv, config: EnvConfig):
     wrapped_env = wrapp_env(env, config)
@@ -15,6 +18,9 @@ def preprocess(env: DatasetBasedEnv, config: EnvConfig):
             except AttributeError:
                 # in case any ActionWrapper wasn't applied
                 action = wrapped_env.last_action
+            except Exception as e:
+                logger.warn(f"Exception while preprocessing: {e}")
+                continue
             yield obs, reward, action, done
         except AssertionError:
             # needed for make FrameStack wrapper working

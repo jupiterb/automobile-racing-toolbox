@@ -9,13 +9,6 @@ from racing_toolbox.datatool.datasets import FromMemoryDataset
 from racing_toolbox.datatool.services import InMemoryDatasetService
 from racing_toolbox.datatool.preproc import preprocess
 from racing_toolbox.datatool.utils import DatasetBasedEnv
-from racing_toolbox.environment.config import (
-    EnvConfig,
-    ActionConfig,
-    ObservationConfig,
-    RewardConfig,
-    reward,
-)
 from racing_toolbox.observation.utils.ocr import OcrTool, SevenSegmentsOcr
 from tests.conftest import env_config
 

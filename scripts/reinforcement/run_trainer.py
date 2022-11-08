@@ -2,6 +2,7 @@ import argparse
 from ray.rllib.env.policy_server_input import PolicyServerInput
 import ray
 import gym
+import pickle
 
 from racing_toolbox.trainer import Trainer, config
 from racing_toolbox.environment import builder
@@ -44,10 +45,10 @@ def main():
         fcnet_hiddens=[100, 256],
         fcnet_activation="relu",
         conv_filters=[
-            (32, 8, 4),
-            (64, 4, 2),
-            (64, 3, 1),
-            (64, 11, 1),
+            (32, (8, 8), 4),
+            (64, (4, 4), 2),
+            (64, (3, 3), 1),
+            (64, (8, 8), 1),
         ],
     )
     training_config = config.TrainingConfig(
@@ -64,7 +65,18 @@ def main():
         env=builder.setup_env(game_config, env_config),
         input_=input_,
     )
-    training = Trainer(trainer_params, checkpoint_path=args.restore)
+
+    bc_checkpoint = "./bc_model/checkpoint_000021/checkpoint-21"
+
+    with open(bc_checkpoint, "rb") as f:
+        model = pickle.load(f)
+
+    value = model["worker"]
+    weights = pickle.loads(value)["state"]["default_policy"]["weights"]
+
+    training = Trainer(
+        trainer_params, checkpoint_path=args.restore, pre_trained_weights=weights
+    )
     training.run()
 
 
@@ -101,7 +113,7 @@ def get_env_config() -> EnvConfig:
 
     observation_conf = ObservationConfig(
         frame=ScreenFrame(top=0.475, bottom=0.9125, left=0.01, right=0.99),
-        shape=(84, 84),
+        shape=(60, 60),
         stack_size=4,
         lidar_config=None,
         track_segmentation_config=None,
@@ -117,7 +129,7 @@ def get_env_config() -> EnvConfig:
 
 def get_algorithm_config(algo: str = "DQN"):
     if algo == "DQN":
-        buffer_config = config.ReplayBufferConfig(capacity=50_000)
+        buffer_config = config.ReplayBufferConfig(capacity=1_000)
         return config.DQNConfig(
             v_min=-100, v_max=100, replay_buffer_config=buffer_config
         )

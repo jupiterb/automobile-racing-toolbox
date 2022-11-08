@@ -22,7 +22,9 @@ def make_rllib_dataset(
     name: str,
 ):
     batch = _create_batch()
-    for obs, reward, action, done in preprocess(env, config):
+    for i, (obs, reward, action, done) in enumerate(preprocess(env, config)):
+        if not i % 100:
+            print(f"{i} data samples preprocessed")
         _add_to_batch(batch, obs, reward, done, action)
     _save(config, batch, dst_path, game, user, name)
 
@@ -41,12 +43,18 @@ def _create_batch() -> Batch:
 
 def _add_to_batch(batch: Batch, obs, reward, done, action) -> Batch:
     batch[SampleBatch.EPS_ID].append(1)
-    batch[SampleBatch.OBS].append(obs.to_list())
+    batch[SampleBatch.OBS].append(obs.tolist())
     batch[SampleBatch.ACTIONS].append(action)
     batch[SampleBatch.REWARDS].append(reward)
     batch[SampleBatch.DONES].append(done)
     batch[SampleBatch.ACTION_LOGP].append(0.0)
     return batch
+
+
+class _SetEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, set):
+            return list(obj)
 
 
 def _save(
@@ -61,9 +69,7 @@ def _save(
     if os.path.exists(path):
         raise ItemExists(game, user, name)
 
-    dirname = os.path.dirname(path)
-    if not os.path.exists(dirname):
-        os.makedirs(dirname)
+    os.makedirs(path)
 
     data_path = f"{path}/data.json"
     with open(data_path, "w") as f:
@@ -71,4 +77,4 @@ def _save(
 
     config_path = f"{path}/config.json"
     with open(config_path, "w") as f:
-        json.dump(config, f)
+        json.dump(config.dict(), f, cls=_SetEncoder)

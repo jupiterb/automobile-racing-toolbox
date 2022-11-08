@@ -59,7 +59,7 @@ def get_env_config() -> EnvConfig:
 
     observation_conf = ObservationConfig(
         frame=ScreenFrame(top=0.475, bottom=0.9125, left=0.01, right=0.99),
-        shape=(84, 84),
+        shape=(60, 60),
         stack_size=4,
         lidar_config=None,
         track_segmentation_config=None,

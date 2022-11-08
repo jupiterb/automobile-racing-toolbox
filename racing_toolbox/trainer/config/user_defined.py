@@ -28,7 +28,7 @@ class DQNConfig(AlgorithmConfig):
     v_max: float = 10
     dueling: bool = True
     double_q: bool = True
-    hiddens: list[int] = [256]
+    hiddens: list[int] = []
     replay_buffer_config: ReplayBufferConfig
 
     class Config:
