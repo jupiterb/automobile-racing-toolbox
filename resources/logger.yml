@@ -28,8 +28,13 @@ loggers:
     handlers: [file]
     propogate: false
 
-  racing_toolbox.enviroment.wrappers: 
+  racing_toolbox.environment.wrappers: 
     level: WARNING
+    handlers: [console]
+    propagate: false 
+
+  racing_toolbox.environment.real_time: 
+    level: DEBUG
     handlers: [console]
     propagate: false 
 

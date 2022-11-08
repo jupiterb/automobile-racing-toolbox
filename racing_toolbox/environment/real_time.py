@@ -4,7 +4,9 @@ from typing import Optional
 
 from racing_toolbox.interface import GameInterface
 from racing_toolbox.environment.final_state import FinalStateDetector
+from logging import getLogger
 
+logger = getLogger(__name__)
 Frame = Optional[np.ndarray]
 
 
@@ -49,6 +51,7 @@ class RealTimeEnviroment(gym.Env):
 
         state, features = self._fetch_state()
         reward = features["speed"]
+        logger.debug(f"current speed: {reward}")
 
         is_final = self._final_state_detector.is_final(new_features=features)
         self._last_frame = state
