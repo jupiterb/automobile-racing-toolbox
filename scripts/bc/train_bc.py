@@ -91,7 +91,7 @@ def get_env_config() -> EnvConfig:
 
 def get_train_config() -> UserDefinedBCConfig:
     return UserDefinedBCConfig(
-        num_iterations=4,
+        num_iterations=10,
         model=ModelConfig(
             fcnet_hiddens=[100, 256],
             fcnet_activation="relu",

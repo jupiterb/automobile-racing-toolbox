@@ -38,6 +38,7 @@ def _create_batch() -> Batch:
         SampleBatch.REWARDS: [],
         SampleBatch.DONES: [],
         SampleBatch.ACTION_LOGP: [],
+        SampleBatch.ACTION_PROB: [],
     }
 
 
@@ -48,6 +49,7 @@ def _add_to_batch(batch: Batch, obs, reward, done, action) -> Batch:
     batch[SampleBatch.REWARDS].append(reward)
     batch[SampleBatch.DONES].append(done)
     batch[SampleBatch.ACTION_LOGP].append(0.0)
+    batch[SampleBatch.ACTION_PROB].append(1.0)
     return batch
 
 

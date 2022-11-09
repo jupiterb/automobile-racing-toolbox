@@ -2,7 +2,7 @@ import gym
 import logging
 
 from ray.rllib.algorithms.bc import BCConfig
-from ray.rllib.offline.estimators import OffPolicyEstimator
+from ray.rllib.offline.estimators import ImportanceSampling
 
 from racing_toolbox.trainer.config import UserDefinedBCConfig
 
@@ -15,10 +15,10 @@ def train_bc(config: UserDefinedBCConfig, env: gym.Env, path_to_data: str):
         .evaluation(
             evaluation_interval=2,
             evaluation_duration=5,
-            off_policy_estimation_methods={"bc_eval": {"type": OffPolicyEstimator}},
+            off_policy_estimation_methods={"bc_eval": {"type": ImportanceSampling}},
         )
         .environment(
-            observation_space=env.observation_space, 
+            observation_space=env.observation_space,
             action_space=env.action_space,
         )
         .framework(framework="torch")
@@ -36,9 +36,10 @@ def train_bc(config: UserDefinedBCConfig, env: gym.Env, path_to_data: str):
         print(f"BC iteration {i}")
         results = behavior.train()
 
-        eval_results = results.get("evaluation")
-        if eval_results:
-            mean_reward = eval_results["episode_reward_mean"]
-            print(f"Iter={i} Mean reward={mean_reward}")
+        try:
+            bc_val_results = results["evaluation"]["off_policy_estimator"]["bc_eval"]
+            print(bc_val_results)
+        except:
+            pass
 
     return behavior
