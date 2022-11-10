@@ -11,14 +11,14 @@ from racing_toolbox.observation.config.track_segmentation_config import (
     TrackSegmentationConfig,
 )
 from racing_toolbox.observation.utils import ScreenFrame
-from racing_toolbox.trainer.trainee import Trainee, Address
+from racing_toolbox.training.worker.worker import Worker, Address
 
 
 def main():
     args = get_cli_args()
     game_config = get_game_config()
     env_config = get_env_config()
-    client = Trainee(
+    client = Worker(
         policy_address=Address(args.host, args.port),
         game_conf=game_config,
         env_conf=env_config,

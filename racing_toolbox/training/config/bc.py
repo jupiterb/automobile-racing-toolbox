@@ -1,7 +1,7 @@
 from __future__ import annotations
 from pydantic import BaseModel, PositiveFloat, PositiveInt
 
-from racing_toolbox.trainer.config import ModelConfig
+from racing_toolbox.training.config import ModelConfig
 
 
 class UserDefinedBCConfig(BaseModel):

@@ -1,9 +1,7 @@
-from pathlib import Path
+from racing_toolbox.const import ROOT_DIR
 from racing_toolbox.logger import setup_logger
 import logging
 
-
-ROOT_DIR = Path(__file__).parent
 
 __logger_config_path = ROOT_DIR.parent / "resources/logger.yml"
 if __logger_config_path.exists():

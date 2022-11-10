@@ -8,8 +8,8 @@ import json
 import ray
 import wandb
 
-import racing_toolbox.trainer.algorithm_constructor as algo
-from racing_toolbox.trainer.config.params import TrainingParams
+import racing_toolbox.training.algorithm_constructor as algo
+from racing_toolbox.training.config.params import TrainingParams
 
 logger = logging.getLogger(__name__)
 

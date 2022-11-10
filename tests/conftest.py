@@ -1,4 +1,5 @@
 import pytest
+from pydantic import BaseModel
 from pynput.keyboard import Key
 from vgamepad import XUSB_BUTTON
 from racing_toolbox.interface.models import GamepadControl
@@ -11,11 +12,20 @@ from racing_toolbox.environment.config import (
     ObservationConfig,
     RewardConfig,
 )
+import copy
+from racing_toolbox.interface.config import GameConfiguration, OcrConfiguration
+from racing_toolbox.environment.config import RewardConfig, ObservationConfig, EnvConfig
+from racing_toolbox.observation.config import TrackSegmentationConfig, LidarConfig
+from racing_toolbox.training.config import (
+    TrainingConfig,
+    ModelConfig,
+    DQNConfig,
+    ReplayBufferConfig,
+)
 
 
-@pytest.fixture
-def game_conf():
-    return GameConfiguration(
+DEFAULT_CONFIGS: dict[type[BaseModel], BaseModel] = {
+    GameConfiguration: GameConfiguration(
         game_id="trackmania",
         process_name="Trackmania Nations Forever",
         window_size=(800, 1000),
@@ -53,7 +63,64 @@ def game_conf():
                 ),
             )
         },
-    )
+    ),
+    EnvConfig: EnvConfig(
+        reward_config=RewardConfig(
+            speed_diff_thresh=3,
+            memory_length=2,
+            speed_diff_exponent=1.2,
+            off_track_reward=-100,
+            clip_range=(-300, 300),
+            baseline=20,
+            scale=300,
+        ),
+        observation_config=ObservationConfig(
+            frame=ScreenFrame(top=0.475, bottom=0.9125, left=0.01, right=0.99),
+            shape=(84, 84),
+            stack_size=4,
+            lidar_config=LidarConfig(
+                depth=3,
+                angles_range=(-90, 90, 10),
+                lidar_start=(0.9, 0.5),
+            ),
+            track_segmentation_config=TrackSegmentationConfig(
+                track_color=(200, 200, 200),
+                tolerance=80,
+                noise_reduction=5,
+            ),
+        ),
+        max_episode_length=1_000,
+        action_config=ActionConfig(
+            available_actions={
+                "FORWARD": {0, 1, 2},
+                "BREAK": set(),
+                "RIGHT": {1, 3},
+                "LEFT": {2, 4},
+            }
+        ),
+    ),
+    TrainingConfig: TrainingConfig(
+        num_rollout_workers=2,
+        rollout_fragment_length=10,
+        train_batch_size=12,
+        max_iterations=122,
+        algorithm=DQNConfig(
+            v_min=-100,
+            v_max=100,
+            replay_buffer_config=ReplayBufferConfig(capacity=50_000),
+        ),
+        model=ModelConfig(
+            fcnet_hiddens=[100, 256],
+            fcnet_activation="relu",
+            conv_filters=[
+                (32, 8, 4),
+                (64, 4, 2),
+                (64, 3, 1),
+                (64, 11, 1),
+            ],
+        ),
+    ),
+}
 
 
 @pytest.fixture
@@ -70,8 +137,8 @@ def env_config():
     reward_conf = RewardConfig(
         speed_diff_thresh=3,
         memory_length=2,
-        speed_diff_trans=lambda x: float(x) ** 1.2,
-        off_track_reward_trans=lambda reward: -abs(reward) - 100,
+        speed_diff_exponent=1.2,
+        off_track_reward=-100,
         clip_range=(-300, 300),
         baseline=20,
         scale=300,
@@ -91,3 +158,15 @@ def env_config():
         observation_config=observation_conf,
         max_episode_length=1_000,
     )
+
+
+@pytest.fixture
+def game_conf():
+    return copy.deepcopy(DEFAULT_CONFIGS[GameConfiguration])
+
+
+@pytest.fixture
+def config(request):
+    cls: type[BaseModel] = request.param
+    assert cls in DEFAULT_CONFIGS, f"No config testcase defined for {cls}"
+    return copy.deepcopy(DEFAULT_CONFIGS[cls])

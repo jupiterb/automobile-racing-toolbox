@@ -61,11 +61,11 @@ def action_wrappers(env: gym.Env, config: ActionConfig) -> gym.Env:
 
 def reward_wrappers(env: gym.Env, config: RewardConfig) -> gym.Env:
     env = SpeedDropPunishment(
-        env, config.memory_length, config.speed_diff_thresh, config.speed_diff_trans
+        env, config.memory_length, config.speed_diff_thresh, config.speed_diff_exponent
     )
     env = OffTrackPunishment(
         env,
-        metric=config.off_track_reward_trans,
+        off_track_reward=config.off_track_reward,
         terminate=config.off_track_termination,
     )
     env = ClipReward(env, *config.clip_range)

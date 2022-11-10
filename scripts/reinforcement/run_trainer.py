@@ -1,24 +1,25 @@
 import argparse
+from contextlib import contextmanager
 from ray.rllib.env.policy_server_input import PolicyServerInput
 import ray
 import gym
 import pickle
+from racing_toolbox.observation.utils.screen_frame import ScreenFrame
 
-from racing_toolbox.trainer import Trainer, config
+from racing_toolbox.training import Trainer, config
 from racing_toolbox.environment import builder
 from racing_toolbox.conf.example_configuration import get_game_config
 from racing_toolbox.observation.config.lidar_config import LidarConfig
 from racing_toolbox.observation.config.track_segmentation_config import (
     TrackSegmentationConfig,
 )
-from racing_toolbox.observation.utils import ScreenFrame
 from racing_toolbox.environment.config import (
-    ActionConfig,
     RewardConfig,
     ObservationConfig,
     EnvConfig,
+    ActionConfig,
 )
-from racing_toolbox.trainer.config.params import TrainingParams
+from racing_toolbox.training.config.params import TrainingParams
 
 PORT = 8000
 HOST = "0.0.0.0"
@@ -93,8 +94,8 @@ def get_env_config() -> EnvConfig:
     reward_conf = RewardConfig(
         speed_diff_thresh=3,
         memory_length=2,
-        speed_diff_trans=lambda x: float(x) ** 1.2,
-        off_track_reward_trans=lambda reward: -abs(reward) - 100,
+        speed_diff_exponent=1.2,
+        off_track_reward=-100,
         clip_range=(-300, 300),
         baseline=20,
         scale=300,
