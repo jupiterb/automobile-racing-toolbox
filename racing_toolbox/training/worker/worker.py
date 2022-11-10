@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 Address = namedtuple("Address", ["host", "port"])
 
 
-class Trainee:
+class Worker:
     def __init__(
         self, policy_address: Address, game_conf: GameConfiguration, env_conf: EnvConfig
     ):
@@ -34,7 +34,7 @@ class Trainee:
             self.client.log_returns(eid, reward, info=info)
 
             if done:
-                logger.info("Total reward:", rewards)
+                logger.info(f"Total reward: {rewards}")
                 rewards = 0.0
                 self.client.end_episode(eid, obs)
 

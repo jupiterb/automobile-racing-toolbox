@@ -4,7 +4,7 @@ from gym import spaces
 from collections import namedtuple
 import random
 
-from racing_toolbox.trainer.config import DQNConfig, ReplayBufferConfig, ModelConfig
+from racing_toolbox.training.config import DQNConfig, ReplayBufferConfig, ModelConfig
 
 
 SpaceParam = namedtuple("SpaceParam", ["observation", "action", "reward"])

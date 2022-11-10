@@ -24,11 +24,21 @@ handlers:
 
 loggers:
   root:
-    level: WARNING
-    handlers: [console,file]
+    level: INFO
+    handlers: [file]
     propogate: false
 
-  racing_toolbox.enviroment.wrappers: 
+  racing_toolbox.environment.wrappers: 
+    level: WARNING
+    handlers: [console]
+    propagate: false 
+
+  racing_toolbox.environment.real_time: 
+    level: DEBUG
+    handlers: [console]
+    propagate: false 
+
+  racing_toolbox.training.worker:
     level: INFO
-    handlers: [console, file]
+    handlers: [console]
     propagate: false 

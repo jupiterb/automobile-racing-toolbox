@@ -4,7 +4,7 @@ from pydantic import validator
 import gym
 from gym.envs.registration import spec
 
-from racing_toolbox.trainer.config.user_defined import TrainingConfig
+from racing_toolbox.training.config.user_defined import TrainingConfig
 
 
 class TrainingParams(TrainingConfig):
@@ -12,9 +12,9 @@ class TrainingParams(TrainingConfig):
         arbitrary_types_allowed = True
 
     env: gym.Env
-    input_: Optional[Callable[[Any], InputReader]] = None
+    input_: Optional[Callable[[Any], Optional[InputReader]]] = None
 
-    @validator("env")
+    @validator("env", allow_reuse=True)
     def check_env(cls, v):
         if not isinstance(v, gym.Env):
             raise ValueError

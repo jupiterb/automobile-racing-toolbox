@@ -8,9 +8,9 @@ from racing_toolbox.environment.utils.logging import log_reward
 
 
 class OffTrackPunishment(gym.RewardWrapper):
-    def __init__(self, env, metric: Callable[[float], float], terminate: bool):
+    def __init__(self, env, off_track_reward: float, terminate: bool):
         super().__init__(env)
-        self.metric = metric
+        self.off_track_reward = off_track_reward
         self.terminate = terminate
 
     def step(self, action):
@@ -21,9 +21,7 @@ class OffTrackPunishment(gym.RewardWrapper):
 
     @log_reward(__name__)
     def reward(self, reward, observation):
-        r = (
-            self.metric(reward) if self._is_off_track(observation) else reward
-        )  # abs to make sure it is still punishment
+        r = self.off_track_reward if self._is_off_track(observation) else reward
         return r
 
     def _is_off_track(self, observation) -> bool:
@@ -40,13 +38,13 @@ class SpeedDropPunishment(gym.RewardWrapper):
         env,
         memory_length: int,
         diff_thresh: float,
-        metric: Callable[[float], float],
+        exponent: float,
         only_diff: bool = False,
     ) -> None:
         super().__init__(env)
         self.reward_history = deque([0], maxlen=memory_length)
         self.threshold = diff_thresh
-        self.metric = metric
+        self.metric = lambda x: x**exponent
 
         if only_diff:
             self.get_base_reward = lambda r: 0
