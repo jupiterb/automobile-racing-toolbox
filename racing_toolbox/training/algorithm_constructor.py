@@ -1,6 +1,7 @@
 from ray.rllib import algorithms as alg
 from ray.rllib.algorithms import dqn
 
+from ray.rllib.algorithms.dqn import dqn
 from racing_toolbox.training.config import DQNConfig
 from racing_toolbox.training.config.params import TrainingParams
 from racing_toolbox.training.config.user_defined import AlgorithmConfig
@@ -15,8 +16,9 @@ def construct_cls(config: TrainingParams) -> alg.Algorithm:
     algo_conf = (
         conf_cls()
         .environment(
-            observation_space=config.env.observation_space,
-            action_space=config.env.action_space,
+            env=config.env_name,
+            observation_space=config.observation_space,
+            action_space=config.action_space,
         )
         .framework(framework="torch")
         .rollouts(

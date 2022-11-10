@@ -107,16 +107,16 @@ DEFAULT_CONFIGS: dict[type[BaseModel], BaseModel] = {
         algorithm=DQNConfig(
             v_min=-100,
             v_max=100,
-            replay_buffer_config=ReplayBufferConfig(capacity=50_000),
+            replay_buffer_config=ReplayBufferConfig(capacity=100),
         ),
         model=ModelConfig(
-            fcnet_hiddens=[100, 256],
+            fcnet_hiddens=[50],
             fcnet_activation="relu",
             conv_filters=[
-                (32, 8, 4),
-                (64, 4, 2),
-                (64, 3, 1),
-                (64, 11, 1),
+                (32, (8, 8), 4),
+                (64, (4, 4), 2),
+                (64, (3, 3), 1),
+                (64, (11, 11), 1),
             ],
         ),
     ),
@@ -163,6 +163,11 @@ def env_config():
 @pytest.fixture
 def game_conf():
     return copy.deepcopy(DEFAULT_CONFIGS[GameConfiguration])
+
+
+@pytest.fixture
+def training_config():
+    return copy.deepcopy(DEFAULT_CONFIGS[TrainingConfig])
 
 
 @pytest.fixture

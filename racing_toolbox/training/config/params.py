@@ -1,7 +1,7 @@
 from typing import Callable, Any, Optional, Union
 from ray.rllib.offline.input_reader import InputReader
 from pydantic import validator
-import gym
+from gym import spaces
 from gym.envs.registration import spec
 
 from racing_toolbox.training.config.user_defined import TrainingConfig
@@ -11,15 +11,18 @@ class TrainingParams(TrainingConfig):
     class Config:
         arbitrary_types_allowed = True
 
-    env: gym.Env
+    env_name: str
+    observation_space: spaces.Space
+    action_space: spaces.Space
     input_: Optional[Callable[[Any], Optional[InputReader]]] = None
 
-    @validator("env", allow_reuse=True)
-    def check_env(cls, v):
-        if not isinstance(v, gym.Env):
-            raise ValueError
-        if not hasattr(v, "observation_space"):
-            raise ValueError("given env doesnt have observation space defined")
-        if not hasattr(v, "action_space"):
-            raise ValueError("given env dosnt have action_space defined")
-        return v
+    # @validator("env", allow_reuse=True)
+    # def check_env(cls, v):
+    #     if isinstance(v, str):
+    #         return v
+    #     return v
+
+    @validator("observation_space", "action_space")
+    def check_space(cls, val):
+        assert isinstance(val, spaces.Space)
+        return val

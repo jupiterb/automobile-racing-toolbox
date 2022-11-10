@@ -15,7 +15,7 @@ class ReplayBufferConfig(BaseModel):
 class ModelConfig(BaseModel):
     fcnet_hiddens: list[int]  # number of units in hidden layers
     fcnet_activation: Activation
-    conv_filters: list[tuple[PositiveInt, PositiveInt, PositiveInt]] = []
+    conv_filters: list[tuple[PositiveInt, tuple[PositiveInt, PositiveInt], PositiveInt]] = []
     conv_activation: Activation = "relu"
 
 
@@ -39,10 +39,6 @@ class TrainingConfig(BaseModel):
     class Config:
         arbitrary_types_allowed = True
 
-    # TODO:
-    # - Callbacks,
-    # - test "remote_worker_envs" will it create env in client?,
-    # - how to configure trigger for video recorder?
     num_rollout_workers: int = Field(ge=0)
     rollout_fragment_length: PositiveInt
     compress_observations: bool = False
@@ -51,6 +47,7 @@ class TrainingConfig(BaseModel):
     train_batch_size: PositiveInt = 200
     max_iterations: PositiveInt = 100
     stop_reward: float = float("inf")
+    checkpoint_frequency: PositiveInt = 10
 
     log_level: str = "INFO"
     model: ModelConfig
