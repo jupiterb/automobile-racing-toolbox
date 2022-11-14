@@ -11,10 +11,10 @@ class TrainingParams(TrainingConfig):
     class Config:
         arbitrary_types_allowed = True
 
-    env_name: str
     observation_space: spaces.Space
     action_space: spaces.Space
-    input_: Optional[Callable[[Any], Optional[InputReader]]] = None
+    env_name: Optional[str] = None
+    input_: Optional[Union[Callable[[Any], Optional[InputReader]], list[str]]] = None
 
     # @validator("env", allow_reuse=True)
     # def check_env(cls, v):

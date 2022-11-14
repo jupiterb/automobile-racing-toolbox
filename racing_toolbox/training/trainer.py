@@ -43,7 +43,7 @@ class Trainer:
 
         for i in it.count(0, 1):
             results = self.algorithm.train()
-            if i + 1 % self.config.checkpoint_frequency == 0:
+            if (i + 1) % self.config.checkpoint_frequency == 0:
                 self._checkpoint_callback(self.algorithm)
             self._log(results)
             if self._stop_criterion(results, i):

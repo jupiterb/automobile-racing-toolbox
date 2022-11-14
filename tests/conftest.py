@@ -21,6 +21,7 @@ from racing_toolbox.training.config import (
     ModelConfig,
     DQNConfig,
     ReplayBufferConfig,
+    EvalConfig,
 )
 
 
@@ -100,10 +101,10 @@ DEFAULT_CONFIGS: dict[type[BaseModel], BaseModel] = {
         ),
     ),
     TrainingConfig: TrainingConfig(
-        num_rollout_workers=2,
+        num_rollout_workers=0,
         rollout_fragment_length=10,
         train_batch_size=12,
-        max_iterations=122,
+        max_iterations=2,
         algorithm=DQNConfig(
             v_min=-100,
             v_max=100,
@@ -119,6 +120,12 @@ DEFAULT_CONFIGS: dict[type[BaseModel], BaseModel] = {
                 (64, (11, 11), 1),
             ],
         ),
+    ),
+    EvalConfig: EvalConfig(
+        eval_name="test_evaluation",
+        eval_interval_frequency=1,
+        eval_duration_unit="timesteps",
+        eval_duration=10,
     ),
 }
 
@@ -165,7 +172,7 @@ def game_conf():
     return copy.deepcopy(DEFAULT_CONFIGS[GameConfiguration])
 
 
-@pytest.fixture
+@pytest.fixture()
 def training_config():
     return copy.deepcopy(DEFAULT_CONFIGS[TrainingConfig])
 
@@ -175,3 +182,8 @@ def config(request):
     cls: type[BaseModel] = request.param
     assert cls in DEFAULT_CONFIGS, f"No config testcase defined for {cls}"
     return copy.deepcopy(DEFAULT_CONFIGS[cls])
+
+
+@pytest.fixture
+def eval_conf():
+    return copy.deepcopy(DEFAULT_CONFIGS[EvalConfig])

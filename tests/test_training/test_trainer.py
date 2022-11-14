@@ -1,9 +1,11 @@
 import pytest
-from racing_toolbox.training import Trainer
-from racing_toolbox.training.config import TrainingParams
-from tests.test_training.conftest import SpaceParam
+from ray.rllib.algorithms import dqn, bc
 from gym.spaces import Box, Discrete
 from copy import deepcopy
+from racing_toolbox.training import Trainer
+from racing_toolbox.training.config import TrainingParams
+import racing_toolbox.training.algorithm_constructor as algo
+from tests.test_training.conftest import SpaceParam
 
 
 @pytest.mark.parametrize(
@@ -22,7 +24,7 @@ def test_if_trainer_runs_properly(fake_env, training_config):
         env_name=fake_env.name,
         observation_space=fake_env.observation_space,
         action_space=fake_env.action_space,
-        **training_config.dict()
+        **training_config.dict(),
     )
     training_params.num_rollout_workers = 0
     training_params.max_iterations = 2
@@ -50,10 +52,10 @@ def test_if_checkpoint_laoded(fake_env, training_config, tmp_path):
         env_name=fake_env.name,
         observation_space=fake_env.observation_space,
         action_space=fake_env.action_space,
-        **training_config.dict()
+        **training_config.dict(),
     )
     training_params.num_rollout_workers = 0
-    training_params.max_iterations = 2
+    training_params.max_iterations = 1
     training_params.train_batch_size = 1
     training_params.checkpoint_frequency = 1
 
@@ -61,17 +63,40 @@ def test_if_checkpoint_laoded(fake_env, training_config, tmp_path):
     tmp_file.parent.mkdir()
 
     checkpoint_dir = tmp_file.parent
-    checkpoint_callback = lambda algorithm: algorithm.save(str(checkpoint_dir))
+    latest = None
+
+    def checkpoint_callback(algorithm):
+        nonlocal latest
+        latest = algorithm.save(str(checkpoint_dir))
+
     trainer = Trainer(training_params, checkpoint_callback=checkpoint_callback)
     trainer.run()
 
-    latest_checkpoint = sorted(
-        [d for d in checkpoint_dir.glob("checkpoint*") if d.is_dir()],
-        key=lambda path: str(path),
-    )[-1]
-    print(latest_checkpoint)
-    new_trainer = Trainer(training_params, checkpoint_path=latest_checkpoint)
+    new_trainer = Trainer(training_params, checkpoint_path=latest)
 
-    assert str(trainer.algorithm.get_state()) == str(
-        new_trainer.algorithm.get_state()
+    assert str(trainer.algorithm.get_policy().get_weights()) == str(
+        new_trainer.algorithm.get_policy().get_weights()
     ), "weights not loaded properly"
+
+
+@pytest.mark.parametrize(
+    "fake_env",
+    [
+        (SpaceParam(Box(-1, 1, (84, 84)), Discrete(5), [1]), 5),
+    ],
+    indirect=True,
+)
+@pytest.mark.parametrize("construct_training_config", [dqn.DQN], indirect=True)
+def test_pretraining_with_bc(construct_training_config, bc_training_params):
+    # pretrain, and get weights
+    trainer = Trainer(bc_training_params)
+    # TODO(jupiterb): upload test data
+    # trainer.run()
+    bc_weights = trainer.algorithm.get_policy().get_weights()
+
+    config, _ = construct_training_config
+    new_trainer = Trainer(config, pre_trained_weights=bc_weights)
+
+    assert str(bc_weights) == str(
+        new_trainer.algorithm.get_policy().get_weights()
+    ), "weights do not match"
