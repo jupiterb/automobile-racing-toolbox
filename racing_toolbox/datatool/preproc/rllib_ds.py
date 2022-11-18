@@ -26,7 +26,7 @@ def make_rllib_dataset(
         if not i % 100:
             print(f"{i} data samples preprocessed")
         _add_to_batch(batch, obs, reward, done, action)
-    _save(config, batch, dst_path, game, user, name)
+    return _save(config, batch, dst_path, game, user, name)
 
 
 def _create_batch() -> Batch:
@@ -80,3 +80,5 @@ def _save(
     config_path = f"{path}/config.json"
     with open(config_path, "w") as f:
         json.dump(config.dict(), f, cls=_SetEncoder)
+
+    return data_path, config_path

@@ -1,4 +1,5 @@
 import pytest
+import shutil
 import gym
 from gym import spaces
 from collections import namedtuple
@@ -8,7 +9,10 @@ from ray.rllib.algorithms import bc
 from pathlib import Path
 from gym.spaces import Box, Discrete
 
-from tests import TEST_DIR
+from tests import TEST_DIR, game_conf, env_config
+
+from racing_toolbox.observation.utils.ocr.abstract import OcrTool
+from racing_toolbox.observation.utils.ocr.seven_segments import SevenSegmentsOcr
 from racing_toolbox.training.config import DQNConfig, ReplayBufferConfig, ModelConfig
 from racing_toolbox.training.config.params import TrainingParams
 from racing_toolbox.training.config import (
@@ -16,6 +20,10 @@ from racing_toolbox.training.config import (
     BCConfig,
     EvalConfig,
 )
+from racing_toolbox.datatool import DatasetContainer
+from racing_toolbox.datatool.datasets import FromMemoryDataset
+from racing_toolbox.datatool.preproc.rllib_ds import make_rllib_dataset
+from racing_toolbox.datatool.utils.dataset_based_env import DatasetBasedEnv
 
 SpaceParam = namedtuple("SpaceParam", ["observation", "action", "reward"])
 
@@ -90,8 +98,21 @@ def fake_env(request) -> RandomEnv:
 
 
 @pytest.fixture
-def offline_data_path():
-    return TEST_DIR / "assets/bcdata"
+def offline_data_path(game_conf, env_config, tmp_path):
+    game = "trackmania"
+    user = "test"
+    name = "tiny"
+
+    container = DatasetContainer()
+    dataset = FromMemoryDataset(f"{TEST_DIR}/assets/recordings", game, user, name)
+    assert container.try_add(dataset)
+
+    ocr_tool = OcrTool(game_conf.ocrs, SevenSegmentsOcr)
+    dataset_env = DatasetBasedEnv(container, ocr_tool)
+    offline_dataset_path, _ = make_rllib_dataset(
+        dataset_env, env_config, tmp_path, game, user, name
+    )
+    return offline_dataset_path
 
 
 @pytest.fixture
@@ -107,7 +128,7 @@ def construct_training_config(
         input_=None,
         env_name=fake_env.name,
         observation_space=fake_env.observation_space,
-        action_space=fake_env.action_space
+        action_space=fake_env.action_space,
     )
     if request.param == bc.BC:
         params.algorithm = BCConfig()
@@ -123,13 +144,12 @@ def construct_training_config(
 @pytest.fixture
 def bc_training_params(training_config, fake_env, eval_conf, offline_data_path):
     training_config.algorithm = BCConfig()
-    training_config.offline_data = [offline_data_path]
     training_config.evaluation_config = eval_conf
     params = TrainingParams(
         **training_config.dict(),
-        input_=None,
         env_name=fake_env.name,
         observation_space=fake_env.observation_space,
-        action_space=fake_env.action_space
+        action_space=fake_env.action_space,
+        input_=[offline_data_path],
     )
     return params

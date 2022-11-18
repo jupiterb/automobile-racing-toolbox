@@ -82,16 +82,14 @@ def test_if_checkpoint_laoded(fake_env, training_config, tmp_path):
 @pytest.mark.parametrize(
     "fake_env",
     [
-        (SpaceParam(Box(-1, 1, (84, 84)), Discrete(5), [1]), 5),
+        (SpaceParam(Box(-1, 1, (84, 84, 4)), Discrete(5), [1]), 5),
     ],
     indirect=True,
 )
 @pytest.mark.parametrize("construct_training_config", [dqn.DQN], indirect=True)
 def test_pretraining_with_bc(construct_training_config, bc_training_params):
-    # pretrain, and get weights
     trainer = Trainer(bc_training_params)
-    # TODO(jupiterb): upload test data
-    # trainer.run()
+    trainer.run()
     bc_weights = trainer.algorithm.get_policy().get_weights()
 
     config, _ = construct_training_config

@@ -1,11 +1,9 @@
 import pytest
-from pathlib import Path
 from ray.rllib import algorithms as alg
 from ray.rllib.algorithms import dqn, bc
 
 from racing_toolbox.training.algorithm_constructor import construct_cls
 from racing_toolbox.training.config import TrainingParams
-from racing_toolbox.training.config import TrainingConfig
 
 
 @pytest.mark.parametrize("construct_training_config", [bc.BC, dqn.DQN], indirect=True)

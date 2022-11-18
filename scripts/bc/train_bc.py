@@ -18,17 +18,23 @@ from racing_toolbox.datatool.utils import DatasetBasedEnv
 from racing_toolbox.observation.utils import ScreenFrame
 from racing_toolbox.observation.utils.ocr import OcrTool, SevenSegmentsOcr
 
-from racing_toolbox.trainer.config import ModelConfig
-from racing_toolbox.trainer.config import UserDefinedBCConfig
-from racing_toolbox.trainer.il import train_bc
+from racing_toolbox.training import Trainer
+from racing_toolbox.training.config import TrainingParams
+from racing_toolbox.training.config import ModelConfig
+from racing_toolbox.training.config.params import TrainingParams
+from racing_toolbox.training.config import (
+    TrainingConfig,
+    BCConfig,
+    EvalConfig,
+)
 
 
 def main(path_to_data: str, game: str, user: str, data: list[str]):
     game_config = get_game_config()
     env_config = get_env_config()
 
-    bc_dataset_root = "./bcdata"
-    bc_dataset_name = "bc"
+    bc_dataset_root = "./datasets"
+    bc_dataset_name = "bc1"
 
     if len(data):
         container = DatasetContainer()
@@ -45,12 +51,10 @@ def main(path_to_data: str, game: str, user: str, data: list[str]):
         )
 
     real_env = setup_env(game_config, env_config)
-    train_config = get_train_config()
-    path_to_data = f"{bc_dataset_root}/{game}/{user}/{bc_dataset_name}/data.json"
+    train_config = get_train_config(real_env)
 
-    algo = train_bc(train_config, real_env, path_to_data)
-
-    algo.save("./bc_model")
+    trainer = Trainer(train_config)
+    trainer.run()
 
 
 def get_env_config() -> EnvConfig:
@@ -66,8 +70,7 @@ def get_env_config() -> EnvConfig:
     reward_conf = RewardConfig(
         speed_diff_thresh=3,
         memory_length=2,
-        speed_diff_trans=lambda x: float(x) ** 1.2,
-        off_track_reward_trans=lambda reward: -abs(reward) - 100,
+        off_track_termination=True,
         clip_range=(-300, 300),
         baseline=20,
         scale=300,
@@ -89,11 +92,24 @@ def get_env_config() -> EnvConfig:
     )
 
 
-def get_train_config() -> UserDefinedBCConfig:
-    return UserDefinedBCConfig(
-        num_iterations=10,
+def get_train_config(env) -> TrainingParams:
+    eval_conf = EvalConfig(
+        eval_name="test_evaluation",
+        eval_interval_frequency=1,
+        eval_duration_unit="timesteps",
+        eval_duration=10,
+    )
+
+    training_config: TrainingConfig = TrainingConfig(
+        num_rollout_workers=0,
+        rollout_fragment_length=10,
+        train_batch_size=12,
+        max_iterations=2,
+        algorithm=BCConfig(),
+        # offline_data=[Path("./datasets/trackmania/ptr/bc1/data.json")],
+        evaluation_config=eval_conf,
         model=ModelConfig(
-            fcnet_hiddens=[100, 256],
+            fcnet_hiddens=[50],
             fcnet_activation="relu",
             conv_filters=[
                 (32, (8, 8), 4),
@@ -101,9 +117,16 @@ def get_train_config() -> UserDefinedBCConfig:
                 (64, (3, 3), 1),
                 (64, (8, 8), 1),
             ],
-            conv_activation="relu",
         ),
     )
+
+    params = TrainingParams(
+        **training_config.dict(),
+        input_=["./datasets/trackmania/ptr/bc1/data.json"],
+        observation_space=env.observation_space,
+        action_space=env.action_space,
+    )
+    return params
 
 
 if __name__ == "__main__":

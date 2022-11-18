@@ -51,9 +51,12 @@ def construct_cls(config: TrainingParams) -> alg.Algorithm:
                 conf.eval_name: {"type": ImportanceSampling}
             },
         )
-    if hasattr(algo_conf, "replay_buffer_config"):
+    try:
+        # hassttr() don't work
         buffer_conf = algo_conf.replay_buffer_config.update(
             **config.algorithm.replay_buffer_config.dict()
         )
         algo_conf.training(replay_buffer_config=buffer_conf)
+    except:
+        pass
     return algo_conf.build()
