@@ -3,6 +3,7 @@ from pydantic import ValidationError
 import streamlit as st
 import json
 import ipaddress
+import socket   
 
 from racing_toolbox.environment.config.env import EnvConfig
 from racing_toolbox.interface.config import GameConfiguration
@@ -85,6 +86,10 @@ def trainer_panel() -> bool:
     if address and port:
         try:
             ip = ipaddress.ip_address(address)
+            if ip == ipaddress.ip_address("0.0.0.0"):
+                hostname = socket.gethostname()   
+                ip = socket.gethostbyname(hostname)  
+                st.error(ip)
             SHARED.trainer_address = f"{ip}:{port}"
         except ValueError:
             st.error("IP address {address} is not valid")
