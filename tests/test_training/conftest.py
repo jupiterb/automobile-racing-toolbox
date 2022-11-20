@@ -101,7 +101,7 @@ def fake_env(request) -> RandomEnv:
 def offline_data_path(game_conf, env_config, tmp_path):
     game = "trackmania"
     user = "test"
-    name = "tiny"
+    name = "small"
 
     container = DatasetContainer()
     dataset = FromMemoryDataset(f"{TEST_DIR}/assets/recordings", game, user, name)

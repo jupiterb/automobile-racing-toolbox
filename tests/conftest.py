@@ -5,7 +5,7 @@ from vgamepad import XUSB_BUTTON
 from racing_toolbox.interface.models import GamepadControl
 from racing_toolbox.interface.config import GameConfiguration
 from racing_toolbox.observation.utils import ScreenFrame
-from racing_toolbox.observation.utils.ocr import OcrConfiguration
+from racing_toolbox.observation.utils.ocr import OcrConfiguration, OcrToolConfiguration
 from racing_toolbox.environment.config import (
     EnvConfig,
     ActionConfig,
@@ -13,7 +13,7 @@ from racing_toolbox.environment.config import (
     RewardConfig,
 )
 import copy
-from racing_toolbox.interface.config import GameConfiguration, OcrConfiguration
+from racing_toolbox.interface.config import GameConfiguration
 from racing_toolbox.environment.config import RewardConfig, ObservationConfig, EnvConfig
 from racing_toolbox.observation.config import TrackSegmentationConfig, LidarConfig
 from racing_toolbox.training.config import (
@@ -46,24 +46,32 @@ DEFAULT_CONFIGS: dict[type[BaseModel], BaseModel] = {
         reset_keys_sequence=[Key.enter],
         reset_gamepad_sequence=[XUSB_BUTTON.XUSB_GAMEPAD_X],
         frequency_per_second=8,
-        ocrs={
-            "speed": (
-                ScreenFrame(top=0.945, bottom=0.9875, left=0.918, right=0.9825),
-                OcrConfiguration(
-                    threshold=190,
-                    max_digits=3,
-                    segemnts_definitions={
-                        0: ScreenFrame(top=0, bottom=0.09, left=0.42, right=0.60),
-                        1: ScreenFrame(top=0.15, bottom=0.28, left=0.14, right=0.28),
-                        2: ScreenFrame(top=0.15, bottom=0.28, left=0.85, right=1.0),
-                        3: ScreenFrame(top=0.38, bottom=0.5, left=0.42, right=0.60),
-                        4: ScreenFrame(top=0.58, bottom=0.73, left=0.14, right=0.28),
-                        5: ScreenFrame(top=0.58, bottom=0.73, left=0.85, right=1.0),
-                        6: ScreenFrame(top=0.82, bottom=0.94, left=0.42, right=0.60),
-                    },
-                ),
-            )
-        },
+        ocrs=OcrToolConfiguration(
+            instances={
+                "speed": (
+                    ScreenFrame(top=0.945, bottom=0.9875, left=0.918, right=0.9825),
+                    OcrConfiguration(
+                        threshold=190,
+                        max_digits=3,
+                        segemnts_definitions={
+                            0: ScreenFrame(top=0, bottom=0.09, left=0.42, right=0.60),
+                            1: ScreenFrame(
+                                top=0.15, bottom=0.28, left=0.14, right=0.28
+                            ),
+                            2: ScreenFrame(top=0.15, bottom=0.28, left=0.85, right=1.0),
+                            3: ScreenFrame(top=0.38, bottom=0.5, left=0.42, right=0.60),
+                            4: ScreenFrame(
+                                top=0.58, bottom=0.73, left=0.14, right=0.28
+                            ),
+                            5: ScreenFrame(top=0.58, bottom=0.73, left=0.85, right=1.0),
+                            6: ScreenFrame(
+                                top=0.82, bottom=0.94, left=0.42, right=0.60
+                            ),
+                        },
+                    ),
+                )
+            },
+        ),
     ),
     EnvConfig: EnvConfig(
         reward_config=RewardConfig(

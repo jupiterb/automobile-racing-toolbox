@@ -1,5 +1,5 @@
 import argparse
-from racing_toolbox.conf.example_configuration import get_game_config
+from racing_toolbox.conf import get_game_config
 from racing_toolbox.environment.config import (
     ActionConfig,
     RewardConfig,

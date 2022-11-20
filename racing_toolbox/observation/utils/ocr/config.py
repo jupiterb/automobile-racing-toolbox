@@ -7,3 +7,7 @@ class OcrConfiguration(BaseModel):
     threshold: int
     max_digits: int
     segemnts_definitions: Optional[dict[int, ScreenFrame]]
+
+
+class OcrToolConfiguration(BaseModel):
+    instances: dict[str, tuple[ScreenFrame, OcrConfiguration]]

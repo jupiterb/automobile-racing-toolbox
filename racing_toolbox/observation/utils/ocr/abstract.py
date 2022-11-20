@@ -1,16 +1,13 @@
 import numpy as np
 from abc import ABC, abstractmethod
-from racing_toolbox.observation.utils import ScreenFrame
-from racing_toolbox.observation.utils.ocr.config import OcrConfiguration
+from racing_toolbox.observation.utils.ocr.config import OcrToolConfiguration
 
 
 class OcrTool:
-    def __init__(
-        self, config: dict[str, tuple[ScreenFrame, OcrConfiguration]], ocr_cls
-    ) -> None:
+    def __init__(self, config: OcrToolConfiguration, ocr_cls) -> None:
         self._ocrs = [
             (name, frame, ocr_cls(ocr_config))
-            for name, (frame, ocr_config) in config.items()
+            for name, (frame, ocr_config) in config.instances.items()
         ]
 
     def perform(self, image: np.ndarray) -> dict[str, float]:

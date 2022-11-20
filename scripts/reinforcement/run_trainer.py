@@ -8,7 +8,7 @@ from racing_toolbox.observation.utils.screen_frame import ScreenFrame
 
 from racing_toolbox.training import Trainer, config
 from racing_toolbox.environment import builder
-from racing_toolbox.conf.example_configuration import get_game_config
+from racing_toolbox.conf import get_game_config
 from racing_toolbox.observation.config.lidar_config import LidarConfig
 from racing_toolbox.observation.config.track_segmentation_config import (
     TrackSegmentationConfig,
@@ -61,21 +61,21 @@ def main():
         model=model_config,
     )
 
-    env=builder.setup_env(game_config, env_config)
+    env = builder.setup_env(game_config, env_config)
     trainer_params = TrainingParams(
         **training_config.dict(),
         observation_space=env.observation_space,
-        action_space=env.action_space
+        action_space=env.action_space,
         input_=input_,
     )
 
-    bc_checkpoint = "./bc_model/checkpoint_000021/checkpoint-21"
+    weights = None
+    if args.checkpoint_path is not None:
+        with open(args.checkpoint_path, "rb") as f:
+            model = pickle.load(f)
 
-    with open(bc_checkpoint, "rb") as f:
-        model = pickle.load(f)
-
-    value = model["worker"]
-    weights = pickle.loads(value)["state"]["default_policy"]["weights"]
+        value = model["worker"]
+        weights = pickle.loads(value)["state"]["default_policy"]["weights"]
 
     training = Trainer(
         trainer_params, checkpoint_path=args.restore, pre_trained_weights=weights
@@ -192,6 +192,14 @@ def get_cli_args():
         type=float,
         default=100.0,
         help="Reward at which we stop training.",
+    )
+    parser.add_argument(
+        "--checkpoint_path",
+        type=str,
+        required=False,
+        default=None,
+        help="Path to checkpoint with pretrained weights. "
+        "They will be used in initialization of the model if provided.",
     )
 
     args = parser.parse_args()
