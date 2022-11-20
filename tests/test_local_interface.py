@@ -1,3 +1,4 @@
+import pytest
 import numpy as np
 from PIL import Image
 from time import sleep
@@ -7,14 +8,16 @@ from racing_toolbox.interface.screen import LocalScreen
 from racing_toolbox.interface.controllers import KeyboardController
 from racing_toolbox.interface.capturing import KeyboardCapturing
 from racing_toolbox.observation.utils.ocr import OcrTool, SevenSegmentsOcr
-from racing_toolbox.conf import get_game_config
+from tests.conftest import game_conf
 from tests import TEST_DIR
 
 
-interface = from_config(get_game_config(), KeyboardController, KeyboardCapturing)
+@pytest.fixture
+def interface(game_conf):
+    return from_config(game_conf, KeyboardController, KeyboardCapturing)
 
 
-def test_integration_with_ocr(monkeypatch) -> None:
+def test_integration_with_ocr(monkeypatch, game_conf, interface) -> None:
     test_cases = {
         "trackmania_1000x800_0": 84.0,
         "trackmania_1000x800_1": 207.0,
@@ -28,7 +31,7 @@ def test_integration_with_ocr(monkeypatch) -> None:
         "trackmania_1000x800_9": 268.0,
     }
 
-    ocr_tool = OcrTool(get_game_config().ocrs, SevenSegmentsOcr)
+    ocr_tool = OcrTool(game_conf.ocrs, SevenSegmentsOcr)
 
     for screenshot, value in test_cases.items():
 
@@ -43,7 +46,7 @@ def test_integration_with_ocr(monkeypatch) -> None:
         assert ocr_result == {"speed": value}
 
 
-def test_keyboard_action() -> None:
+def test_keyboard_action(interface) -> None:
     interface.reset()
     sleep(0.01)  # we need to wait a bit for keylogger start
 

@@ -2,7 +2,6 @@ import pytest
 import numpy as np
 import gym
 from PIL import Image
-from racing_toolbox.conf import get_game_config
 
 from racing_toolbox.environment import RealTimeEnviroment
 from racing_toolbox.environment.final_state import FinalStateDetector
@@ -35,8 +34,8 @@ def my_interface(monkeypatch, game_conf) -> GameInterface:
 
 
 @pytest.fixture
-def my_env(my_interface) -> gym.Env:
-    ocr_tool = OcrTool(get_game_config().ocrs, SevenSegmentsOcr)
+def my_env(my_interface, game_conf) -> gym.Env:
+    ocr_tool = OcrTool(game_conf.ocrs, SevenSegmentsOcr)
 
     detector = FinalStateDetector(
         [

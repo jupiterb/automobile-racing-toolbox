@@ -1,1 +1,0 @@
-from racing_toolbox.conf.example_game_configuration import get_game_config

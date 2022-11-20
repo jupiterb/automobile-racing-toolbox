@@ -3,14 +3,13 @@ import random
 import shutil
 import numpy as np
 
-from racing_toolbox.conf import get_game_config
 from racing_toolbox.datatool import DatasetContainer
 from racing_toolbox.datatool.datasets import FromMemoryDataset
 from racing_toolbox.datatool.services import InMemoryDatasetService
 from racing_toolbox.datatool.preproc import preprocess
 from racing_toolbox.datatool.utils import DatasetBasedEnv
 from racing_toolbox.observation.utils.ocr import OcrTool, SevenSegmentsOcr
-from tests.conftest import env_config
+from tests.conftest import env_config, game_conf
 
 
 @pytest.fixture
@@ -105,7 +104,7 @@ def test_dataset_container(
 
 
 def test_datasets_preprocessing(
-    path, observations, shuffled_observations, env_config, monkeypatch
+    path, observations, shuffled_observations, env_config, monkeypatch, game_conf
 ):
     game = "trackmania"
     user = "pytest"
@@ -121,7 +120,7 @@ def test_datasets_preprocessing(
         dataset = FromMemoryDataset(path, game, user, name)
         container.try_add(dataset)
 
-    ocr_tool = OcrTool(get_game_config().ocrs, SevenSegmentsOcr)
+    ocr_tool = OcrTool(game_conf.ocrs, SevenSegmentsOcr)
     env = DatasetBasedEnv(container, ocr_tool)
 
     height, width, stack_szie = 20, 20, 5

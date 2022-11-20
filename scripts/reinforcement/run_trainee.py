@@ -1,11 +1,12 @@
 import argparse
-from racing_toolbox.conf import get_game_config
+import json
 from racing_toolbox.environment.config import (
     ActionConfig,
     RewardConfig,
     ObservationConfig,
     EnvConfig,
 )
+from racing_toolbox.interface.config import GameConfiguration
 from racing_toolbox.observation.config.lidar_config import LidarConfig
 from racing_toolbox.observation.config.track_segmentation_config import (
     TrackSegmentationConfig,
@@ -16,7 +17,7 @@ from racing_toolbox.training.worker.worker import Worker, Address
 
 def main():
     args = get_cli_args()
-    game_config = get_game_config()
+    game_config = get_game_config(args.game_config)
     env_config = get_env_config()
     client = Worker(
         policy_address=Address(args.host, args.port),
@@ -24,6 +25,11 @@ def main():
         env_conf=env_config,
     )
     client.run()
+
+
+def get_game_config(config_path):
+    with open(config_path) as gp:
+        return GameConfiguration(**json.load(gp))
 
 
 def get_env_config() -> EnvConfig:
@@ -79,7 +85,12 @@ def get_cli_args():
     parser.add_argument(
         "--port", type=int, default=9900, help="The port to use (on localhost)."
     )
-
+    parser.add_argument(
+        "--game_config",
+        type=str,
+        default="./config/trackmania/game_config.json",
+        help="Path to json with game configuartion",
+    )
     args = parser.parse_args()
     return args
 

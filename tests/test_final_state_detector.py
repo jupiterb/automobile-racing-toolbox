@@ -5,10 +5,10 @@ from PIL import Image
 
 from racing_toolbox.environment.final_state import FinalStateDetector
 from racing_toolbox.environment.config import FinalValueDetectionParameters
-from racing_toolbox.conf import get_game_config
 from racing_toolbox.interface import from_config
 from racing_toolbox.interface.screen import LocalScreen
 from racing_toolbox.observation.utils.ocr import OcrTool, SevenSegmentsOcr
+from tests.conftest import game_conf
 from tests import TEST_DIR
 
 
@@ -64,7 +64,7 @@ def test_final_state_detection() -> None:
     assert not detector.is_final()
 
 
-def test_integration_with_ocr(monkeypatch) -> None:
+def test_integration_with_ocr(monkeypatch, game_conf) -> None:
     final_features_values = [
         FinalValueDetectionParameters(
             feature_name="speed",
@@ -78,7 +78,7 @@ def test_integration_with_ocr(monkeypatch) -> None:
 
     assert not detector.is_final()
 
-    config = get_game_config()
+    config = game_conf
     interface = from_config(config)
     ocr_tool = OcrTool(config.ocrs, SevenSegmentsOcr)
 

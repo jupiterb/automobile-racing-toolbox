@@ -1,14 +1,12 @@
 import argparse
-from contextlib import contextmanager
 from ray.rllib.env.policy_server_input import PolicyServerInput
-import ray
-import gym
+import json
 import pickle
+from racing_toolbox.interface.config import GameConfiguration
 from racing_toolbox.observation.utils.screen_frame import ScreenFrame
 
 from racing_toolbox.training import Trainer, config
 from racing_toolbox.environment import builder
-from racing_toolbox.conf import get_game_config
 from racing_toolbox.observation.config.lidar_config import LidarConfig
 from racing_toolbox.observation.config.track_segmentation_config import (
     TrackSegmentationConfig,
@@ -39,7 +37,7 @@ def main():
         else:
             return None
 
-    game_config = get_game_config()
+    game_config = get_game_config(args.game_config)
     env_config = get_env_config()
     algo_config = get_algorithm_config(args.run)
     model_config = config.ModelConfig(
@@ -140,6 +138,11 @@ def get_algorithm_config(algo: str = "DQN"):
         raise NotImplementedError
 
 
+def get_game_config(config_path):
+    with open(config_path) as gp:
+        return GameConfiguration(**json.load(gp))
+
+
 def get_cli_args():
     """Create CLI parser and return parsed arguments"""
     parser = argparse.ArgumentParser()
@@ -200,6 +203,12 @@ def get_cli_args():
         default=None,
         help="Path to checkpoint with pretrained weights. "
         "They will be used in initialization of the model if provided.",
+    )
+    parser.add_argument(
+        "--game_config",
+        type=str,
+        default="./config/trackmania/game_config.json",
+        help="Path to json with game configuartion.",
     )
 
     args = parser.parse_args()
