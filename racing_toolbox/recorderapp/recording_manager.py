@@ -84,8 +84,8 @@ class EpisodeRecordingManager:
                 action = game_interface.read_action()
                 service.put(image, action)
 
-    @contextmanager
     @staticmethod
+    @contextmanager
     def __expect_time_duration(expected_duration: float):
         start = time.time()
         yield None

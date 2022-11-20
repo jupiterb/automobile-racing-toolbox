@@ -6,6 +6,7 @@ from racing_toolbox.observation.config import LidarConfig, TrackSegmentationConf
 import gym.spaces
 from racing_toolbox.observation.lidar import Lidar
 from racing_toolbox.observation.track_segmentation import TrackSegmenter
+from racing_toolbox.observation.utils import ScreenFrame
 from racing_toolbox.environment.utils.logging import log_observation
 
 
@@ -33,6 +34,16 @@ class RescaleWrapper(gym.ObservationWrapper):
     @log_observation(__name__)
     def observation(self, observation: np.ndarray):
         return observation / 255.0
+
+
+class CutImageWrapper(gym.ObservationWrapper):
+    def __init__(self, env: gym.Env, frame: ScreenFrame) -> None:
+        super().__init__(env)
+        self._frame = frame
+
+    @log_observation(__name__)
+    def observation(self, observation: np.ndarray) -> np.ndarray:
+        return self._frame.apply(observation)
 
 
 class LidarWrapper(gym.ObservationWrapper):

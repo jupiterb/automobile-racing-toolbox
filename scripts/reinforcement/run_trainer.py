@@ -1,17 +1,22 @@
 import argparse
-from contextlib import contextmanager
 from ray.rllib.env.policy_server_input import PolicyServerInput
-import ray
-import gym
+import json
+import pickle
+from racing_toolbox.interface.config import GameConfiguration
+from racing_toolbox.observation.utils.screen_frame import ScreenFrame
 
 from racing_toolbox.training import Trainer, config
 from racing_toolbox.environment import builder
-from racing_toolbox.conf.example_configuration import get_game_config
 from racing_toolbox.observation.config.lidar_config import LidarConfig
 from racing_toolbox.observation.config.track_segmentation_config import (
     TrackSegmentationConfig,
 )
-from racing_toolbox.environment.config import RewardConfig, ObservationConfig, EnvConfig
+from racing_toolbox.environment.config import (
+    RewardConfig,
+    ObservationConfig,
+    EnvConfig,
+    ActionConfig,
+)
 from racing_toolbox.training.config.params import TrainingParams
 
 PORT = 8000
@@ -32,17 +37,17 @@ def main():
         else:
             return None
 
-    game_config = get_game_config()
+    game_config = get_game_config(args.game_config)
     env_config = get_env_config()
     algo_config = get_algorithm_config(args.run)
     model_config = config.ModelConfig(
         fcnet_hiddens=[100, 256],
         fcnet_activation="relu",
         conv_filters=[
-            (32, 8, 4),
-            (64, 4, 2),
-            (64, 3, 1),
-            (64, 11, 1),
+            (32, (8, 8), 4),
+            (64, (4, 4), 2),
+            (64, (3, 3), 1),
+            (64, (8, 8), 1),
         ],
     )
     training_config = config.TrainingConfig(
@@ -54,21 +59,43 @@ def main():
         model=model_config,
     )
 
+    env = builder.setup_env(game_config, env_config)
     trainer_params = TrainingParams(
         **training_config.dict(),
-        env=builder.setup_env(game_config, env_config),
+        observation_space=env.observation_space,
+        action_space=env.action_space,
         input_=input_,
     )
-    training = Trainer(trainer_params, checkpoint_path=args.restore)
+
+    weights = None
+    if args.checkpoint_path is not None:
+        with open(args.checkpoint_path, "rb") as f:
+            model = pickle.load(f)
+
+        value = model["worker"]
+        weights = pickle.loads(value)["state"]["default_policy"]["weights"]
+
+    training = Trainer(
+        trainer_params, checkpoint_path=args.restore, pre_trained_weights=weights
+    )
     training.run()
 
 
 def get_env_config() -> EnvConfig:
+    action_config = ActionConfig(
+        available_actions={
+            "FORWARD": {0, 1, 2},
+            "BREAK": set(),
+            "RIGHT": {1, 3},
+            "LEFT": {2, 4},
+        }
+    )
+
     reward_conf = RewardConfig(
         speed_diff_thresh=3,
         memory_length=2,
-        speed_diff_trans=lambda x: float(x) ** 1.2,
-        off_track_reward_trans=lambda reward: -abs(reward) - 100,
+        speed_diff_exponent=1.2,
+        off_track_reward=-100,
         clip_range=(-300, 300),
         baseline=20,
         scale=300,
@@ -86,10 +113,15 @@ def get_env_config() -> EnvConfig:
     )
 
     observation_conf = ObservationConfig(
-        shape=(84, 84), stack_size=4, lidar_config=None, track_segmentation_config=None
+        frame=ScreenFrame(top=0.475, bottom=0.9125, left=0.01, right=0.99),
+        shape=(60, 60),
+        stack_size=4,
+        lidar_config=None,
+        track_segmentation_config=None,
     )
 
     return EnvConfig(
+        action_config=action_config,
         reward_config=reward_conf,
         observation_config=observation_conf,
         max_episode_length=1_000,
@@ -98,12 +130,17 @@ def get_env_config() -> EnvConfig:
 
 def get_algorithm_config(algo: str = "DQN"):
     if algo == "DQN":
-        buffer_config = config.ReplayBufferConfig(capacity=50_000)
+        buffer_config = config.ReplayBufferConfig(capacity=1_000)
         return config.DQNConfig(
             v_min=-100, v_max=100, replay_buffer_config=buffer_config
         )
     else:
         raise NotImplementedError
+
+
+def get_game_config(config_path):
+    with open(config_path) as gp:
+        return GameConfiguration(**json.load(gp))
 
 
 def get_cli_args():
@@ -158,6 +195,20 @@ def get_cli_args():
         type=float,
         default=100.0,
         help="Reward at which we stop training.",
+    )
+    parser.add_argument(
+        "--checkpoint_path",
+        type=str,
+        required=False,
+        default=None,
+        help="Path to checkpoint with pretrained weights. "
+        "They will be used in initialization of the model if provided.",
+    )
+    parser.add_argument(
+        "--game_config",
+        type=str,
+        default="./config/trackmania/game_config.json",
+        help="Path to json with game configuartion.",
     )
 
     args = parser.parse_args()

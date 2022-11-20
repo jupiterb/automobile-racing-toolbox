@@ -1,7 +1,8 @@
 from __future__ import annotations
 from collections import namedtuple
-from typing import Literal
+from typing import Literal, Union, Optional
 from pydantic import BaseModel, PositiveFloat, PositiveInt, Field
+from pathlib import Path
 
 
 Activation = Literal["relu", "tanh", "sigmoid"]
@@ -15,7 +16,9 @@ class ReplayBufferConfig(BaseModel):
 class ModelConfig(BaseModel):
     fcnet_hiddens: list[int]  # number of units in hidden layers
     fcnet_activation: Activation
-    conv_filters: list[tuple[PositiveInt, PositiveInt, PositiveInt]] = []
+    conv_filters: list[
+        tuple[PositiveInt, tuple[PositiveInt, PositiveInt], PositiveInt]
+    ] = []
     conv_activation: Activation = "relu"
 
 
@@ -28,21 +31,28 @@ class DQNConfig(AlgorithmConfig):
     v_max: float = 10
     dueling: bool = True
     double_q: bool = True
-    hiddens: list[int] = [256]
+    hiddens: list[int] = []
     replay_buffer_config: ReplayBufferConfig
 
     class Config:
         frozen = True
 
 
+class BCConfig(AlgorithmConfig):
+    pass
+
+
+class EvalConfig(BaseModel):
+    eval_name: Optional[str]
+    eval_interval_frequency: PositiveInt
+    eval_duration: PositiveInt
+    eval_duration_unit: Literal["episodes", "timesteps"] = "timesteps"
+
+
 class TrainingConfig(BaseModel):
     class Config:
         arbitrary_types_allowed = True
 
-    # TODO:
-    # - Callbacks,
-    # - test "remote_worker_envs" will it create env in client?,
-    # - how to configure trigger for video recorder?
     num_rollout_workers: int = Field(ge=0)
     rollout_fragment_length: PositiveInt
     compress_observations: bool = False
@@ -51,9 +61,13 @@ class TrainingConfig(BaseModel):
     train_batch_size: PositiveInt = 200
     max_iterations: PositiveInt = 100
     stop_reward: float = float("inf")
+    checkpoint_frequency: PositiveInt = 10
+
+    evaluation_config: Optional[EvalConfig] = None
 
     log_level: str = "INFO"
     model: ModelConfig
 
     # in rllib algorithm config is flatten on this level, but for readability made it nested
-    algorithm: DQNConfig  # TODO: when more algorithm will be available, make it union
+    algorithm: Union[DQNConfig, BCConfig]
+    offline_data: Optional[list[Path]] = None

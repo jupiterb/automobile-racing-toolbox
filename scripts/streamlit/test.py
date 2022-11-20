@@ -23,9 +23,11 @@ def _training_thread(at):
         else:
             return None
 
+    env = builder.setup_env(game_config, env_config)
     trainer_params = TrainingParams(
         **training_config.dict(),
-        env=builder.setup_env(game_config, env_config),
+        observation_space=env.observation_space,
+        action_space=env.action_space,
         input_=input_,
     )
     trainer = Trainer(trainer_params)

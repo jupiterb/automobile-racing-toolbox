@@ -3,11 +3,13 @@ import random
 import shutil
 import numpy as np
 
-from racing_toolbox.datatool import DatasetContainer, preprocess
+from racing_toolbox.datatool import DatasetContainer
 from racing_toolbox.datatool.datasets import FromMemoryDataset
 from racing_toolbox.datatool.services import InMemoryDatasetService
-from racing_toolbox.environment.config import ObservationConfig
-from racing_toolbox.environment.builder import observation_wrappers
+from racing_toolbox.datatool.preproc import preprocess
+from racing_toolbox.datatool.utils import DatasetBasedEnv
+from racing_toolbox.observation.utils.ocr import OcrTool, SevenSegmentsOcr
+from tests.conftest import env_config, game_conf
 
 
 @pytest.fixture
@@ -24,7 +26,7 @@ def path(autouse=True):
 def observations() -> list[tuple[np.ndarray, dict[str, float]]]:
     obs_number = lambda i: i % 5 + i % 3 + 1
     image = lambda i: np.full((50, 50, 3), obs_number(i))
-    actions = lambda i: {"x": obs_number(i) / 2, "y": -obs_number(i) / 4}
+    actions = lambda i: {"x": obs_number(i) % 2, "y": (obs_number(i) % 3) % 2}
     return [(image(i), actions(i)) for i in range(100)]
 
 
@@ -66,7 +68,7 @@ def test_dataset_service(path, observations) -> None:
             assert list(dataset.actions[i]) == list(actions.values())
 
 
-def test_adding_to_dataset_container(
+def test_dataset_container(
     path,
     observations,
     shuffled_observations,
@@ -94,42 +96,18 @@ def test_adding_to_dataset_container(
         assert empty_dataset_container.can_be_added(dataset)
         assert increasing_dataset_container.try_add(dataset) == should_be_added
 
-
-def test_iteration_over_dataset_container(
-    path,
-    observations,
-    shuffled_observations,
-    observations_with_other_images_size,
-) -> None:
-    game = "trackmania"
-    user = "pytest"
-    fps = 10
-
-    dataset_container = DatasetContainer()
-
-    for i, test_observations in enumerate(
-        [observations, shuffled_observations, observations_with_other_images_size]
-    ):
-        name = f"test_{i}"
-        with InMemoryDatasetService(path, game, user, name, fps) as service:
-            for image, actions in test_observations:
-                service.put(image, actions)
-        dataset = FromMemoryDataset(path, game, user, name)
-        dataset_container.try_add(dataset)
+    container = increasing_dataset_container
 
     expected_items_number = len(observations) + len(shuffled_observations)
-    actual_items_number = len([item for item in dataset_container.get_all()])
+    actual_items_number = len([item for item in container.get_all()])
     assert actual_items_number == expected_items_number
 
 
 def test_datasets_preprocessing(
-    path,
-    observations,
-    shuffled_observations,
+    path, observations, shuffled_observations, env_config, monkeypatch, game_conf
 ):
     game = "trackmania"
     user = "pytest"
-    preprocessed_name = "destination"
     fps = 10
 
     container = DatasetContainer()
@@ -142,28 +120,17 @@ def test_datasets_preprocessing(
         dataset = FromMemoryDataset(path, game, user, name)
         container.try_add(dataset)
 
-    fps = container.fps
-    assert fps is not None
+    ocr_tool = OcrTool(game_conf.ocrs, SevenSegmentsOcr)
+    env = DatasetBasedEnv(container, ocr_tool)
 
-    revert_action = lambda action: {str(i): a for i, a in enumerate(action)}
+    height, width, stack_szie = 20, 20, 5
+    env_config.observation_config.shape = (height, width)
+    env_config.observation_config.stack_size = stack_szie
 
-    observation_conf = ObservationConfig(
-        shape=(50, 100), stack_size=4, lidar_config=None, track_segmentation_config=None
-    )
-    wrapp_observations = lambda env: observation_wrappers(env, observation_conf)
+    env_config.action_config.available_actions = {"x": {0, 1}, "y": {1, 2}}
 
-    with InMemoryDatasetService(path, game, user, preprocessed_name, fps) as service:
-        preprocessed = preprocess(container, revert_action, wrapp_observations)
-        for observation, actions in preprocessed:
-            service.put(observation, actions)
-    dataset = FromMemoryDataset(path, game, user, preprocessed_name)
+    monkeypatch.setattr(SevenSegmentsOcr, "read_number", lambda self, image: 0)
 
-    stack_size = observation_conf.stack_size
-    expected_length = len([item for item in container.get_all()])
-    height, width = observation_conf.shape
-    possible_actions = len(observations[0][1])
-
-    with dataset.get() as result:
-        assert result.observations.shape == (expected_length, height, width, stack_size)
-        assert result.actions.shape == (expected_length, possible_actions)
-        assert result.fps == fps
+    for obs, _, action, _ in preprocess(env, env_config):
+        assert obs.shape == (height, width, stack_szie)
+        assert action in [0, 1, 2, 3]

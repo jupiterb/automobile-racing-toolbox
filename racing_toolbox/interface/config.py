@@ -1,25 +1,17 @@
 from pydantic import BaseModel, validator
 from pynput.keyboard import Key
-from enum import Enum
-from typing import Any, Optional
-from racing_toolbox.interface.models.screen_frame import ScreenFrame
+from typing import Any
 from racing_toolbox.interface.models.gamepad_action import GamepadAction
-
-
-class OcrConfiguration(BaseModel):
-    threshold: int
-    max_digits: int
-    segemnts_definitions: Optional[dict[int, ScreenFrame]]
+from racing_toolbox.observation.utils.ocr import OcrToolConfiguration
 
 
 class GameConfiguration(BaseModel):
     game_id: str
     process_name: str
     window_size: tuple[int, int]
-    observation_frame: ScreenFrame
     discrete_actions_mapping: dict[str, Key]
     continous_actions_mapping: dict[str, GamepadAction]
-    ocrs: dict[str, tuple[ScreenFrame, OcrConfiguration]]
+    ocrs: OcrToolConfiguration
     reset_seconds: int
     reset_keys_sequence: list[Key]
     reset_gamepad_sequence: list[GamepadAction]

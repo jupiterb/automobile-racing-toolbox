@@ -4,23 +4,28 @@ from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.button import Button
 
+import argparse
+import json
 import sys
 from os import path
 
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
 from racing_toolbox.recorderapp import EpisodeRecordingManager
-from racing_toolbox.conf import get_game_config
 from racing_toolbox.interface import from_config
+from racing_toolbox.interface.config import GameConfiguration
 from racing_toolbox.interface.controllers import KeyboardController
 from racing_toolbox.interface.capturing import KeyboardCapturing
-
-from racing_toolbox.conf import get_game_config
 
 
 class RecorderScreen(GridLayout):
     def __init__(self, **kwargs):
         super(RecorderScreen, self).__init__(**kwargs)
+        self._game_config: GameConfiguration
+        args = get_cli_args()
+        with open(args.game_config) as gp:
+            self._game_config = GameConfiguration(**json.load(gp))
+
         self.cols = 2
         self._recording_manager = EpisodeRecordingManager()
 
@@ -46,13 +51,13 @@ class RecorderScreen(GridLayout):
             self._start_save_button.text = "Start recording"
         else:
             interface = from_config(
-                get_game_config(), KeyboardController, KeyboardCapturing
+                self._game_config, KeyboardController, KeyboardCapturing
             )
             self._recording_manager.start(
                 interface,
                 self._user_name.text,
                 self._recording_name.text,
-                get_game_config().frequency_per_second,
+                self._game_config.frequency_per_second,
             )
             self._start_save_button.text = "Save recording"
 
@@ -68,6 +73,17 @@ class RecorderScreen(GridLayout):
 class RecorderApp(App):
     def build(self):
         return RecorderScreen()
+
+
+def get_cli_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--game_config",
+        type=str,
+        default="./config/trackmania/game_config.json",
+        help="Path to json with game configuartion",
+    )
+    return parser.parse_args()
 
 
 if __name__ == "__main__":

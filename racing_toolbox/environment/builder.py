@@ -2,20 +2,25 @@ from gym.wrappers import GrayScaleObservation, ResizeObservation, FrameStack, Ti
 import gym
 from racing_toolbox.environment.wrappers import *
 from racing_toolbox.environment.config import (
+    ActionConfig,
     RewardConfig,
     ObservationConfig,
     FinalValueDetectionParameters,
 )
+from racing_toolbox.environment.wrappers.observation import CutImageWrapper
 from racing_toolbox.interface.controllers.keyboard import KeyboardController
 
 from racing_toolbox.interface.config import GameConfiguration
 from racing_toolbox.environment.final_state.detector import FinalStateDetector
 from racing_toolbox.environment.config.env import EnvConfig
 from racing_toolbox.interface import from_config
+from racing_toolbox.observation.utils.ocr import OcrTool, SevenSegmentsOcr
 
 
 def setup_env(game_config: GameConfiguration, env_config: EnvConfig) -> gym.Env:
     interface = from_config(game_config, KeyboardController)
+
+    ocr_tool = OcrTool(game_config.ocrs, SevenSegmentsOcr)
 
     final_st_det = FinalStateDetector(
         [
@@ -32,24 +37,25 @@ def setup_env(game_config: GameConfiguration, env_config: EnvConfig) -> gym.Env:
     env = gym.make(
         "custom/real-time-v0",
         game_interface=interface,
+        ocr_tool=ocr_tool,
         final_state_detector=final_st_det,
     )
 
-    available_actions = [
-        {"FORWARD"},
-        {"FORWARD", "LEFT"},
-        {"FORWARD", "RIGHT"},
-        {"LEFT"},
-        {"RIGHT"},
-        set(),
-    ]
+    env = wrapp_env(env, env_config)
+    env = TimeLimit(env, env_config.max_episode_length)
+    return env
 
-    env = DiscreteActionToVectorWrapper(
-        env, available_actions, interface.get_possible_actions()
-    )
+
+def wrapp_env(env: gym.Env, env_config: EnvConfig) -> gym.Env:
+    env = action_wrappers(env, env_config.action_config)
     env = reward_wrappers(env, env_config.reward_config)
     env = observation_wrappers(env, env_config.observation_config)
-    env = TimeLimit(env, env_config.max_episode_length)
+    return env
+
+
+def action_wrappers(env: gym.Env, config: ActionConfig) -> gym.Env:
+    if config.available_actions is not None:
+        env = DiscreteActionToVectorWrapper(env, config.available_actions)
     return env
 
 
@@ -68,6 +74,7 @@ def reward_wrappers(env: gym.Env, config: RewardConfig) -> gym.Env:
 
 
 def observation_wrappers(env: gym.Env, config: ObservationConfig) -> gym.Env:
+    env = CutImageWrapper(env, config.frame)
     if config.track_segmentation_config:
         env = TrackSegmentationWrapper(env, config.track_segmentation_config)
         if config.lidar_config:

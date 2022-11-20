@@ -4,6 +4,7 @@ from typing import Optional
 
 from racing_toolbox.interface import GameInterface
 from racing_toolbox.environment.final_state import FinalStateDetector
+from racing_toolbox.observation.utils.ocr import OcrTool
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -18,6 +19,7 @@ class RealTimeEnviroment(gym.Env):
     def __init__(
         self,
         game_interface: GameInterface,
+        ocr_tool: OcrTool,
         final_state_detector: FinalStateDetector,
     ) -> None:
         super().__init__()
@@ -39,6 +41,7 @@ class RealTimeEnviroment(gym.Env):
         )
 
         self._game_interface = game_interface
+        self._ocr = ocr_tool
         self._final_state_detector = final_state_detector
         self._last_frame: Frame = None
 
@@ -74,5 +77,5 @@ class RealTimeEnviroment(gym.Env):
 
     def _fetch_state(self) -> tuple[np.ndarray, dict[str, float]]:
         image = self._game_interface.grab_image().astype(np.uint8)
-        features = self._game_interface.perform_ocr()
+        features = self._ocr.perform(image)
         return image, features

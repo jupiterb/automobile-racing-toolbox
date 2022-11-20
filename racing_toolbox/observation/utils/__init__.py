@@ -1,0 +1,1 @@
+from racing_toolbox.observation.utils.screen_frame import ScreenFrame

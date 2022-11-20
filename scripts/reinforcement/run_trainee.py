@@ -1,16 +1,23 @@
 import argparse
-from racing_toolbox.conf.example_configuration import get_game_config
-from racing_toolbox.environment.config import RewardConfig, ObservationConfig, EnvConfig
+import json
+from racing_toolbox.environment.config import (
+    ActionConfig,
+    RewardConfig,
+    ObservationConfig,
+    EnvConfig,
+)
+from racing_toolbox.interface.config import GameConfiguration
 from racing_toolbox.observation.config.lidar_config import LidarConfig
 from racing_toolbox.observation.config.track_segmentation_config import (
     TrackSegmentationConfig,
 )
+from racing_toolbox.observation.utils import ScreenFrame
 from racing_toolbox.training.worker.worker import Worker, Address
 
 
 def main():
     args = get_cli_args()
-    game_config = get_game_config()
+    game_config = get_game_config(args.game_config)
     env_config = get_env_config()
     client = Worker(
         policy_address=Address(args.host, args.port),
@@ -20,7 +27,21 @@ def main():
     client.run()
 
 
+def get_game_config(config_path):
+    with open(config_path) as gp:
+        return GameConfiguration(**json.load(gp))
+
+
 def get_env_config() -> EnvConfig:
+    action_config = ActionConfig(
+        available_actions={
+            "FORWARD": {0, 1, 2},
+            "BREAK": set(),
+            "RIGHT": {1, 3},
+            "LEFT": {2, 4},
+        }
+    )
+
     reward_conf = RewardConfig(
         speed_diff_thresh=3,
         memory_length=2,
@@ -43,10 +64,15 @@ def get_env_config() -> EnvConfig:
     )
 
     observation_conf = ObservationConfig(
-        shape=(84, 84), stack_size=4, lidar_config=None, track_segmentation_config=None
+        frame=ScreenFrame(top=0.475, bottom=0.9125, left=0.01, right=0.99),
+        shape=(60, 60),
+        stack_size=4,
+        lidar_config=None,
+        track_segmentation_config=None,
     )
 
     return EnvConfig(
+        action_config=action_config,
         reward_config=reward_conf,
         observation_config=observation_conf,
         max_episode_length=1_000,
@@ -59,7 +85,12 @@ def get_cli_args():
     parser.add_argument(
         "--port", type=int, default=9900, help="The port to use (on localhost)."
     )
-
+    parser.add_argument(
+        "--game_config",
+        type=str,
+        default="./config/trackmania/game_config.json",
+        help="Path to json with game configuartion",
+    )
     args = parser.parse_args()
     return args
 

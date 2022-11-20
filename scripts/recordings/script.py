@@ -1,9 +1,10 @@
-import sys
+import argparse
+import json
 from racing_toolbox.interface import from_config
+from racing_toolbox.interface.config import GameConfiguration
 from racing_toolbox.interface.controllers import KeyboardController, GamepadController
 from racing_toolbox.interface.capturing import KeyboardCapturing, GamepadCapturing
 from racing_toolbox.recorderapp import EpisodeRecordingManager
-from racing_toolbox.conf import get_game_config
 import time
 
 
@@ -15,15 +16,17 @@ def starting(seconds: int) -> None:
     print("Started.")
 
 
-def record(user_name: str, recording_name: str, controller_type: str) -> None:
+def record(game_config_path: str, user_name: str, recording_name: str, controller_type: str) -> None:
+    game_config: GameConfiguration
+    with open(game_config_path) as gp:
+        game_config = GameConfiguration(**json.load(gp))
+
     starting(10)
 
     if controller_type == "gamepad":
-        interface = from_config(get_game_config(), GamepadController, GamepadCapturing)
+        interface = from_config(game_config, GamepadController, GamepadCapturing)
     elif controller_type == "keyboard":
-        interface = from_config(
-            get_game_config(), KeyboardController, KeyboardCapturing
-        )
+        interface = from_config(game_config, KeyboardController, KeyboardCapturing)
     else:
         raise NotImplementedError(
             f"Cannot create game interface with {controller_type} controller"
@@ -34,7 +37,7 @@ def record(user_name: str, recording_name: str, controller_type: str) -> None:
         interface,
         user_name,
         recording_name,
-        get_game_config().frequency_per_second,
+        game_config.frequency_per_second,
     )
     while True:
         if input() == "q":
@@ -43,8 +46,33 @@ def record(user_name: str, recording_name: str, controller_type: str) -> None:
             return
 
 
+def get_cli_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--game_config",
+        type=str,
+        default="./config/trackmania/game_config.json",
+        help="Path to json with game configuartion",
+    )
+    parser.add_argument(
+        "--user",
+        type=str,
+        help="User name",
+    )
+    parser.add_argument(
+        "--name",
+        type=str,
+        help="Name of recording",
+    )
+    parser.add_argument(
+        "--controller",
+        type=str,
+        default="keyboard"
+        help="Controller type. Possible options are `keyboard` and `gamepad`",
+    )
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
-    user_name = sys.argv[1]
-    recording_name = sys.argv[2]
-    controller = sys.argv[3]
-    record(user_name, recording_name, controller)
+    args = get_cli_args()
+    record(args.game_config, args.user, args.name, args.controller)
