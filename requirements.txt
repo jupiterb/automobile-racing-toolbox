@@ -14,8 +14,6 @@ wandb==0.12.21
 ffmpeg==1.4
 imageio-ffmpeg==0.4.7
 ray[rllib]
-pynput
-pydantic
 pygame==2.1.2
 vgamepad==0.0.8
 pynput==1.7.6

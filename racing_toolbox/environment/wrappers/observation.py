@@ -56,3 +56,6 @@ class TrackSegmentationWrapper(gym.ObservationWrapper):
     @log_observation(__name__)
     def observation(self, observation: np.ndarray) -> np.ndarray:
         return self._track_segmenter.perform_segmentation(observation)
+
+
+
