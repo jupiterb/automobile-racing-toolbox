@@ -8,6 +8,7 @@ from racing_toolbox.environment.config import (
     FinalValueDetectionParameters,
 )
 from racing_toolbox.environment.wrappers.observation import CutImageWrapper
+from racing_toolbox.interface.controllers.gamepad import GamepadController
 from racing_toolbox.interface.controllers.keyboard import KeyboardController
 
 from racing_toolbox.interface.config import GameConfiguration
@@ -18,7 +19,10 @@ from racing_toolbox.observation.utils.ocr import OcrTool, SevenSegmentsOcr
 
 
 def setup_env(game_config: GameConfiguration, env_config: EnvConfig) -> gym.Env:
-    interface = from_config(game_config, KeyboardController)
+    if env_config.action_config.available_actions is not None:
+        interface = from_config(game_config, KeyboardController)
+    else:
+        interface = from_config(game_config, GamepadController)
 
     ocr_tool = OcrTool(game_config.ocrs, SevenSegmentsOcr)
 

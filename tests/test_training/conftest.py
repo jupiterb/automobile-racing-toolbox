@@ -4,8 +4,7 @@ import gym
 from gym import spaces
 from collections import namedtuple
 import random
-from ray.rllib.algorithms import dqn
-from ray.rllib.algorithms import bc
+from ray.rllib.algorithms import dqn, bc, sac
 from pathlib import Path
 from gym.spaces import Box, Discrete
 
@@ -13,12 +12,15 @@ from tests import TEST_DIR, game_conf, env_config
 
 from racing_toolbox.observation.utils.ocr.abstract import OcrTool
 from racing_toolbox.observation.utils.ocr.seven_segments import SevenSegmentsOcr
-from racing_toolbox.training.config import DQNConfig, ReplayBufferConfig, ModelConfig
 from racing_toolbox.training.config.params import TrainingParams
 from racing_toolbox.training.config import (
     TrainingConfig,
     BCConfig,
+    DQNConfig,
+    SACConfig,
     EvalConfig,
+    ReplayBufferConfig,
+    ModelConfig,
 )
 from racing_toolbox.datatool import DatasetContainer
 from racing_toolbox.datatool.datasets import FromMemoryDataset
@@ -78,6 +80,11 @@ def model_config():
 
 
 @pytest.fixture
+def buffer_config():
+    return ReplayBufferConfig(capacity=100)
+
+
+@pytest.fixture
 def fake_env(request) -> RandomEnv:
     from ray.tune.registry import register_env
 
@@ -122,6 +129,8 @@ def construct_training_config(
     eval_conf: EvalConfig,
     training_config: TrainingConfig,
     offline_data_path: Path,
+    model_config: ModelConfig,
+    buffer_config: ReplayBufferConfig,
 ):
     params = TrainingParams(
         **training_config.dict(),
@@ -136,9 +145,17 @@ def construct_training_config(
         params.evaluation_config = eval_conf
         return params, bc.BC
     if request.param == dqn.DQN:
+        params.algorithm = DQNConfig(
+            v_min=-100, v_max=100, replay_buffer_config=buffer_config
+        )
         params.offline_data = None
         params.evaluation_config = None
         return params, dqn.DQN
+    if request.param == sac.SAC:
+        params.algorithm = SACConfig(tau=0.1, replay_buffer_config=buffer_config)
+        params.offline_data = None
+        params.evaluation_config = None
+        return params, sac.SAC
 
 
 @pytest.fixture

@@ -38,6 +38,18 @@ class DQNConfig(AlgorithmConfig):
         frozen = True
 
 
+class SACConfig(AlgorithmConfig):
+    twin_q: bool = True
+    tau: float = 5e-3
+    initial_alpha: float = 1.0
+    q_model_config: Optional[ModelConfig] = None
+    policy_model_config: Optional[ModelConfig] = None
+    replay_buffer_config: ReplayBufferConfig
+
+    class Config:
+        frozen = True
+
+
 class BCConfig(AlgorithmConfig):
     pass
 
@@ -69,5 +81,5 @@ class TrainingConfig(BaseModel):
     model: ModelConfig
 
     # in rllib algorithm config is flatten on this level, but for readability made it nested
-    algorithm: Union[DQNConfig, BCConfig]
+    algorithm: Union[DQNConfig, SACConfig, BCConfig]
     offline_data: Optional[list[Path]] = None

@@ -1,6 +1,7 @@
 from racing_toolbox.training.config.user_defined import (
     AlgorithmConfig,
     DQNConfig,
+    SACConfig,
     ReplayBufferConfig,
     ModelConfig,
     TrainingConfig,

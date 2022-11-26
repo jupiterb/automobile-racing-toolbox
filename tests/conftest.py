@@ -4,6 +4,7 @@ from pynput.keyboard import Key
 from vgamepad import XUSB_BUTTON
 from racing_toolbox.interface.models import GamepadControl
 from racing_toolbox.interface.config import GameConfiguration
+from racing_toolbox.interface.models.gamepad_action import GamepadAction
 from racing_toolbox.observation.utils import ScreenFrame
 from racing_toolbox.observation.utils.ocr import OcrConfiguration, OcrToolConfiguration
 from racing_toolbox.environment.config import (
@@ -37,10 +38,8 @@ DEFAULT_CONFIGS: dict[type[BaseModel], BaseModel] = {
             "LEFT": Key.left,
         },
         continous_actions_mapping={
-            "FORWARD": XUSB_BUTTON.XUSB_GAMEPAD_A,
-            "BREAK": XUSB_BUTTON.XUSB_GAMEPAD_B,
-            "DIRECT_X": GamepadControl.LEFT_JOYSTICK_X,
-            "DIRECT_Y": GamepadControl.LEFT_JOYSTICK_Y,
+            "Y": GamepadControl.AXIS_Z,
+            "X": GamepadControl.AXIS_X_LEFT,
         },
         reset_seconds=3,
         reset_keys_sequence=[Key.enter],

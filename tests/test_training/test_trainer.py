@@ -1,33 +1,19 @@
 import pytest
-from ray.rllib.algorithms import dqn, bc
+from functools import reduce
+from ray.rllib.algorithms import dqn, sac
 from gym.spaces import Box, Discrete
 from copy import deepcopy
 from racing_toolbox.training import Trainer
-from racing_toolbox.training.config import TrainingParams
-import racing_toolbox.training.algorithm_constructor as algo
+from racing_toolbox.training.config.params import TrainingParams
 from tests.test_training.conftest import SpaceParam
 
 
-@pytest.mark.parametrize(
-    "fake_env",
-    [
-        (SpaceParam(Box(-1, 1, (84, 84)), Discrete(5), [1]), 5),
-        (
-            SpaceParam(Box(-1, 1, (84, 84, 4)), Discrete(5), [1]),
-            5,
-        ),
-    ],
-    indirect=True,
-)
-def test_if_trainer_runs_properly(fake_env, training_config):
-    training_params = TrainingParams(
-        env_name=fake_env.name,
-        observation_space=fake_env.observation_space,
-        action_space=fake_env.action_space,
-        **training_config.dict(),
-    )
+def training_test(training_params: TrainingParams):
     training_params.num_rollout_workers = 0
-    training_params.max_iterations = 2
+    # SAC needs more iterations, and it depends from observation space shape
+    training_params.max_iterations = (
+        reduce(lambda a, b: a * b, training_params.observation_space.shape) // 1_200
+    )
     training_params.train_batch_size = 1
     training_params.checkpoint_frequency = 1000
 
@@ -44,16 +30,46 @@ def test_if_trainer_runs_properly(fake_env, training_config):
     "fake_env",
     [
         (SpaceParam(Box(-1, 1, (84, 84)), Discrete(5), [1]), 5),
+        (
+            SpaceParam(Box(-1, 1, (84, 84, 4)), Discrete(5), [1]),
+            5,
+        ),
     ],
     indirect=True,
 )
-def test_if_checkpoint_laoded(fake_env, training_config, tmp_path):
-    training_params = TrainingParams(
-        env_name=fake_env.name,
-        observation_space=fake_env.observation_space,
-        action_space=fake_env.action_space,
-        **training_config.dict(),
-    )
+@pytest.mark.parametrize("construct_training_config", [dqn.DQN, sac.SAC], indirect=True)
+def test_if_training_runs_properly_with_discrete_action_space(
+    construct_training_config,
+):
+    training_params, _ = construct_training_config
+    training_test(training_params)
+
+
+@pytest.mark.parametrize(
+    "fake_env",
+    [
+        (SpaceParam(Box(-1, 1, (84, 84)), Box(-1, 1, (3,)), [1]), 5),
+    ],
+    indirect=True,
+)
+@pytest.mark.parametrize("construct_training_config", [sac.SAC], indirect=True)
+def test_if_training_runs_properly_with_continous_action_space(
+    construct_training_config,
+):
+    training_params, _ = construct_training_config
+    training_test(training_params)
+
+
+@pytest.mark.parametrize(
+    "fake_env",
+    [
+        (SpaceParam(Box(-1, 1, (84, 84)), Discrete(5), [1]), 5),
+    ],
+    indirect=True,
+)
+@pytest.mark.parametrize("construct_training_config", [dqn.DQN, sac.SAC], indirect=True)
+def test_if_checkpoint_laoded(construct_training_config, tmp_path):
+    training_params, _ = construct_training_config
     training_params.num_rollout_workers = 0
     training_params.max_iterations = 1
     training_params.train_batch_size = 1

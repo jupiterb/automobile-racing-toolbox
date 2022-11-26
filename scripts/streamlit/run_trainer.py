@@ -1,4 +1,5 @@
 from multiprocessing import Process
+from turtle import color
 from pydantic import ValidationError
 import streamlit as st
 import json
@@ -82,12 +83,13 @@ def trainer_panel() -> bool:
         step=1,
         value=8000,
     )
+    st.markdown("""---""")
     if address and port:
         try:
             ip = ipaddress.ip_address(address)
             SHARED.trainer_address = f"{ip}:{port}"
         except ValueError:
-            st.error("IP address {address} is not valid")
+            st.error(f"IP address {address} is not valid")
 
     return SHARED.trainer_ready
 
@@ -219,5 +221,7 @@ def main():
 
 
 if __name__ == "__main__":
-    st.set_page_config(page_title="Automobile training starter", layout="wide")
+    st.set_page_config(page_title="Automobile Training Console", layout="wide")
+    st.title("Automobile Training Console")
+    st.markdown("""---""")
     main()
