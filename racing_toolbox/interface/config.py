@@ -1,12 +1,13 @@
 from pydantic import BaseModel, validator
 from pynput.keyboard import Key
-from typing import Any
+from typing import Any, Optional
 from racing_toolbox.interface.models.gamepad_action import GamepadAction
 from racing_toolbox.observation.utils.ocr import OcrToolConfiguration
 
 
 class GameConfiguration(BaseModel):
     game_id: str
+    full_name: Optional[str] = None
     process_name: str
     window_size: tuple[int, int]
     discrete_actions_mapping: dict[str, Key]
