@@ -15,6 +15,7 @@ from scripts.streamlit.state_utils import (
     WorkerFailure,
     start_trainer_process,
 )
+from scripts.streamlit.authentication import auth_pannel
 
 
 SHARED = SharedState()  # proxy for session state to get shared variables between panels
@@ -221,7 +222,6 @@ def main():
 
 
 if __name__ == "__main__":
-    st.set_page_config(page_title="Automobile Training Console", layout="wide")
-    st.title("Automobile Training Console")
-    st.markdown("""---""")
-    main()
+    st.set_page_config(page_title="Automobile training starter", layout="wide")
+    if user := auth_pannel():
+        main()

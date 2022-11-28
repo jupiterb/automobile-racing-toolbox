@@ -22,7 +22,7 @@ class TrainingParams(TrainingConfig):
     #         return v
     #     return v
 
-    @validator("observation_space", "action_space")
+    @validator("observation_space", "action_space", allow_reuse=True)
     def check_space(cls, val):
         assert isinstance(val, spaces.Space)
         return val
