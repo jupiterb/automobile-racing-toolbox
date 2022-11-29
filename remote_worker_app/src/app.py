@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from racing_toolbox.training.worker.route import router
+from remote_worker_app.src.route import router
 
 app = FastAPI()
 app.include_router(router)

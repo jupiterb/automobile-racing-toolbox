@@ -7,7 +7,7 @@ from fastapi import APIRouter, Response
 from threading import Lock
 from racing_toolbox.environment.config.env import EnvConfig
 from racing_toolbox.interface.config import GameConfiguration
-from racing_toolbox.training.worker.worker import Worker, Address
+from remote_worker_app.src.worker import Worker, Address
 
 logger = logging.getLogger(__name__)
 
