@@ -1,7 +1,7 @@
 import itertools as it
 import logging
 from pathlib import Path
-from typing import Optional, Callable, Any
+from typing import Optional, Callable, Any, Generator
 from ray.rllib.algorithms import Algorithm
 from ray.air._internal.json import SafeFallbackEncoder
 import json
@@ -32,20 +32,23 @@ class Trainer:
             self._algorithm.restore(str(checkpoint_path))
 
         self._checkpoint_callback = checkpoint_callback or self.make_checkpoint
+        ray.init(ignore_reinit_error=True)
 
     @property
     def algorithm(self) -> Algorithm:
         return self._algorithm
 
-    def run(self) -> None:
+    def run(self) -> Generator[int, None, None]:
         "training loop"
-        ray.init(ignore_reinit_error=True)
 
         for i in it.count(0, 1):
             results = self.algorithm.train()
             if (i + 1) % self.config.checkpoint_frequency == 0:
                 self._checkpoint_callback(self.algorithm)
             self._log(results)
+
+            yield i
+
             if self._stop_criterion(results, i):
                 logger.info("Stop criterion satisfied. Exiting training loop.")
                 break
@@ -75,10 +78,7 @@ class Trainer:
         result = result.copy()
         result.update(config=None)  # drop config from pretty print
         result.update(hist_stats=None)  # drop hist_stats from pretty print
-        out = {}
-        for k, v in result.items():
-            if v is not None:
-                out[k] = v
+        out = {k: v for k, v in result.items() if v is not None}
 
         cleaned = json.dumps(out, cls=SafeFallbackEncoder)
         return json.loads(cleaned)

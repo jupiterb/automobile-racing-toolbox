@@ -6,10 +6,9 @@ ROOT_DIR = Path(__file__).absolute().parents[1]
 RESOURCE_DIR = ROOT_DIR / "resources"
 
 
-class EnvConfig(BaseConfig):
+class EnvVarsConfig(BaseConfig):
     celery_broker_url: str
     celery_backend_url: str
 
 
 load_dotenv(RESOURCE_DIR / ".env")
-CONFIG = EnvConfig()
