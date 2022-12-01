@@ -1,9 +1,9 @@
 import gym
 import numpy as np
+import wandb
+import gym.spaces
 
 from racing_toolbox.observation.config import LidarConfig, TrackSegmentationConfig
-
-import gym.spaces
 from racing_toolbox.observation.lidar import Lidar
 from racing_toolbox.observation.track_segmentation import TrackSegmenter
 from racing_toolbox.observation.utils import ScreenFrame
@@ -67,3 +67,35 @@ class TrackSegmentationWrapper(gym.ObservationWrapper):
     @log_observation(__name__)
     def observation(self, observation: np.ndarray) -> np.ndarray:
         return self._track_segmenter.perform_segmentation(observation)
+
+
+class WandbVideoLogger(gym.Wrapper):
+    def __init__(self, env: gym.Env, log_frequency: int, log_duration: int) -> None:
+        super().__init__(env)
+        assert log_frequency > log_duration
+
+        self.log_freq = log_frequency
+        self.log_duration = log_duration
+
+        self._is_recording: bool = True
+        self._frames: list[np.ndarray] = []
+        self._step = 0
+
+    def step(self, action):
+        obs, rew, done, info = super().step(action)
+        if wandb.run is not None:
+            self._maybe_record(obs)
+        return obs, rew, done, info
+
+    def _maybe_record(self, obs: np.ndarray):
+        if self._step % self.log_freq == 0 or self._is_recording:
+            self._is_recording = True
+            self._record(obs)
+        if len(self._frames) == self.log_duration:
+            self._is_recording = False
+            self._frames = []
+
+    def _record(self, obs: np.ndarray):
+        self._frames.append(obs)
+        if self.log_duration == len(self._frames):
+            wandb.log({"recording": wandb.Video(np.stack(self._frames), fps=10)})

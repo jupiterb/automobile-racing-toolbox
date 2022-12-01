@@ -3,6 +3,7 @@ from racing_toolbox.environment.wrappers.observation import (
     RescaleWrapper,
     LidarWrapper,
     TrackSegmentationWrapper,
+    WandbVideoLogger,
 )
 from racing_toolbox.environment.wrappers.reward import (
     OffTrackPunishment,

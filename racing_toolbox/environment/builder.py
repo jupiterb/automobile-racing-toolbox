@@ -1,5 +1,6 @@
 from gym.wrappers import GrayScaleObservation, ResizeObservation, FrameStack, TimeLimit
 import gym
+import wandb
 from racing_toolbox.environment.wrappers import *
 from racing_toolbox.environment.config import (
     ActionConfig,
@@ -49,7 +50,9 @@ def setup_env(game_config: GameConfiguration, env_config: EnvConfig) -> gym.Env:
 def wrapp_env(env: gym.Env, env_config: EnvConfig) -> gym.Env:
     env = action_wrappers(env, env_config.action_config)
     env = reward_wrappers(env, env_config.reward_config)
-    env = observation_wrappers(env, env_config.observation_config)
+    env = observation_wrappers(
+        env, env_config.observation_config, env_config.video_freq, env_config.video_len
+    )
     return env
 
 
@@ -73,8 +76,12 @@ def reward_wrappers(env: gym.Env, config: RewardConfig) -> gym.Env:
     return env
 
 
-def observation_wrappers(env: gym.Env, config: ObservationConfig) -> gym.Env:
+def observation_wrappers(
+    env: gym.Env, config: ObservationConfig, video_freq, video_len
+) -> gym.Env:
     env = CutImageWrapper(env, config.frame)
+    if wandb.run is not None:
+        env = WandbVideoLogger(env, video_freq, video_len)
     if config.track_segmentation_config:
         env = TrackSegmentationWrapper(env, config.track_segmentation_config)
         if config.lidar_config:
