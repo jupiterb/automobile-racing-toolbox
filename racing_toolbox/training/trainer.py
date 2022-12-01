@@ -25,6 +25,7 @@ class Trainer:
         self.config = config
         # lazy values
         self._algorithm: Algorithm = algo.construct_cls(config)
+        # TODO: handle case where checkpoint has more policies than actual trainer
         if pre_trained_weights:
             self._algorithm.get_policy().set_weights(pre_trained_weights)
         if checkpoint_path:

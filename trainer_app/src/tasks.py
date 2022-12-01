@@ -1,4 +1,4 @@
-from trainer_app.src.const import EnvVarsConfig
+from trainer_app.src.const import EnvVarsConfig, TMP_DIR
 from racing_toolbox.training import Trainer
 from racing_toolbox.training.config.params import TrainingParams
 from racing_toolbox.environment.config.env import EnvConfig
@@ -12,7 +12,12 @@ from celery.contrib.abortable import AbortableTask
 from celery.utils.log import get_task_logger
 from ray.rllib.env.policy_server_input import PolicyServerInput
 import os
-import wandb 
+import wandb
+import json
+import uuid
+from pydantic import BaseModel
+from ray.rllib.algorithms import Algorithm
+
 
 logger = get_task_logger(__name__)
 
@@ -58,17 +63,23 @@ def start_training(
         action_space=env.action_space,
         input_=input_,
     )
-    trainer = Trainer(trainer_params, checkpoint_path, pre_trained_weights)
-    with wandb.init(project="ART", name=f"task_{self.}") as run:
-        game_conf_artifact = wandb.Artifact("game-config", type="config")
-        env_conf_artifact = wandb.Artifact("env-config", type="config")
-        training_conf_artifact = wandb.Artifact("training-config", type="config")
-        game_conf_artifact.add(game_config.dict(), "latest")
-        env_conf_artifact.add(env_config.dict(), "latest")
-        training_conf_artifact.add(TrainingConfig(**config.dict()).dict(), "latest")
-        run.log_artifact(training_conf_artifact)
-        run.log_artifact(game_conf_artifact)
-        run.log_artifact(training_conf_artifact)
+    with wandb.init(project="ART", name=f"task_{self.request.id}") as run:
+        _log_config(game_config)
+        _log_config(env_config)
+        _log_config(training_config)
+
+        chkpnt_dir = TMP_DIR / f"checkpoints_{run.id}"
+        chkpnt_dir.mkdir()
+        chkpnt_artifact = wandb.Artifact(f"checkpoint-{run.id}", type="checkpoint")
+        checkpoint_callback = _wandb_checkpoint_callback_factory(
+            chkpnt_artifact, chkpnt_dir
+        )
+        trainer = Trainer(
+            trainer_params,
+            checkpoint_path,
+            pre_trained_weights,
+            checkpoint_callback=checkpoint_callback,
+        )
 
         for epoch in trainer.run():
             logger.debug(f"epoch {epoch} done")
@@ -76,3 +87,19 @@ def start_training(
                 logger.warning("task has been aborted")
                 break
 
+
+def _wandb_checkpoint_callback_factory(checkpoint_artifact: wandb.Artifact, dir: Path):
+    def callback(algorithm: Algorithm):
+        chkpnt_path = algorithm.save(str(dir))
+        checkpoint_artifact.add_dir(chkpnt_path, name="checkpoint")
+        wandb.log_artifact(checkpoint_artifact)
+
+    return callback
+
+
+def _log_config(config: BaseModel) -> None:
+    unique_filename = Path(str(uuid.uuid4()) + ".json")
+    with open(unique_filename, "w") as f:
+        f.write(config.json())
+    wandb.save(str(unique_filename), policy="now")
+    unique_filename.unlink()

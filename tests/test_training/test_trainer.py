@@ -33,7 +33,8 @@ def test_if_trainer_runs_properly(fake_env, training_config):
 
     trainer = Trainer(training_params)
     weights_before = deepcopy(trainer.algorithm.get_policy().get_weights())
-    trainer.run()
+    for _ in trainer.run():
+        pass
 
     assert str(weights_before) != str(
         trainer.algorithm.get_policy().get_weights()
@@ -70,7 +71,8 @@ def test_if_checkpoint_laoded(fake_env, training_config, tmp_path):
         latest = algorithm.save(str(checkpoint_dir))
 
     trainer = Trainer(training_params, checkpoint_callback=checkpoint_callback)
-    trainer.run()
+    for _ in trainer.run():
+        pass
 
     new_trainer = Trainer(training_params, checkpoint_path=latest)
 
@@ -89,7 +91,8 @@ def test_if_checkpoint_laoded(fake_env, training_config, tmp_path):
 @pytest.mark.parametrize("construct_training_config", [dqn.DQN], indirect=True)
 def test_pretraining_with_bc(construct_training_config, bc_training_params):
     trainer = Trainer(bc_training_params)
-    trainer.run()
+    for _ in trainer.run():
+        pass
     bc_weights = trainer.algorithm.get_policy().get_weights()
 
     config, _ = construct_training_config
