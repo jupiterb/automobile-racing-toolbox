@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from remote_worker_app.src.route import router
 from remote_worker_app.src.schemas import EnvVars
 import requests
+import logging
 from requests.adapters import HTTPAdapter, Retry
 from pathlib import Path
 
@@ -27,7 +28,7 @@ def register_in_trainer_app(n_retries):
                 response.status_code == 200
             ), f"Invalid status code {response.status_code}"
         except Exception as e:
-            print("Cannot connect to the trainer server")
+            logging.error("Cannot connect to the trainer server")
             raise
 
 
