@@ -4,11 +4,27 @@ from ray.rllib.env.policy_client import PolicyClient
 from racing_toolbox.environment.builder import setup_env
 from racing_toolbox.environment.config.env import EnvConfig
 from racing_toolbox.interface.config import GameConfiguration
+import wandb 
+import time 
+import os 
 
 logger = logging.getLogger(__name__)
 
 
 Address = namedtuple("Address", ["host", "port"])
+
+def run_worker_process(
+    policy_address, game_config, env_config, wandb_api_key, wandb_project, wandb_group
+):
+    os.environ["WANDB_API_KEY"] = wandb_api_key
+    with wandb.init(project=wandb_project, group=wandb_group) as run:
+        worker = Worker(
+            policy_address=policy_address,
+            game_conf=game_config,
+            env_conf=env_config,
+        )
+        time.sleep(15)
+        worker.run()
 
 
 class Worker:

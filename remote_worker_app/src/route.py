@@ -1,13 +1,12 @@
 import http
 import logging
 from multiprocessing import Process
-import time
 from typing import Optional
 from fastapi import APIRouter, Response
 from threading import Lock
-from racing_toolbox.environment.config.env import EnvConfig
-from racing_toolbox.interface.config import GameConfiguration
-from remote_worker_app.src.worker import Worker, Address
+from remote_worker_app.src.schemas import SyncRequest
+from remote_worker_app.src.worker import run_worker_process
+
 
 logger = logging.getLogger(__name__)
 
@@ -18,24 +17,11 @@ __LOCK = (
     Lock()
 )  # TODO: probably better idea is to handle lock via middleware, or custom router
 
-
-def run_worker_process(policy_address, game_config, env_config):
-    worker = Worker(
-        policy_address=policy_address,
-        game_conf=game_config,
-        env_conf=env_config,
-    )
-    time.sleep(15)
-    worker.run()
-
-
 router = APIRouter(prefix="/worker")
 
 
 @router.post("/sync")
-def load_configs(
-    game_config: GameConfiguration, env_config: EnvConfig, policy_address: Address
-):
+def load_configs(body: SyncRequest):
     logger.info("got sync requst")
     global __WORKER_ARGS, __WORKER_PROCESS
     if not __LOCK.acquire(blocking=False):
@@ -46,9 +32,12 @@ def load_configs(
         return Response(status_code=http.HTTPStatus.SERVICE_UNAVAILABLE.value)
 
     __WORKER_ARGS = (
-        policy_address,
-        game_config,
-        env_config,
+        body.policy_address,
+        body.game_config,
+        body.env_config,
+        body.wandb_api_key,
+        body.wandb_project,
+        body.wandb_group,
     )
     __LOCK.release()
 
@@ -77,3 +66,8 @@ def stop_worker():
     __WORKER_PROCESS = None
     __WORKER_ARGS = None
     __LOCK.release()
+
+
+@router.get("/probe")
+def probe():
+    pass
