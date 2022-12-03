@@ -3,7 +3,7 @@ import streamlit as st
 
 def main():
     st.markdown(
-        f'<h1 style="color:#ff8833;font-size:40px;">{"Automobile Training Main Page"}</h1>',
+        f'<h1 style="color:#ee6c4d;font-size:40px;">{"Automobile Training Main Page"}</h1>',
         unsafe_allow_html=True,
     )
     st.markdown("""---""")

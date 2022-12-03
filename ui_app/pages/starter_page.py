@@ -54,7 +54,7 @@ def configure_autencoder():
 
 def main():
     st.markdown(
-        f'<h1 style="color:#ff8833;font-size:40px;">{"Automobile Training Starter"}</h1>',
+        f'<h1 style="color:#ee6c4d;font-size:40px;">{"Automobile Training Starter"}</h1>',
         unsafe_allow_html=True,
     )
     st.markdown("""---""")
