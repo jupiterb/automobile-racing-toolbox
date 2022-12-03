@@ -14,12 +14,17 @@ class SyncRequest(BaseModel):
     wandb_group: str
 
 
+import uuid
+from typing import Optional
+
+
 class EnvVars(BaseSettings):
     host: str
     port: int
-    trainer_address: str
-    register_route: str
+    register_url: str
+    keepalive_url: str
     game_id: str
+    self_id: Optional[uuid.UUID] = None
 
     @validator("host")
     def change_to_local_address(cls, v):
@@ -31,10 +36,6 @@ class EnvVars(BaseSettings):
 
     class Config:
         env_file = ".env"
-
-    @property
-    def trainer_url(self) -> str:
-        return f"{self.trainer_address}/{self.register_route}"
 
     @property
     def self_url(self) -> str:

@@ -69,5 +69,5 @@ def stop_worker():
 
 
 @router.get("/probe")
-def probe():
+async def probe():
     pass
