@@ -1,0 +1,65 @@
+{
+    "num_rollout_workers": 1,
+    "rollout_fragment_length": 128,
+    "compress_observations": false,
+    "gamma": 0.99,
+    "lr": 0.0001,
+    "train_batch_size": 256,
+    "max_iterations": 200,
+    "stop_reward": Infinity,
+    "log_level": "INFO",
+    "model": {
+        "fcnet_hiddens": [
+            100,
+            256
+        ],
+        "fcnet_activation": "relu",
+        "conv_filters": [
+            [
+                32,
+                [
+                    8,
+                    8
+                ],
+                4
+            ],
+            [
+                64,
+                [
+                    4,
+                    4
+                ],
+                2
+            ],
+            [
+                64,
+                [
+                    3,
+                    3
+                ],
+                1
+            ],
+            [
+                64,
+                [
+                    11,
+                    11
+                ],
+                1
+            ]
+        ],
+        "conv_activation": "relu"
+    },
+    "algorithm": {
+        "v_min": -100.0,
+        "v_max": 100.0,
+        "dueling": true,
+        "double_q": true,
+        "hiddens": [
+            256
+        ],
+        "replay_buffer_config": {
+            "capacity": 50000
+        }
+    }
+}

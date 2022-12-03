@@ -8,5 +8,5 @@ class ObservationConfig(BaseModel):
     frame: ScreenFrame
     shape: tuple[PositiveInt, PositiveInt]
     stack_size: PositiveInt
-    lidar_config: Optional[LidarConfig]
-    track_segmentation_config: Optional[TrackSegmentationConfig]
+    lidar_config: Optional[LidarConfig] = None
+    track_segmentation_config: Optional[TrackSegmentationConfig] = None
