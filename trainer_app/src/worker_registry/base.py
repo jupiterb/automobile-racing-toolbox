@@ -1,34 +1,29 @@
-from dataclasses import dataclass, field
+from pydantic import BaseModel, Field
 from abc import abstractmethod
+from threading import Lock
 import uuid
 
 
-@dataclass(frozen=True)
-class RemoteWorkerRef:
+class RemoteWorkerRef(BaseModel):
     address: str
     game_id: str
-    id_: uuid.UUID = field(init=False, default_factory=uuid.uuid1)
+    id_: uuid.UUID = Field(default_factory=uuid.uuid1)
+
+    class Config:
+        frozen = True
 
 
-class SingletonType(type):
-    def __new__(mcls, name, bases, attrs):
-        # Assume the target class is created (i.e. this method to be called) in the main thread.
-        cls = super(SingletonType, mcls).__new__(mcls, name, bases, attrs)
-        cls.__shared_instance_lock__ = Lock()
-        return cls
+class SingletonMeta(type):
+    _instances = {}
 
     def __call__(cls, *args, **kwargs):
-        with cls.__shared_instance_lock__:
-            try:
-                return cls.__shared_instance__
-            except AttributeError:
-                cls.__shared_instance__ = super(SingletonType, cls).__call__(
-                    *args, **kwargs
-                )
-                return cls.__shared_instance__
+        if cls not in cls._instances:
+            instance = super().__call__(*args, **kwargs)
+            cls._instances[cls] = instance
+        return cls._instances[cls]
 
 
-class RemoteWorkerRegistry(metaclass=SingletonType):
+class RemoteWorkerRegistry(metaclass=SingletonMeta):
     @abstractmethod
     def register_worker(self, worker_ref: RemoteWorkerRef) -> None:
         """Cal this method to add new worker to registry. Raise adequate exception, if worker already exist"""

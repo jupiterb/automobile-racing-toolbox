@@ -5,26 +5,35 @@ from trainer_app.src.worker_registry import (
     RemoteWorkerRef,
     MemoryRegistry,
 )
-from dataclasses import asdict
+from trainer_app.src.worker_registry.in_memory_registry import get_registry
 import uuid
+from typing import Any
 
-workers_registry = APIRouter(prefix="/registry")
+
+registry_router = APIRouter(prefix="/registry")
 
 
-@workers_registry.post("/")
+@registry_router.post("/")
 def register_remote_worker(
     url: str = Body(),
     game_id: str = Body(),
-    reigstry: RemoteWorkerRegistry = Depends(MemoryRegistry),
+    reigstry: RemoteWorkerRegistry = Depends(get_registry),
 ):
-    worker_ref = RemoteWorkerRef(url, game_id)
+    worker_ref = RemoteWorkerRef(address=url, game_id=game_id)
     reigstry.register_worker(worker_ref)
-    return JSONResponse(asdict(worker_ref))
+    return worker_ref
 
 
-@workers_registry.post("/keepalive")
+@registry_router.post("/keepalive")
 def keepalive(
     worker_id: uuid.UUID = Body(),
-    reigstry: RemoteWorkerRegistry = Depends(MemoryRegistry),
+    reigstry: RemoteWorkerRegistry = Depends(get_registry),
 ):
     reigstry.update_timestamp(worker_id)
+
+
+@registry_router.get("/")
+def get_registry(
+    reigstry: RemoteWorkerRegistry = Depends(get_registry),
+):
+    return {"workers": reigstry.get_active_workers()}

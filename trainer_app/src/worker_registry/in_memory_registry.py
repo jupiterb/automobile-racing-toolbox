@@ -1,4 +1,8 @@
-from trainer_app.src.worker_registry.base import RemoteWorkerRef, RemoteWorkerRegistry
+from trainer_app.src.worker_registry.base import (
+    RemoteWorkerRef,
+    RemoteWorkerRegistry,
+    SingletonMeta,
+)
 from trainer_app.src.worker_registry.exceptions import RecordExists, RecordDoesntExist
 from multiprocessing.dummy import Pool as ThreadPool
 from multiprocessing import Lock
@@ -75,3 +79,7 @@ class MemoryRegistry(RemoteWorkerRegistry):
             for w in self._workers
             if now - self._id2timestamp[w.id_] < self._expiry_time
         }
+
+
+def get_registry():
+    return MemoryRegistry(timedelta(seconds=15))

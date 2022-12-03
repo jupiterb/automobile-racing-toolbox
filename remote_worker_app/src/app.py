@@ -7,8 +7,10 @@ from requests.adapters import HTTPAdapter, Retry
 from pathlib import Path
 import os
 import threading
+import uuid
 
 ENV_FILE = Path(__file__).absolute().parents[1] / ".env"
+_RUNNING = True
 
 
 def keep_sending_keepalive(worker_id, keepalive_url, timeout):
@@ -23,19 +25,20 @@ def keep_sending_keepalive(worker_id, keepalive_url, timeout):
             )
         )
         session.mount("http://", adapter)
-        body = {"worker_id": worker_id}
         try:
-            response = session.post(keepalive_url, data=body)
+            response = session.post(keepalive_url, json=worker_id)
             assert (
                 response.status_code == 200
-            ), f"Invalid status code {response.status_code}"
+            ), f"Invalid status code {response.status_code}, {response.content}"
         except Exception as e:
             logging.error(f"Exception during keepalive ping: {e}")
-    threading.Timer(
-        interval=timeout,
-        function=keep_sending_keepalive,
-        args=(worker_id, keepalive_url, timeout),
-    ).start()
+            raise e
+    if _RUNNING:
+        threading.Timer(
+            interval=timeout,
+            function=keep_sending_keepalive,
+            args=(worker_id, keepalive_url, timeout),
+        ).start()
 
 
 app = FastAPI()
@@ -58,10 +61,10 @@ def register_in_trainer_app():
         session.mount("http://", adapter)
         body = {"url": config.self_url, "game_id": config.game_id}
         try:
-            response = session.post(config.register_url, data=body)
+            response = session.post(config.register_url, json=body)
             assert (
                 response.status_code == 200
-            ), f"Invalid status code {response.status_code}"
+            ), f"Invalid status code {response.status_code}, {response.content}"
         except Exception as e:
             logging.error("Cannot connect to the trainer server")
             raise
@@ -69,3 +72,9 @@ def register_in_trainer_app():
             body = response.json()
             os.environ["SELF_ID"] = body["id_"]
             keep_sending_keepalive(body["id_"], config.keepalive_url, 5)
+
+
+@app.on_event("startup")
+def stop_keepalive():
+    global _RUNNING
+    _RUNNING = False

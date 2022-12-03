@@ -1,5 +1,5 @@
 version: 1
-disable_existing_loggers: true
+disable_existing_loggers: false
 
 formatters:
   brief:
@@ -25,20 +25,20 @@ handlers:
 loggers:
   root:
     level: INFO
-    handlers: [file]
+    handlers: [file, console]
     propogate: false
 
-  racing_toolbox.environment.wrappers: 
-    level: WARNING
-    handlers: [console]
-    propagate: false 
+  # racing_toolbox.environment.wrappers: 
+  #   level: WARNING
+  #   handlers: [console]
+  #   propagate: false 
 
-  racing_toolbox.environment.real_time: 
-    level: DEBUG
-    handlers: [console]
-    propagate: false 
+  # racing_toolbox.environment.real_time: 
+  #   level: DEBUG
+  #   handlers: [console]
+  #   propagate: false 
 
-  racing_toolbox.training.worker:
-    level: INFO
-    handlers: [console]
-    propagate: false 
+  # racing_toolbox.training.worker:
+  #   level: INFO
+  #   handlers: [console]
+  #   propagate: false 
