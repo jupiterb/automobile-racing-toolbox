@@ -31,5 +31,4 @@ class GameConfiguration(BaseModel):
         return k if isinstance(k, Key) else Key[str(k)]
 
     class Config:
-        # use_enum_values = True
-        json_encoders = {Key: lambda k: k.name, GamepadAction: lambda a: a.name}
+        json_encoders = {Key: lambda k: k.name}

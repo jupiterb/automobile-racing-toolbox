@@ -1,7 +1,7 @@
 import vgamepad as vg
 
 from racing_toolbox.interface.controllers.abstract import GameActionController
-from racing_toolbox.interface.models import GamepadAction
+from racing_toolbox.interface.models import GamepadAction, GamepadControl, GamepadButton
 from racing_toolbox.interface.models.gamepad_action import GamepadControl
 
 
@@ -37,7 +37,7 @@ class GamepadController(GameActionController):
         discrete_actions = {
             action
             for action, value in gamepad_actions.items()
-            if isinstance(action, vg.XUSB_BUTTON) and value > 0
+            if isinstance(action, GamepadButton) and value > 0
         }
         continous_actions = {
             action: value
@@ -48,10 +48,11 @@ class GamepadController(GameActionController):
         self._apply_gamepad_continous_actions(continous_actions)
         self._gamepad.update()
 
-    def _apply_gamepad_discrete_actions(self, buttons: set[vg.XUSB_BUTTON]) -> None:
-        for action in buttons:
+    def _apply_gamepad_discrete_actions(self, buttons: set[GamepadButton]) -> None:
+        vg_buttons = {vg.XUSB_BUTTON[b.value] for b in buttons} 
+        for action in vg_buttons:
             self._gamepad.press_button(button=action)
-        for action in set(vg.XUSB_BUTTON) - buttons:
+        for action in set(vg.XUSB_BUTTON) - vg_buttons:
             self._gamepad.release_button(button=action)
 
     def _apply_gamepad_continous_actions(
