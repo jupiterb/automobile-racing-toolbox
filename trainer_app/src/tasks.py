@@ -2,6 +2,7 @@ from trainer_app.src.const import EnvVarsConfig, TMP_DIR
 from racing_toolbox.training import Trainer
 from racing_toolbox.training.config.params import TrainingParams
 from racing_toolbox.environment.config.env import EnvConfig
+from racing_toolbox.environment.mocked import MockedEnv
 from racing_toolbox.interface.config import GameConfiguration
 from racing_toolbox.training.config.user_defined import TrainingConfig
 from racing_toolbox.environment import builder
@@ -56,7 +57,9 @@ def start_training(
 
     os.environ["WANDB_API_KEY"] = wandb_api_key
 
-    env = builder.setup_env(game_config, env_config)
+    # TODO: How to choose correct interface action mapping based only on game config?
+    mocked_env = MockedEnv(game_config.discrete_actions_mapping, game_config.window_size)
+    env = builder.wrapp_env(mocked_env, env_config)
     trainer_params = TrainingParams(
         **training_config.dict(),
         observation_space=env.observation_space,

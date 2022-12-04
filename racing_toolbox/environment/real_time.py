@@ -1,4 +1,5 @@
 import gym
+import gym.spaces 
 import numpy as np
 from typing import Optional
 

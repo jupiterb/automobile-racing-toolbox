@@ -5,14 +5,13 @@ from racing_toolbox.interface.models import GamepadAction, GamepadControl, Gamep
 from racing_toolbox.interface.models.gamepad_action import GamepadControl
 
 
-class GamepadController(GameActionController):
+class GamepadController(GameActionController[GamepadAction]):
     def __init__(
         self,
-        gamepad_action_mapping: dict[str, GamepadAction],
+        action_mapping: dict[str, GamepadAction],
         reset_sequence: list[GamepadAction],
     ) -> None:
-        self._gamepad_action_mapping = gamepad_action_mapping
-        self._reset_sequence = reset_sequence
+        super().__init__(action_mapping=action_mapping, reset_sequence=reset_sequence)
         self._gamepad = vg.VX360Gamepad()
 
     def reset_game(self) -> None:
@@ -23,13 +22,10 @@ class GamepadController(GameActionController):
 
     def apply_actions(self, actions: dict[str, float]) -> None:
         gamepad_actions = {
-            self._gamepad_action_mapping[action]: value
+            self._action_mapping[action]: value
             for action, value in actions.items()
         }
         self._apply_gamepad_actions(gamepad_actions)
-
-    def get_possible_actions(self) -> list[str]:
-        return list(self._gamepad_action_mapping)
 
     def _apply_gamepad_actions(
         self, gamepad_actions: dict[GamepadAction, float]

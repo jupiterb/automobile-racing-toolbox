@@ -29,7 +29,7 @@ class SqueezingWrapper(gym.ObservationWrapper):
 class RescaleWrapper(gym.ObservationWrapper):
     def __init__(self, env: gym.Env) -> None:
         super().__init__(env)
-        self.observation_space = gym.spaces.Box(0, 1, env.observation_space.shape)
+        self.observation_space = gym.spaces.Box(0, 1, env.observation_space.sample().shape)
 
     @log_observation(__name__)
     def observation(self, observation: np.ndarray):
@@ -40,6 +40,7 @@ class CutImageWrapper(gym.ObservationWrapper):
     def __init__(self, env: gym.Env, frame: ScreenFrame) -> None:
         super().__init__(env)
         self._frame = frame
+        self.observation_space = frame.apply(env.observation_space.sample()).shape
 
     @log_observation(__name__)
     def observation(self, observation: np.ndarray) -> np.ndarray:
@@ -63,6 +64,7 @@ class TrackSegmentationWrapper(gym.ObservationWrapper):
     def __init__(self, env: gym.Env, config: TrackSegmentationConfig) -> None:
         super().__init__(env)
         self._track_segmenter = TrackSegmenter(config)
+        # TODO(jupiterb): add observation space 
 
     @log_observation(__name__)
     def observation(self, observation: np.ndarray) -> np.ndarray:
