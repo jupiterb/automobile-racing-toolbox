@@ -1,13 +1,11 @@
 from ray.rllib import algorithms as alg
 from ray.rllib.algorithms import dqn
-
-from ray.rllib.algorithms import dqn
 from ray.rllib.algorithms import bc
 from ray.rllib.algorithms import sac
+from ray.rllib.offline.estimators import ImportanceSampling
 from racing_toolbox.training.config import DQNConfig, BCConfig, SACConfig
 from racing_toolbox.training.config.params import TrainingParams
 from racing_toolbox.training.config.user_defined import AlgorithmConfig
-from ray.rllib.offline.estimators import ImportanceSampling
 
 
 __config_to_cls_map: dict[type[AlgorithmConfig], type[alg.AlgorithmConfig]] = {

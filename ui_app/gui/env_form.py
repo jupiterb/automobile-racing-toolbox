@@ -47,10 +47,10 @@ def actions_form(
 def screen_frame_form() -> ScreenFrame:
     st.write("Configure screen frame")
     return ScreenFrame(
-        top=1
-        - st.number_input("Top", min_value=0.0, max_value=1.0, value=1.0, step=0.05),
-        bottom=1
-        - st.number_input("Bottom", min_value=0.0, max_value=1.0, value=0.0, step=0.05),
+        top=st.number_input("Top", min_value=0.0, max_value=1.0, value=0.0, step=0.05),
+        bottom=st.number_input(
+            "Bottom", min_value=0.0, max_value=1.0, value=1.0, step=0.05
+        ),
         left=st.number_input(
             "Left", min_value=0.0, max_value=1.0, value=0.0, step=0.05
         ),
