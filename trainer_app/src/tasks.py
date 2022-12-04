@@ -34,7 +34,7 @@ app = make_celery(EnvVarsConfig())
 
 
 @app.task(bind=True, base=AbortableTask)
-def start_training(
+def start_training_task(
     self: AbortableTask,
     wandb_api_key: str,
     training_config: TrainingParams,
