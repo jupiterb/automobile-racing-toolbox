@@ -27,13 +27,14 @@ def register_remote_worker(
 @registry_router.post("/keepalive")
 def keepalive(
     worker_id: uuid.UUID = Body(),
+    available: bool = Body(),
     reigstry: RemoteWorkerRegistry = Depends(get_registry),
 ):
-    reigstry.update_timestamp(worker_id)
+    reigstry.update_timestamp(worker_id, available=available)
 
 
 @registry_router.get("/")
-def get_registry(
+def get_registry_route(
     reigstry: RemoteWorkerRegistry = Depends(get_registry),
 ):
     return {"workers": reigstry.get_active_workers()}

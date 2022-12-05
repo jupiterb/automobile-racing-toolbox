@@ -31,7 +31,7 @@ class MemoryRegistry(RemoteWorkerRegistry):
 
     def __init__(self, expiry_time: timedelta):
         self._expiry_time = expiry_time
-        self._workers: set[RemoteWorkerRef] = set()
+        self._workers: list[RemoteWorkerRef] = list()
         self._id2worker: dict[uuid.UUID, RemoteWorkerRef] = {}
         self._id2timestamp: dict[uuid.UUID, datetime] = {}
 
@@ -39,7 +39,7 @@ class MemoryRegistry(RemoteWorkerRegistry):
     def register_worker(self, worker_ref: RemoteWorkerRef) -> None:
         if worker_ref in self._workers:
             raise RecordExists(worker_ref)
-        self._workers.add(worker_ref)
+        self._workers.append(worker_ref)
         self._id2worker[worker_ref.id_] = worker_ref
         self._id2timestamp[worker_ref.id_] = datetime.now()
         logger.debug(f"worker added: {worker_ref}")
@@ -50,13 +50,13 @@ class MemoryRegistry(RemoteWorkerRegistry):
         if worker_id not in self._id2worker:
             logger.warning(f"Trying to remove non existing worker: {worker_id}")
             raise RecordDoesntExist(worker_id)
-        self._workers = {w for w in self._workers if w.id_ != worker_id}
+        self._workers = [w for w in self._workers if w.id_ != worker_id]
         del self._id2worker[worker_id]
         del self._id2timestamp[worker_id]
         logger.debug(f"Removed worker: {worker_id}")
 
     @synchornized(_lock)
-    def update_timestamp(self, worker_id: uuid.UUID) -> None:
+    def update_timestamp(self, worker_id: uuid.UUID, available: bool) -> None:
         """Call this method to mark that worker is still alive"""
         if worker_id not in self._id2timestamp:
             logger.warning(
@@ -64,21 +64,22 @@ class MemoryRegistry(RemoteWorkerRegistry):
             )
             raise RecordDoesntExist(worker_id)
         self._id2timestamp[worker_id] = datetime.now()
+        self._id2worker[worker_id].available = available
 
     @synchornized(_lock)
-    def get_workers(self, game_id: str) -> set[RemoteWorkerRef]:
+    def get_workers(self, game_id: str) -> list[RemoteWorkerRef]:
         """Returns active workers that can run given game"""
         active_workers = self.get_active_workers()
-        return {w for w in active_workers if w.game_id == game_id}
+        return [w for w in active_workers if w.game_id == game_id]
 
     @synchornized(_lock)
-    def get_active_workers(self) -> set[RemoteWorkerRef]:
+    def get_active_workers(self) -> list[RemoteWorkerRef]:
         now = datetime.now()
-        return {
+        return [
             w
             for w in self._workers
             if now - self._id2timestamp[w.id_] < self._expiry_time
-        }
+        ]
 
 
 def get_registry():

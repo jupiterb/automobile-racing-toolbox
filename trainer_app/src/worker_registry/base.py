@@ -7,10 +7,8 @@ import uuid
 class RemoteWorkerRef(BaseModel):
     address: str
     game_id: str
+    available: bool = True
     id_: uuid.UUID = Field(default_factory=uuid.uuid1)
-
-    class Config:
-        frozen = True
 
 
 class SingletonMeta(type):
@@ -33,7 +31,7 @@ class RemoteWorkerRegistry(metaclass=SingletonMeta):
         """Call this method to remove worker for registry. Raise exception if it doesn't exist"""
 
     @abstractmethod
-    def update_timestamp(self, worker_id: uuid.UUID) -> None:
+    def update_timestamp(self, worker_id: uuid.UUID, available: bool) -> None:
         """Call this method to mark that worker is still alive"""
 
     @abstractmethod

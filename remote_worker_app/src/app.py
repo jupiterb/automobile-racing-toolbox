@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from remote_worker_app.src.route import router
+from remote_worker_app.src.route import router, is_available
 from remote_worker_app.src.schemas import EnvVars
 import requests
 import logging
@@ -25,8 +25,9 @@ def keep_sending_keepalive(worker_id, keepalive_url, timeout):
             )
         )
         session.mount("http://", adapter)
+        body = {"worker_id": worker_id, "available": is_available()}
         try:
-            response = session.post(keepalive_url, json=worker_id)
+            response = session.post(keepalive_url, json=body)
             assert (
                 response.status_code == 200
             ), f"Invalid status code {response.status_code}, {response.content}"

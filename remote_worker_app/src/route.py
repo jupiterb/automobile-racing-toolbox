@@ -6,7 +6,7 @@ from fastapi import APIRouter, Response
 from threading import Lock
 from remote_worker_app.src.schemas import SyncRequest
 from remote_worker_app.src.worker import run_worker_process
-
+from threading import Timer
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +18,15 @@ __LOCK = (
 )  # TODO: probably better idea is to handle lock via middleware, or custom router
 
 router = APIRouter(prefix="/worker")
+def is_available() -> bool:
+    with __LOCK:
+        return __WORKER_ARGS is None
+
+def __unsync():
+    global __WORKER_ARGS, __WORKER_PROCESS, __LOCK
+    with __LOCK:
+        if __WORKER_PROCESS is None:
+            __WORKER_ARGS = None 
 
 
 @router.post("/sync")
@@ -40,6 +49,7 @@ def load_configs(body: SyncRequest):
         body.wandb_group,
     )
     __LOCK.release()
+    Timer(60, __unsync).run()
 
 
 @router.post("/start")
