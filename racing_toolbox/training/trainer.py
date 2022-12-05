@@ -26,11 +26,11 @@ class Trainer:
         # lazy values
         self._algorithm: Algorithm = algo.construct_cls(config)
         # TODO: handle case where checkpoint has more policies than actual trainer
-        if pre_trained_weights:
-            self._algorithm.get_policy().set_weights(pre_trained_weights)
         if checkpoint_path:
             logger.info(f"restoring from checkpoint {checkpoint_path}")
             self._algorithm.restore(str(checkpoint_path))
+        if pre_trained_weights:
+            self._algorithm.get_policy().set_weights(pre_trained_weights)
 
         self._checkpoint_callback = checkpoint_callback or self.make_checkpoint
         ray.init(ignore_reinit_error=True)

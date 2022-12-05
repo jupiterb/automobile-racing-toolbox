@@ -15,9 +15,11 @@ class StartTrainingRequest(BaseModel):
     wandb_group: str = str(uuid.uuid1()) 
 
 
-class ContinueTrainingRequest(BaseModel):
+class ResumeTrainingRequest(BaseModel):
     wandb_run_reference: str 
     wandb_api_key: str 
+    checkpoint_name: str
+    game_id: str # TODO: think about a way to extract it from wandb
     training_config: TrainingConfig
 
 
