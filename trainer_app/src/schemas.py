@@ -4,6 +4,7 @@ from racing_toolbox.environment.config.env import EnvConfig
 from racing_toolbox.interface.config import GameConfiguration
 from racing_toolbox.training.config.user_defined import TrainingConfig
 import uuid 
+from datetime import datetime 
 
 class StartTrainingRequest(BaseModel):
     game_config: GameConfiguration
@@ -24,11 +25,10 @@ class ResumeTrainingRequest(BaseModel):
 
 
 class TaskInfoResponse(BaseModel):
-    task_finish_time: str 
+    task_finish_time: Optional[datetime] 
     task_name: str 
     task_id: str
     status: str
-    kwargs: dict[str, Any]
     result: Optional[Any]
 
 

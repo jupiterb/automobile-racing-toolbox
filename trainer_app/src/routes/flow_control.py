@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import PlainTextResponse
 from trainer_app.src.schemas import StartTrainingRequest, ResumeTrainingRequest
 from trainer_app.src.tasks.tasks import (
+    app,
     start_training_task,
     sync_workers,
     notify_workers,
@@ -85,4 +86,4 @@ def start_training(
 @flow_router.get("/stop/{task_id}")
 def stop_training(task_id):
     """stop running training task"""
-    start_training_task.AsyncResult(task_id).abort()
+    app.Task().AsyncResult(task_id).abort()
