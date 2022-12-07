@@ -16,7 +16,7 @@ requirements_common = [
     "imageio-ffmpeg==0.4.7",
     "ray[rllib]",
     "pygame==2.1.2",
-    "pynput==1.7.6",
+    "pynput==1.7.5",
     "pydantic==1.10.2",
     "tables==3.7.0",
     "streamlit",

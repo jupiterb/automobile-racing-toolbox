@@ -1,7 +1,6 @@
 import pytest
 from pydantic import BaseModel
-from pynput.keyboard import Key
-from racing_toolbox.interface.models import GamepadControl, GamepadAction, GamepadButton
+from racing_toolbox.interface.models import GamepadControl, GamepadAction, GamepadButton, KeyAction
 from racing_toolbox.interface.config import GameConfiguration
 from racing_toolbox.observation.utils import ScreenFrame
 from racing_toolbox.observation.utils.ocr import OcrConfiguration, OcrToolConfiguration
@@ -30,10 +29,10 @@ DEFAULT_CONFIGS: dict[type[BaseModel], BaseModel] = {
         process_name="Trackmania Nations Forever",
         window_size=(800, 1000),
         discrete_actions_mapping={
-            "FORWARD": Key.up,
-            "BREAK": Key.down,
-            "RIGHT": Key.right,
-            "LEFT": Key.left,
+            "FORWARD": KeyAction.up,
+            "BREAK": KeyAction.down,
+            "RIGHT": KeyAction.right,
+            "LEFT": KeyAction.left,
         },
         continous_actions_mapping={
             "FORWARD": GamepadButton.XUSB_GAMEPAD_A,
@@ -42,7 +41,7 @@ DEFAULT_CONFIGS: dict[type[BaseModel], BaseModel] = {
             "DIRECT_Y": GamepadControl.LEFT_JOYSTICK_Y,
         },
         reset_seconds=3,
-        reset_keys_sequence=[Key.enter],
+        reset_keys_sequence=[KeyAction.enter],
         reset_gamepad_sequence=[GamepadButton.XUSB_GAMEPAD_X],
         frequency_per_second=8,
         ocrs=OcrToolConfiguration(
