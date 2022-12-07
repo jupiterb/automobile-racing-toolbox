@@ -1,9 +1,9 @@
-from trainer_app.src.worker_registry.base import (
+from src.worker_registry.base import (
     RemoteWorkerRef,
     RemoteWorkerRegistry,
     SingletonMeta,
 )
-from trainer_app.src.worker_registry.exceptions import RecordExists, RecordDoesntExist
+from src.worker_registry.exceptions import RecordExists, RecordDoesntExist
 from multiprocessing.dummy import Pool as ThreadPool
 from multiprocessing import Lock
 from threading import get_ident

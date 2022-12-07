@@ -26,9 +26,9 @@ class ResumeTrainingRequest(BaseModel):
 
 class TaskInfoResponse(BaseModel):
     task_finish_time: Optional[datetime] 
-    task_name: str 
-    task_id: str
-    status: str
+    task_name: Optional[str] 
+    task_id: Optional[str]
+    status: Optional[str]
     result: Optional[Any]
 
 

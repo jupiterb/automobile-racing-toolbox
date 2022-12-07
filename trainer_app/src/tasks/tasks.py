@@ -1,6 +1,6 @@
-from trainer_app.src.const import EnvVarsConfig, TMP_DIR
-from trainer_app.src.worker_registry import RemoteWorkerRef
-from trainer_app.src.tasks.utils import (
+from src.const import EnvVarsConfig, TMP_DIR
+from src.worker_registry import RemoteWorkerRef
+from src.tasks.utils import (
     WorkerFailure,
     wandb_checkpoint_callback_factory,
     log_config,
@@ -22,7 +22,7 @@ import os, uuid
 import wandb
 from ray.rllib.algorithms import Algorithm
 import grequests
-
+import logging 
 
 logger = get_task_logger(__name__)
 
@@ -218,3 +218,10 @@ def sync_workers(
     for r, addr in zip(responses, urls):
         if r.status_code != 200:
             raise WorkerFailure(addr, "Cannot sync")
+
+import time 
+@app.task(ignore_results=True)
+def probe_task():
+    time.sleep(10)
+    print(10)
+    return 10

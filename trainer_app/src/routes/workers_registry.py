@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Body, Depends
 from fastapi.responses import JSONResponse
-from trainer_app.src.worker_registry import (
+from src.worker_registry import (
     RemoteWorkerRegistry,
     RemoteWorkerRef,
     MemoryRegistry,
 )
-from trainer_app.src.worker_registry.in_memory_registry import get_registry
+from src.worker_registry.in_memory_registry import get_registry
 import uuid
 from typing import Any
 
