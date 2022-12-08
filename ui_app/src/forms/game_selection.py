@@ -1,6 +1,6 @@
 import streamlit as st
 from typing import Optional, Union
-from pynput.keyboard import Key
+from racing_toolbox.interface.models.keyboard_action import KeyAction
 from vgamepad import XUSB_BUTTON
 import string
 
@@ -69,8 +69,8 @@ def create_new_game_config(name: str) -> GameConfiguration:
     )
 
 
-def get_possible_key_actions() -> list[Union[Key, str]]:
-    possible_keys: list[Union[Key, str]] = [key for key in Key]
+def get_possible_key_actions() -> list[str]:
+    possible_keys: list[Union[KeyAction, str]] = [key.value for key in KeyAction]
     possible_keys.extend(string.ascii_uppercase)
     possible_keys.extend(string.digits)
     return possible_keys
@@ -80,7 +80,7 @@ def get_possible_gamepad_actions() -> list[GamepadAction]:
     return [action for _set in [XUSB_BUTTON, GamepadControl] for action in _set]
 
 
-def configure_discrete_actions() -> dict[str, Union[Key, str]]:
+def configure_discrete_actions() -> dict[str, str]:
     possible_actions = get_possible_key_actions()
     keys_to_use = st.multiselect(
         "Choose keyboard actions for discrete action space", possible_actions
@@ -96,7 +96,7 @@ def configure_continous_actions() -> dict[str, GamepadAction]:
     return {str(selected): selected for selected in actions_to_use}
 
 
-def configure_discrete_reset_sequence() -> list[Union[Key, str]]:
+def configure_discrete_reset_sequence() -> list[str]:
     possible_actions = get_possible_key_actions()
     return st.multiselect(
         "Choose keyboard actions for episode resetting", possible_actions
