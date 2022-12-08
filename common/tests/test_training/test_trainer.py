@@ -44,13 +44,6 @@ def test_if_training_runs_properly_with_discrete_action_space(
     training_params, _ = construct_training_config
     training_test(training_params)
 
-<<<<<<< HEAD:tests/test_training/test_trainer.py
-=======
-    trainer = Trainer(training_params)
-    weights_before = deepcopy(trainer.algorithm.get_policy().get_weights())
-    for _ in trainer.run():
-        pass
->>>>>>> 2a43dfdba2e67dea4ff8ec1fd72a61921726cc4f:common/tests/test_training/test_trainer.py
 
 @pytest.mark.parametrize(
     "fake_env",

@@ -9,12 +9,7 @@ from racing_toolbox.environment.config import (
     FinalValueDetectionParameters,
 )
 from racing_toolbox.environment.wrappers.observation import CutImageWrapper
-<<<<<<< HEAD:racing_toolbox/environment/builder.py
-from racing_toolbox.interface.controllers.gamepad import GamepadController
-from racing_toolbox.interface.controllers.keyboard import KeyboardController
-=======
 from racing_toolbox.interface import controllers
->>>>>>> 2a43dfdba2e67dea4ff8ec1fd72a61921726cc4f:common/racing_toolbox/environment/builder.py
 
 from racing_toolbox.interface.config import GameConfiguration
 from racing_toolbox.environment.final_state.detector import FinalStateDetector
@@ -24,14 +19,7 @@ from racing_toolbox.observation.utils.ocr import OcrTool, SevenSegmentsOcr
 
 
 def setup_env(game_config: GameConfiguration, env_config: EnvConfig) -> gym.Env:
-<<<<<<< HEAD:racing_toolbox/environment/builder.py
-    if env_config.action_config.available_actions is not None:
-        interface = from_config(game_config, KeyboardController)
-    else:
-        interface = from_config(game_config, GamepadController)
-=======
     interface = from_config(game_config, controllers.KeyboardController)
->>>>>>> 2a43dfdba2e67dea4ff8ec1fd72a61921726cc4f:common/racing_toolbox/environment/builder.py
 
     ocr_tool = OcrTool(game_config.ocrs, SevenSegmentsOcr)
 
