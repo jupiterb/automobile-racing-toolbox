@@ -22,7 +22,7 @@ def select_training_way() -> str:
     st.header("Select way to train")
     option = st.selectbox(
         "Would you like to use pretrained model or create new one from scratch?",
-        ["From scratch", "Use pretrained", "Train autencoder"],
+        ["From scratch", "Use pretrained", "Train autoencoder"],
     )
     return option
 
