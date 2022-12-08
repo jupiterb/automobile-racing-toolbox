@@ -6,7 +6,7 @@ from racing_toolbox.training.config import TrainingConfig
 from racing_toolbox.training.config.validation import ValidationError, ConfigValidator
 
 
-def starter_form(
+def start_training(
     game_config: GameConfiguration,
     env_config: EnvConfig,
     training_config: TrainingConfig,

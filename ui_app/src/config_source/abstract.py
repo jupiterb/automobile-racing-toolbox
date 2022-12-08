@@ -21,5 +21,5 @@ class AbstractConfigSource(Generic[RacingToolboxConfiguration]):
         pass
 
     @abstractmethod
-    def add_config(self, config: RacingToolboxConfiguration):
+    def add_config(self, name: str, config: RacingToolboxConfiguration):
         pass

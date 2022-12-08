@@ -28,7 +28,6 @@ class ConfigValidator:
         self._errors = []
         self._catch_errors(_validate_discrete_actions_compatibilty)(game, env)
         self._catch_errors(_validate_continous_actions_compatibilty)(game, env)
-        self._catch_errors(_validate_observation_frame)(env)
         self._catch_errors(_validate_model_and_observation_space_compatibilty)(
             game, env, training
         )
@@ -66,13 +65,6 @@ def _validate_continous_actions_compatibilty(game: GameConfiguration, env: EnvCo
         assert any(
             game_continous_actions
         ), "You want to use continous actions space so any continous action was defined in game interface."
-
-
-def _validate_observation_frame(env: EnvConfig):
-    frame = env.observation_config.frame
-    assert (
-        frame.top < frame.bottom and frame.left < frame.right
-    ), "Screen frame error: top/left border should be lower than bottom/right."
 
 
 def _validate_model_and_observation_space_compatibilty(
@@ -123,3 +115,4 @@ def _validate_model_and_observation_space_compatibilty(
             optput_size(y, kernel_y, stride),
             channels,
         )
+    # TODO final shape should be

@@ -2,16 +2,11 @@ import os
 import json
 from typing import Generic
 
-from ui_app.config_source.abstract import (
+from ui_app.src.config_source.abstract import (
     AbstractConfigSource,
     RacingToolboxConfiguration,
 )
-
-
-class _SetEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, set):
-            return list(obj)
+from ui_app.src.utils import SetEncoder
 
 
 class FileSysteConfigSource(AbstractConfigSource, Generic[RacingToolboxConfiguration]):
@@ -40,4 +35,4 @@ class FileSysteConfigSource(AbstractConfigSource, Generic[RacingToolboxConfigura
             raise ValueError(f"{self._folder_path} not found!")
         new_config_path = f"{self._folder_path}/{name}.json"
         with open(new_config_path, "w") as f:
-            json.dump(config.dict(), f, cls=_SetEncoder)
+            json.dump(config.dict(), f, cls=SetEncoder)

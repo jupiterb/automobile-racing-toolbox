@@ -1,6 +1,6 @@
 from pydantic import BaseModel, validator
 from pynput.keyboard import Key
-from typing import Any
+from typing import Any, Union
 from racing_toolbox.interface.models.gamepad_action import GamepadAction
 from racing_toolbox.observation.utils.ocr import OcrToolConfiguration
 
@@ -9,11 +9,11 @@ class GameConfiguration(BaseModel):
     game_id: str
     process_name: str
     window_size: tuple[int, int]
-    discrete_actions_mapping: dict[str, Key]
+    discrete_actions_mapping: dict[str, Union[Key, str]]
     continous_actions_mapping: dict[str, GamepadAction]
     ocrs: OcrToolConfiguration
     reset_seconds: int
-    reset_keys_sequence: list[Key]
+    reset_keys_sequence: list[Union[Key, str]]
     reset_gamepad_sequence: list[GamepadAction]
     frequency_per_second: int
 

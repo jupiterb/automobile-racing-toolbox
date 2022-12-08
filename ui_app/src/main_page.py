@@ -7,7 +7,7 @@ def main():
         unsafe_allow_html=True,
     )
     st.markdown("""---""")
-    with st.expander("Abour the project 🏎️"):
+    with st.expander("About the project 🏎️"):
         st.write(
             "From March 2022, the idea of the possibility of training an agent in racing simulators pushed us to create this tool. Today with Automobile Racing Toolbox you can create an agent for your favorite racing game. With the help of reinforcement learning algorithms, you don't need to collect data, just configure your environment. Unless you really want to, we can use your rides to teach the resulting agent even better."
         )

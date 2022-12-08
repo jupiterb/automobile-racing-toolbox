@@ -12,10 +12,58 @@ from racing_toolbox.environment.config import (
 from racing_toolbox.observation.utils.screen_frame import ScreenFrame
 from racing_toolbox.observation.config import LidarConfig, TrackSegmentationConfig
 
-from ui_app.config_source.file_based import FileSysteConfigSource
+from ui_app.src.shared import Shared
+from ui_app.src.forms.common import configure_screen_frame
 
 
-def actions_form(
+def configure_env(game_config: Optional[GameConfiguration]) -> Optional[EnvConfig]:
+    source = source = Shared().envs_source
+    envs = source.get_configs()
+    selected = st.selectbox("Select environment", list(envs.keys()))
+    with st.expander("Add new environment"):
+        name = st.text_input("Provide new environment name", value="My_New_Env")
+        action_space_type = st.selectbox(
+            "Select action space type", ["Continous", "Discrete"]
+        )
+        discrete_action_space = action_space_type == "Discrete"
+        feature_extraction_type = st.selectbox(
+            "Select feature extraction type",
+            options=["Reshape", "LIDAR", "Autoencoder"],
+        )
+        with st.form("new_env"):
+            config = create_new_env(
+                game_config, discrete_action_space, feature_extraction_type
+            )
+            submitted = st.form_submit_button("Submit")
+            if submitted:
+                source.add_config(name, config)
+    if selected is not None:
+        config = envs[selected]
+        return config
+
+
+def create_new_env(
+    game_config: Optional[GameConfiguration],
+    discrete_action_space: bool,
+    feature_extraction_type: str,
+) -> EnvConfig:
+    action_config = configure_actions(game_config, discrete_action_space)
+    observation_config = configure_observation(feature_extraction_type)
+    st.markdown("""---""")
+    reward_config = configure_reward()
+    st.markdown("""---""")
+    max_episode_length = st.number_input(
+        "Maximal episode length", min_value=100, max_value=10_000, value=1_000
+    )
+    return EnvConfig(
+        action_config=action_config,
+        observation_config=observation_config,
+        reward_config=reward_config,
+        max_episode_length=max_episode_length,
+    )
+
+
+def configure_actions(
     game_config: Optional[GameConfiguration], discrete_action_space: bool
 ) -> ActionConfig:
     action_config = ActionConfig(available_actions=None)
@@ -44,23 +92,7 @@ def actions_form(
     return action_config
 
 
-def screen_frame_form() -> ScreenFrame:
-    st.write("Configure screen frame")
-    return ScreenFrame(
-        top=st.number_input("Top", min_value=0.0, max_value=1.0, value=0.0, step=0.05),
-        bottom=st.number_input(
-            "Bottom", min_value=0.0, max_value=1.0, value=1.0, step=0.05
-        ),
-        left=st.number_input(
-            "Left", min_value=0.0, max_value=1.0, value=0.0, step=0.05
-        ),
-        right=st.number_input(
-            "Right", min_value=0.0, max_value=1.0, value=1.0, step=0.05
-        ),
-    )
-
-
-def lidar_form() -> LidarConfig:
+def configure_lidar() -> LidarConfig:
     st.write("Configure LIDAR parameters")
     return LidarConfig(
         depth=st.number_input("Depth", min_value=1, max_value=5, value=3),
@@ -80,7 +112,7 @@ def lidar_form() -> LidarConfig:
     )
 
 
-def track_segmentation_form() -> TrackSegmentationConfig:
+def configure_track_segmentation() -> TrackSegmentationConfig:
     st.write("Provide expected color of track")
     track_color = (
         st.number_input("Red", min_value=0, max_value=256, value=200),
@@ -98,7 +130,7 @@ def track_segmentation_form() -> TrackSegmentationConfig:
     )
 
 
-def autoencoders_form() -> ScreenFrame:
+def configure_autoencoders() -> ScreenFrame:
     # It's now placeholder only and returns ScreenFrame
     vaes = {"VAE 1": ScreenFrame(), "VAE 2": ScreenFrame(top=0.5)}
     if len(vaes) == 0:
@@ -108,7 +140,7 @@ def autoencoders_form() -> ScreenFrame:
     return vaes[selected]
 
 
-def observation_form(feature_extraction_type: str) -> ObservationConfig:
+def configure_observation(feature_extraction_type: str) -> ObservationConfig:
     st.write("Observation config")
     stack_size = st.number_input("Stack size", min_value=1, max_value=10, value=4)
     shape = (84, 84)
@@ -120,13 +152,13 @@ def observation_form(feature_extraction_type: str) -> ObservationConfig:
             st.number_input("Height", min_value=32, max_value=256, value=84),
             st.number_input("Width", min_value=32, max_value=256, value=84),
         )
-        frame = screen_frame_form()
+        frame = configure_screen_frame()
     elif feature_extraction_type == "LIDAR":
-        lidar_config = lidar_form()
-        segmentation_config = track_segmentation_form()
-        frame = screen_frame_form()
+        lidar_config = configure_lidar()
+        segmentation_config = configure_track_segmentation()
+        frame = configure_screen_frame()
     else:
-        frame = autoencoders_form()
+        frame = configure_autoencoders()
     observation_config = ObservationConfig(
         frame=frame,
         shape=shape,
@@ -137,7 +169,7 @@ def observation_form(feature_extraction_type: str) -> ObservationConfig:
     return observation_config
 
 
-def reward_form() -> RewardConfig:
+def configure_reward() -> RewardConfig:
     st.write("Reward config")
     speed_diff_thresh = st.number_input(
         "Sppeed difference threshold", min_value=0, max_value=40, value=10
@@ -159,50 +191,3 @@ def reward_form() -> RewardConfig:
         scale=scale,
         clip_range=clip_range,
     )
-
-
-def new_env_form(
-    game_config: Optional[GameConfiguration],
-    discrete_action_space: bool,
-    feature_extraction_type: str,
-) -> EnvConfig:
-    action_config = actions_form(game_config, discrete_action_space)
-    observation_config = observation_form(feature_extraction_type)
-    st.markdown("""---""")
-    reward_config = reward_form()
-    st.markdown("""---""")
-    max_episode_length = st.number_input(
-        "Maximal episode length", min_value=100, max_value=10_000, value=1_000
-    )
-    return EnvConfig(
-        action_config=action_config,
-        observation_config=observation_config,
-        reward_config=reward_config,
-        max_episode_length=max_episode_length,
-    )
-
-
-def configure_env(game_config: Optional[GameConfiguration]) -> Optional[EnvConfig]:
-    source = FileSysteConfigSource[EnvConfig]("./config/envs")
-    envs = source.get_configs()
-    selected = st.selectbox("Select environment", list(envs.keys()))
-    with st.expander("Add new environment"):
-        name = st.text_input("Provide new environment name", value="My_New_Env")
-        action_space_type = st.selectbox(
-            "Select action spave type", ["Continous", "Discrete"]
-        )
-        discrete_action_space = action_space_type == "Discrete"
-        feature_extraction_type = st.selectbox(
-            "Select feature extraction type",
-            options=["Reshape", "LIDAR", "Autoencoder"],
-        )
-        with st.form("new_env"):
-            config = new_env_form(
-                game_config, discrete_action_space, feature_extraction_type
-            )
-            submitted = st.form_submit_button("Submit")
-            if submitted:
-                source.add_config(name, config)
-    if selected is not None:
-        config = envs[selected]
-        return config

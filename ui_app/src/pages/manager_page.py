@@ -43,7 +43,7 @@ def main():
         row = pd.DataFrame(selected[0])
         name = str(row.iloc[0]["Name"])
 
-        if st.button(f"Rerun {name}"):
+        if st.button(f"Resume {name}"):
             # TODO make training run agian
             pass
 

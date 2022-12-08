@@ -5,8 +5,8 @@ from racing_toolbox.interface.config import GameConfiguration
 from racing_toolbox.environment.config import EnvConfig
 from racing_toolbox.training.config import ModelConfig
 
-from ui_app.trainings_source.abstract import AbstractModelsSource, WeightsAndConfigs
-from ui_app.config_source.file_based import FileSysteConfigSource as ConfigSource
+from ui_app.src.trainings_source.abstract import AbstractModelsSource, WeightsAndConfigs
+from ui_app.src.config_source.file_based import FileSysteConfigSource as ConfigSource
 
 
 class FileSysteModelsSource(AbstractModelsSource):

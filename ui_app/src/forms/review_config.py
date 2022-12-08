@@ -5,19 +5,39 @@ from racing_toolbox.interface.config import GameConfiguration
 from racing_toolbox.environment.config import EnvConfig
 from racing_toolbox.training.config import TrainingConfig
 
-from ui_app.config_source.file_based import (
-    FileSysteConfigSource,
+from ui_app.src.config_source.abstract import (
+    AbstractConfigSource,
     RacingToolboxConfiguration,
 )
-from ui_app.utils import SetEncoder
+from ui_app.src.shared import Shared
+from ui_app.src.utils import SetEncoder
+
+
+def review_all(
+    game_config: GameConfiguration,
+    env_config: EnvConfig,
+    training_config: TrainingConfig,
+) -> tuple[GameConfiguration, EnvConfig, TrainingConfig]:
+    with st.sidebar.header("Review configuration"):
+        shared = Shared()
+        return (
+            review_config(game_config, "Game configuration", shared.games_source),
+            review_config(env_config, "Environment configuration", shared.envs_source),
+            review_config(
+                training_config,
+                "Training configuration",
+                shared.training_configs_source,
+            ),
+        )
 
 
 def review_config(
-    config: RacingToolboxConfiguration, config_label: str, path: str
+    config: RacingToolboxConfiguration,
+    config_label: str,
+    config_source: AbstractConfigSource,
 ) -> RacingToolboxConfiguration:
     st.sidebar.markdown("""---""")
     config_cls = type(config)
-    config_source = FileSysteConfigSource[config_cls](path)
     selected = st.sidebar.selectbox(config_label, options=["Review", "Edit", "Upload"])
     if selected == "Review":
         st.sidebar.json(config.dict(), expanded=False)
@@ -56,18 +76,3 @@ def review_config(
                 config_source.add_config(config_name, new_config)
                 config = new_config
     return config
-
-
-def review_configs(
-    game_config: GameConfiguration,
-    env_config: EnvConfig,
-    training_config: TrainingConfig,
-) -> tuple[GameConfiguration, EnvConfig, TrainingConfig]:
-    with st.sidebar.header("Review configuration"):
-        return (
-            review_config(game_config, "Game configuration", "./config/games"),
-            review_config(env_config, "Environment configuration", "./config/envs"),
-            review_config(
-                training_config, "Training configuration", "./config/trainings"
-            ),
-        )

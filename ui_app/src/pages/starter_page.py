@@ -1,15 +1,25 @@
 import streamlit as st
 
-from ui_app.gui.game_form import configure_game
-from ui_app.gui.env_form import configure_env, screen_frame_form
-from ui_app.gui.training_form import configure_training, recordings_form
-from ui_app.gui.pretrained_form import configure_pretained
-from ui_app.gui.review_config import review_configs
-from ui_app.gui.starter_form import starter_form
+from ui_app.src.forms import (
+    configure_game,
+    configure_env,
+    configure_training,
+    configure_pretained,
+    review_all,
+    start_training,
+)
+from ui_app.src.forms.common import configure_screen_frame, select_recordings
+from ui_app.src.config import (
+    UIAppConfig,
+    ConfigSourceType,
+    Credentials,
+    ConfigsContentEndpoints,
+)
+from ui_app.src.shared import Shared
 
 
 def select_training_way() -> str:
-    st.header("Select way to train new amazing AI")
+    st.header("Select way to train")
     option = st.selectbox(
         "Would you like to use pretrained model or create new one from scratch?",
         ["From scratch", "Use pretrained", "Train autencoder"],
@@ -24,10 +34,10 @@ def configure_from_scratch():
     env_config = configure_env(game_config)
     training_config = configure_training()
     if game_config and env_config and training_config:
-        game_config, env_config, training_config = review_configs(
+        game_config, env_config, training_config = review_all(
             game_config, env_config, training_config
         )
-        starter_form(game_config, env_config, training_config)
+        start_training(game_config, env_config, training_config)
 
 
 def configure_with_pretrained():
@@ -36,10 +46,10 @@ def configure_with_pretrained():
     pretrained = configure_pretained()
     if pretrained:
         game_config, env_config, training_config = pretrained
-        game_config, env_config, training_config = review_configs(
+        game_config, env_config, training_config = review_all(
             game_config, env_config, training_config
         )
-        starter_form(game_config, env_config, training_config)
+        start_training(game_config, env_config, training_config)
 
 
 def configure_autencoder():
@@ -48,8 +58,28 @@ def configure_autencoder():
     game_config = configure_game()
     st.markdown("""---""")
     st.write("Configure autoencoder training")
-    screen_frame = screen_frame_form()
-    recordings_to_use = recordings_form()
+    screen_frame = configure_screen_frame()
+    recordings_to_use = select_recordings()
+
+
+def setup_shared():
+    shared = Shared()
+    shared.use_config(
+        UIAppConfig(
+            credentials=Credentials(
+                user_key_id="AKIAVEKIFJHIO7KY23YZ",
+                user_secret_key="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",
+            ),
+            source_type=ConfigSourceType.S3_BUCKET,
+            root="automobile-training-test",
+            endpoints=ConfigsContentEndpoints(
+                game_configs="configs/games",
+                env_configs="configs/envs",
+                training_configs="configs/trainings",
+                recordings="recordings",
+            ),
+        )
+    )
 
 
 def main():
@@ -57,6 +87,9 @@ def main():
         f'<h1 style="color:#ee6c4d;font-size:40px;">{"Automobile Training Starter"}</h1>',
         unsafe_allow_html=True,
     )
+
+    setup_shared()
+
     st.markdown("""---""")
 
     training_type = select_training_way()
