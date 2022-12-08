@@ -1,0 +1,6 @@
+*venv
+scripts
+sandbox
+data
+config
+*db*
