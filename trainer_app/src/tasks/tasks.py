@@ -28,10 +28,20 @@ logger = get_task_logger(__name__)
 
 
 def make_celery(config: EnvVarsConfig):
+
+    class CeleryConfig:
+        task_serializer = "pickle"
+        result_serializer = "pickle"
+        event_serializer = "json"
+        accept_content = ["application/json", "application/x-python-serialize"]
+        result_accept_content = ["application/json", "application/x-python-serialize"]
+
+
     celery = Celery(
         "tasks", broker=config.celery_broker_url, backend=config.celery_backend_url
     )
     celery.conf.result_extended = True
+    celery.config_from_object(CeleryConfig)
     return celery
 
 
@@ -190,6 +200,7 @@ def notify_workers(urls: list[str], route: str):
         if r.status_code != 200:
             raise WorkerFailure(addr, "Cannot start")
 
+import orjson 
 
 @app.task(ignore_result=True)
 def sync_workers(
@@ -206,17 +217,21 @@ def sync_workers(
     rs = []
     for i, url in enumerate(urls):
         body = {
-            "game_config": game_config,
-            "env_config": env_config,
-            "policy_address": f"http://{host}:{port + i}",
+            "game_config": orjson.loads(game_config.json()),
+            "env_config": orjson.loads(env_config.json()),
+            "policy_address": [host, port + i],
             "wandb_project": wandb_project,
             "wandb_api_key": wandb_api_key,
             "wandb_group": wandb_group,
         }
-        rs.append(grequests.post(url, data=body))
+        
+        print(url)
+        rs.append(grequests.post(url + "/worker/sync", json=body))
     responses = grequests.map(rs)
+    logger.error(f"responses {responses}")
     for r, addr in zip(responses, urls):
-        if r.status_code != 200:
+        if r is None or r.status_code != 200:
+            logger.error(f"cannot sync with {addr}. got response {r.content if r is not None else r}")
             raise WorkerFailure(addr, "Cannot sync")
 
 import time 

@@ -7,7 +7,8 @@ from src.worker_registry import (
     RemoteWorkerRegistry,
 )
 from src.worker_registry.in_memory_registry import get_registry
-
+from logging import getLogger
+logger = getLogger(__name__)
 
 flow_router = APIRouter()
 
@@ -39,11 +40,13 @@ def start_training(
     body: StartTrainingRequest,
     registry: RemoteWorkerRegistry = Depends(get_registry),
 ):
+    logger.info("tu")
     """run training task"""
     env_vars: EnvVarsConfig = EnvVarsConfig()
     workers = [w for w in registry.get_workers(body.game_config.game_id) if w.available]
     if len(workers) < body.training_config.num_rollout_workers:
         return PlainTextResponse(status_code=404, content="too many workers requested")
+    
     workers = workers[: body.training_config.num_rollout_workers]
     sync_task = tasks.sync_workers.s(
         workers=workers,
@@ -65,14 +68,15 @@ def start_training(
         port=env_vars.default_policy_port,
         workers_ref=workers,
     ).on_error(tasks.notify_workers.s([w.address for w in workers], "/stop"))
+
     if body.run_reference and body.checkpoint_name:
         load_weights_task = tasks.load_pretrained_weights.s(
             body.wandb_api_key, body.run_reference, body.checkpoint_name
         )
         result = (sync_task | load_weights_task | start_task)()
     else:
-        start_task = tasks.start_training_task.s(pretrained_weights=None, **start_task.kwargs)
         result = (sync_task | start_task)()
+
     return result.id
 
 
