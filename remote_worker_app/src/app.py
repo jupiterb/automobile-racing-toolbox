@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from remote_worker_app.src.route import router, is_available
-from remote_worker_app.src.schemas import EnvVars
+from src.route import router, is_available
+from src.schemas import EnvVars
 import requests
 import logging
 from requests.adapters import HTTPAdapter, Retry
@@ -75,7 +75,7 @@ def register_in_trainer_app():
             keep_sending_keepalive(body["id_"], config.keepalive_url, 5)
 
 
-@app.on_event("startup")
+@app.on_event("shutdown")
 def stop_keepalive():
     global _RUNNING
     _RUNNING = False

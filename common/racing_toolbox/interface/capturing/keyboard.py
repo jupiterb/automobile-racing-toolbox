@@ -1,5 +1,5 @@
 from pynput.keyboard import Listener, Key
-from common.racing_toolbox.interface.models.keyboard_action import KeyAction
+from racing_toolbox.interface.models.keyboard_action import KeyAction
 from racing_toolbox.interface.capturing.abstract import GameActionCapturing
 
 

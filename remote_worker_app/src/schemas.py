@@ -1,7 +1,7 @@
 from pydantic import BaseModel, BaseSettings, validator
 from racing_toolbox.environment.config.env import EnvConfig
 from racing_toolbox.interface.config import GameConfiguration
-from remote_worker_app.src.worker import Worker, Address
+from src.worker import Worker, Address
 import socket
 
 

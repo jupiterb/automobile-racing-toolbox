@@ -4,9 +4,11 @@ from multiprocessing import Process
 from typing import Optional
 from fastapi import APIRouter, Response
 from threading import Lock
-from remote_worker_app.src.schemas import SyncRequest
-from remote_worker_app.src.worker import run_worker_process
+from src.schemas import SyncRequest
+from src.worker import run_worker_process
 from threading import Timer
+from fastapi.responses import PlainTextResponse
+
 
 logger = logging.getLogger(__name__)
 
@@ -80,4 +82,4 @@ def stop_worker():
 
 @router.get("/probe")
 async def probe():
-    pass
+    return PlainTextResponse("Up and running")
