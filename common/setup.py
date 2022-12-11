@@ -37,7 +37,7 @@ if "linux" not in sys.platform:
 
 setup(
     name="Racing Toolbox",
-    version="0.1.0",
+    version="0.1.1",
     description="Racing Toolbox - module for RL with racing games",
     packages=find_packages(),
     install_requires=requirements,

@@ -95,3 +95,4 @@ def observation_wrappers(
     env = FrameStack(env, config.stack_size)
     env = SqueezingWrapper(env)
     return env
+    

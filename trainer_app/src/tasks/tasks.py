@@ -17,15 +17,17 @@ from typing import Optional
 from pathlib import Path
 from celery import Celery
 from celery.contrib.abortable import AbortableTask
-from celery.utils.log import get_task_logger
+from celery.utils.log import get_task_logger, base_logger
+from celery.signals import after_setup_task_logger, setup_logging
+from celery.app.log import TaskFormatter
 import os, uuid
 import wandb
 from ray.rllib.algorithms import Algorithm
-import grequests
+import requests
 import logging 
+logging.basicConfig(format='%(levelname)-8s: %(asctime)s - %(name)s.%(funcName)s() - %(message)s')
 
 logger = get_task_logger(__name__)
-
 
 def make_celery(config: EnvVarsConfig):
 
@@ -47,6 +49,10 @@ def make_celery(config: EnvVarsConfig):
 
 app = make_celery(EnvVarsConfig())
 
+@setup_logging.connect
+def setup_celery_logging(**kwargs):
+    pass
+
 
 class TrainingTask(AbortableTask):
     def training_loop(
@@ -60,23 +66,25 @@ class TrainingTask(AbortableTask):
         workers_ref: list[RemoteWorkerRef],
     ):
         run = wandb.run
+        print("going to log configs")
         log_config(game_config, "game_config")
         log_config(env_config, "env_config")
         log_config(training_config, "training_config")
-
+        print("going to build trainer")
         trainer = Trainer(
             trainer_params,
             pre_trained_weights=pretrained_weights,
             checkpoint_callback=self._get_calllback(run),
             checkpoint_path=checkpoint_dir,
         )
-        notify_workers([w.address for w in workers_ref], "/start")
+        print("going to notify workers about start")
+        notify_workers(urls=[w.address for w in workers_ref], route="/worker/start", method="post")
         for epoch in trainer.run():
-            logger.debug(f"epoch {epoch} done")
+            logger.info(f"epoch {epoch} done")
             if self.is_aborted():
                 logger.warning("task has been aborted")
                 break
-        notify_workers([w.address for w in workers_ref], "/stop")
+        notify_workers(urls=[w.address for w in workers_ref], route="/worker/stop", method="post")
 
     def _get_calllback(self, run):
         chkpnt_dir = TMP_DIR / f"checkpoints_{run.id}"
@@ -101,11 +109,12 @@ def start_training_task(
     port: int,
     workers_ref: list[RemoteWorkerRef],
 ):
-
+    print("starting")
     trainer_params = get_training_params(
         host, port, training_config, game_config, env_config
     )
     os.environ["WANDB_API_KEY"] = wandb_api_key
+    print("starting wandb run")
     with wandb.init(project="ART", name=f"task_{self.request.id}", group=group) as run:
         self.training_loop(
             game_config,
@@ -168,14 +177,14 @@ def load_pretrained_weights(wandb_api_key: str, run_ref: str, checkpoint_name: s
     import wandb
 
     os.environ["WANDB_API_KEY"] = wandb_api_key
-    run = wandb.init(project="ART")
-    checkpoint_artefact = run.use_artifact(
-        f"{run_ref}/{checkpoint_name}", type="checkpoint"
-    )
-    checkpoint_dir = checkpoint_artefact.download()
-    game_config = GameConfiguration.parse_raw(wandb.restore("game_config.json"))
-    env_config = EnvConfig.parse_raw(wandb.restore("env_config.json"))
-    training_config = TrainingConfig.parse_raw(wandb.restore("training_config.json"))
+    with wandb.init(project="ART") as run:
+        checkpoint_artefact = run.use_artifact(
+            f"{run_ref}/{checkpoint_name}", type="checkpoint"
+        )
+        checkpoint_dir = checkpoint_artefact.download()
+        game_config = GameConfiguration.parse_raw(wandb.restore("game_config.json"))
+        env_config = EnvConfig.parse_raw(wandb.restore("env_config.json"))
+        training_config = TrainingConfig.parse_raw(wandb.restore("training_config.json"))
 
     mocked_env = MockedEnv(
         game_config.discrete_actions_mapping, game_config.window_size
@@ -193,9 +202,9 @@ def load_pretrained_weights(wandb_api_key: str, run_ref: str, checkpoint_name: s
 
 
 @app.task(ignore_result=True)
-def notify_workers(urls: list[str], route: str):
-    rs = (grequests.get(u + route) for u in urls)
-    responses = grequests.map(rs)
+def notify_workers(*args, urls: list[str], route: str, method: str="get", **kwargs):
+    responses = [getattr(requests, method)(u + route) for u in urls]
+    # responses = grequests.map(rs)
     for r, addr in zip(responses, urls):
         if r.status_code != 200:
             raise WorkerFailure(addr, "Cannot start")
@@ -214,7 +223,7 @@ def sync_workers(
     wandb_group: str,
 ):
     urls = [w.address for w in workers]
-    rs = []
+    responses = []
     for i, url in enumerate(urls):
         body = {
             "game_config": orjson.loads(game_config.json()),
@@ -226,13 +235,14 @@ def sync_workers(
         }
         
         print(url)
-        rs.append(grequests.post(url + "/worker/sync", json=body))
-    responses = grequests.map(rs)
-    logger.error(f"responses {responses}")
-    for r, addr in zip(responses, urls):
+        r = requests.post(url + "/worker/sync", json=body)
+        responses.append(r)
         if r is None or r.status_code != 200:
-            logger.error(f"cannot sync with {addr}. got response {r.content if r is not None else r}")
-            raise WorkerFailure(addr, "Cannot sync")
+            logger.error(f"cannot sync with {url}. got response {r.content if r is not None else r}")
+            raise WorkerFailure(url, "Cannot sync")
+    # responses = grequests.map(rs)
+    logger.info(f"responses {responses}")
+    # for r, addr in zip(responses, urls):
 
 import time 
 @app.task(ignore_results=True)

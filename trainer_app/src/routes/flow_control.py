@@ -67,7 +67,7 @@ def start_training(
         host=env_vars.default_policy_host,
         port=env_vars.default_policy_port,
         workers_ref=workers,
-    ).on_error(tasks.notify_workers.s([w.address for w in workers], "/stop"))
+    )#.on_error(tasks.notify_workers.s(urls=[w.address for w in workers], route="/worker/stop"))
 
     if body.run_reference and body.checkpoint_name:
         load_weights_task = tasks.load_pretrained_weights.s(

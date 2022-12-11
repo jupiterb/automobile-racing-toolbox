@@ -30,11 +30,11 @@ def wandb_checkpoint_callback_factory(checkpoint_artifact: wandb.Artifact, dir: 
 
 
 def log_config(config: BaseModel, name: str) -> None:
-    unique_filename = Path(name + ".json")
-    with open(unique_filename, "w") as f:
+    filename = Path(name + ".json")
+    with open(filename, "w") as f:
         f.write(config.json())
-    wandb.save(str(unique_filename), policy="now")
-    unique_filename.unlink()
+    wandb.save(str(filename), policy="now")
+    # filename.unlink()
 
 
 def get_training_params(
@@ -59,6 +59,7 @@ def get_training_params(
         game_config.discrete_actions_mapping, game_config.window_size
     )
     env = builder.wrapp_env(mocked_env, env_config)
+    print(f"observation space: {env.observation_space.shape}")
     trainer_params = TrainingParams(
         **training_config.dict(),
         observation_space=env.observation_space,

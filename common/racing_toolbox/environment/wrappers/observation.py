@@ -39,8 +39,12 @@ class RescaleWrapper(gym.ObservationWrapper):
 class CutImageWrapper(gym.ObservationWrapper):
     def __init__(self, env: gym.Env, frame: ScreenFrame) -> None:
         super().__init__(env)
-        self._frame = frame
-        self.observation_space = frame.apply(env.observation_space.sample()).shape
+        shape = frame.apply(env.observation_space.sample()).shape
+        self.observation_space = gym.spaces.Box(
+            np.min(env.observation_space.low),
+            np.max(env.observation_space.high),
+            shape
+        )
 
     @log_observation(__name__)
     def observation(self, observation: np.ndarray) -> np.ndarray:
