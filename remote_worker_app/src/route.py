@@ -34,7 +34,7 @@ def __unsync():
 @router.post("/sync")
 def load_configs(body: SyncRequest):
     logger.info("got sync requst")
-    global __WORKER_ARGS, __WORKER_PROCESS
+    global __WORKER_ARGS, __WORKER_PROCESS, __LOCK
     if not __LOCK.acquire(blocking=False):
         return Response(status_code=http.HTTPStatus.SERVICE_UNAVAILABLE.value)
 
@@ -51,7 +51,7 @@ def load_configs(body: SyncRequest):
         body.wandb_group,
     )
     __LOCK.release()
-    Timer(60, __unsync).run()
+    Timer(60, __unsync).start()
 
 
 @router.post("/start")
