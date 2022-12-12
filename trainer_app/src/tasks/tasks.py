@@ -111,10 +111,10 @@ def start_training_task(
     workers_ref: list[RemoteWorkerRef],
 ):
     print("starting")
+    os.environ["WANDB_API_KEY"] = wandb_api_key
     trainer_params = get_training_params(
         host, port, training_config, game_config, env_config
     )
-    os.environ["WANDB_API_KEY"] = wandb_api_key
     print("starting wandb run")
     with wandb.init(project="ART", name=f"task_{self.request.id}", group=group) as run:
         self.training_loop(

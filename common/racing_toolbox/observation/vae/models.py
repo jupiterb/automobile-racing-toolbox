@@ -162,7 +162,7 @@ class VAE(pl.LightningModule):
         super().__init__()
         self.save_hyperparameters()
         self.params = params
-        self.vae = VanillaVAE(3, params["latent_dim"], params["hiddens"], params["input_shape"]).to(DEVICE)
+        self.vae = VanillaVAE(3, params["latent_dim"], params["hiddens"]).to(DEVICE) # TODO: add input shape 
 
     def training_step(self, batch, batch_idx) -> dict[str, th.Tensor]:
         X = batch[0]
