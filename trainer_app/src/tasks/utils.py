@@ -44,11 +44,12 @@ def get_training_params(
     game_config: GameConfiguration,
     env_config: EnvConfig,
 ):
+
     def input_(ioctx):
         if ioctx.worker_index > 0 or ioctx.worker.num_workers == 0:
             return PolicyServerInput(
                 ioctx,
-                host,
+                "0.0.0.0",
                 port + ioctx.worker_index - (1 if ioctx.worker_index > 0 else 0),
             )
         else:

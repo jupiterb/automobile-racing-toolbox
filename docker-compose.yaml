@@ -12,7 +12,8 @@ services:
       - 8000:8000
     environment:
       - DEFAULT_POLICY_PORT=9000
-      - DEFAULT_POLICY_HOST=0.0.0.0
+      - PYTHONPATH=/app/
+      - CELERY_BROKER_URL=redis://redis:6379/0
     env_file:
       - ./trainer_app/resources/.env
     depends_on:
@@ -31,14 +32,18 @@ services:
       dockerfile: ./trainer_app/Dockerfile
     environment:
       - PYTHONPATH=/app/
-    command: celery -A src.tasks.tasks worker 
+      - CELERY_BROKER_URL=redis://redis:6379/0
+    command: celery -A src.tasks.tasks worker -c 1 -P threads
     env_file:
       - ./trainer_app/resources/.env
     ports:
-      - 9001:9001
+      - 9000:9000
     depends_on:
       - redis
       - trainer_app
+    restart: always
+    mem_limit: 10G 
+
 
 #   celery_beat:
 #     build:
