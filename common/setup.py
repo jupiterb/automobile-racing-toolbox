@@ -24,6 +24,8 @@ requirements_common = [
     "ray[rllib]",
     "torch",
     "torchvision"
+    "moviepy",
+    "imageio"
 ]
 
 windows_requirements = [
