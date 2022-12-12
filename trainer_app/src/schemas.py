@@ -16,7 +16,7 @@ class TrainingRequet(BaseModel):
 class StartTrainingRequest(TrainingRequet):
     game_config: GameConfiguration
     env_config: EnvConfig
-    run_reference: Optional[str] = None 
+    wandb_run_reference: Optional[str] = None 
     checkpoint_name: Optional[str] = None 
 
 

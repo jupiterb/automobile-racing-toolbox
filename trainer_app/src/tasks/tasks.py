@@ -64,8 +64,9 @@ class TrainingTask(AbortableTask):
         pretrained_weights: Optional[dict],
         checkpoint_dir: Optional[Path],
         workers_ref: list[RemoteWorkerRef],
+        wandb_run=None
     ):
-        run = wandb.run
+        run = wandb_run or wandb.run
         print("going to log configs")
         log_config(game_config, "game_config")
         log_config(env_config, "env_config")
@@ -177,7 +178,7 @@ def continue_training_task(
 
 
 @app.task
-def load_pretrained_weights(wandb_api_key: str, run_ref: str, checkpoint_name: str):
+def load_pretrained_weights(*args, wandb_api_key: str, run_ref: str, checkpoint_name: str, **kwargs):
     import wandb
 
     os.environ["WANDB_API_KEY"] = wandb_api_key
@@ -200,7 +201,7 @@ def load_pretrained_weights(wandb_api_key: str, run_ref: str, checkpoint_name: s
         action_space=env.action_space,
     )
     algorithm: Algorithm = Trainer(
-        trainer_params, checkpoint_path=Path(checkpoint_dir)
+        trainer_params, checkpoint_path=Path(checkpoint_dir).absolute() / "checkpoint"
     ).algorithm
     return algorithm.get_policy().get_weights()
 
@@ -211,7 +212,7 @@ def notify_workers(*args, urls: list[str], route: str, method: str="get", **kwar
     # responses = grequests.map(rs)
     for r, addr in zip(responses, urls):
         if r.status_code != 200:
-            raise WorkerFailure(addr, "Cannot start")
+            raise WorkerFailure(addr, str(r.content))
 
 import orjson 
 

@@ -1,13 +1,14 @@
 from fastapi import APIRouter, Depends
 from fastapi.responses import PlainTextResponse
 from src.schemas import StartTrainingRequest, ResumeTrainingRequest
-from src.tasks import tasks 
+from src.tasks import tasks
 from src.const import EnvVarsConfig
 from src.worker_registry import (
     RemoteWorkerRegistry,
 )
 from src.worker_registry.in_memory_registry import get_registry
 from logging import getLogger
+
 logger = getLogger(__name__)
 
 flow_router = APIRouter()
@@ -31,7 +32,7 @@ def continue_training(
         group=body.wandb_group,
         host=env_vars.default_policy_host,
         port=env_vars.default_policy_port,
-        workers_ref=workers
+        workers_ref=workers,
     )
     return resume_task.id
 
@@ -47,7 +48,7 @@ def start_training(
     workers = [w for w in registry.get_workers(body.game_config.game_id) if w.available]
     if len(workers) < body.training_config.num_rollout_workers:
         return PlainTextResponse(status_code=404, content="too many workers requested")
-    
+
     workers = workers[: body.training_config.num_rollout_workers]
     sync_task = tasks.sync_workers.s(
         workers=workers,
@@ -68,11 +69,13 @@ def start_training(
         host=env_vars.default_policy_host,
         port=env_vars.default_policy_port,
         workers_ref=workers,
-    )#.on_error(tasks.notify_workers.s(urls=[w.address for w in workers], route="/worker/stop"))
+    )  # .on_error(tasks.notify_workers.s(urls=[w.address for w in workers], route="/worker/stop"))
 
-    if body.run_reference and body.checkpoint_name:
+    if body.wandb_run_reference and body.checkpoint_name:
         load_weights_task = tasks.load_pretrained_weights.s(
-            body.wandb_api_key, body.run_reference, body.checkpoint_name
+            wandb_api_ley=body.wandb_api_key,
+            run_ref=body.wandb_run_reference,
+            checkpoint_name=body.checkpoint_name,
         )
         result = (sync_task | load_weights_task | start_task)()
     else:
@@ -84,7 +87,17 @@ def start_training(
 @flow_router.get("/stop/{task_id}")
 def stop_training(task_id):
     """stop running training task"""
-    tasks.TrainingTask().AsyncResult(task_id).abort()
+    import itertools as it
+
+    i = tasks.app.control.inspect()
+    active_tasks = it.chain.from_iterable(i.active().values())
+    # get task info dict, with given id
+    task_info = next((info for info in active_tasks if info["id"] == task_id), None)
+    if task_info is None:
+        return PlainTextResponse(f"Cannot find active task of id={task_id}", 404)
+    task_callable_name = task_info["name"].split(".")[-1]
+    getattr(tasks, task_callable_name).AsyncResult(task_id).abort()
+
 
 @flow_router.post("/probe")
 def start_probe():
