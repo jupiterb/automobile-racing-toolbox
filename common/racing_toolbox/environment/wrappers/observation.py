@@ -127,6 +127,7 @@ class WandbVideoLogger(gym.Wrapper):
             self._frames = []
 
     def _record(self, obs: np.ndarray):
-        self._frames.append(obs)
+        img = np.moveaxis(obs, -1, 0) # channel first
+        self._frames.append(img)
         if self.log_duration == len(self._frames):
             wandb.log({"recording": wandb.Video(np.stack(self._frames), fps=10)})
