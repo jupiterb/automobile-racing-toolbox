@@ -2,12 +2,36 @@ import gym
 import numpy as np
 import wandb
 import gym.spaces
+import torch as th 
+from torchvision import transforms 
 
 from racing_toolbox.observation.config import LidarConfig, TrackSegmentationConfig
 from racing_toolbox.observation.lidar import Lidar
 from racing_toolbox.observation.track_segmentation import TrackSegmenter
 from racing_toolbox.observation.utils import ScreenFrame
 from racing_toolbox.environment.utils.logging import log_observation
+from racing_toolbox.observation.vae import VanillaVAE
+
+
+class VaeObservationWrapper(gym.ObservationWrapper):
+    def __init__(self, env: gym.Env, vae: VanillaVAE) -> None:
+        super().__init__(env)
+        self.vae = vae
+        self.vae.eval()
+        self.observation_space = gym.spaces.Box(0, 1, (self.vae.latent_dim, ))
+        self.transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Resize(vae.input_shape)
+        ])
+
+    def observation(self, observation: np.ndarray) -> np.ndarray:
+        """given RGB compatible with vae model input, return sample from latent space"""
+        img: th.Tensor = self.transform(observation)
+
+        with th.no_grad():
+            mu, log_var = self.vae(img.unsqueeze(0))
+            latent_vec = self.vae.reparameterize(mu, log_var)
+        return latent_vec.detach().squeeze(0).numpy()
 
 
 class SqueezingWrapper(gym.ObservationWrapper):

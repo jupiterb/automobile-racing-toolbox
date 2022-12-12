@@ -22,6 +22,8 @@ requirements_common = [
     "streamlit",
     "httpx-oauth==0.10.2",
     "ray[rllib]",
+    "torch",
+    "torchvision"
 ]
 
 windows_requirements = [

@@ -44,7 +44,6 @@ def get_training_params(
     game_config: GameConfiguration,
     env_config: EnvConfig,
 ):
-
     def input_(ioctx):
         if ioctx.worker_index > 0 or ioctx.worker.num_workers == 0:
             return PolicyServerInput(

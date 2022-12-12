@@ -1,21 +1,20 @@
 from gym.wrappers import GrayScaleObservation, ResizeObservation, FrameStack, TimeLimit
 import gym
 import wandb
-from racing_toolbox.environment.wrappers import *
+from racing_toolbox.environment.wrappers import observation, stats, action, reward
 from racing_toolbox.environment.config import (
     ActionConfig,
     RewardConfig,
     ObservationConfig,
     FinalValueDetectionParameters,
 )
-from racing_toolbox.environment.wrappers.observation import CutImageWrapper
 from racing_toolbox.interface import controllers
-
 from racing_toolbox.interface.config import GameConfiguration
 from racing_toolbox.environment.final_state.detector import FinalStateDetector
 from racing_toolbox.environment.config.env import EnvConfig
 from racing_toolbox.interface import from_config
 from racing_toolbox.observation.utils.ocr import OcrTool, SevenSegmentsOcr
+from racing_toolbox.observation.vae import load_vae_from_wandb_checkpoint
 
 
 def setup_env(game_config: GameConfiguration, env_config: EnvConfig) -> gym.Env:
@@ -58,41 +57,50 @@ def wrapp_env(env: gym.Env, env_config: EnvConfig) -> gym.Env:
 
 def action_wrappers(env: gym.Env, config: ActionConfig) -> gym.Env:
     if config.available_actions is not None:
-        env = DiscreteActionToVectorWrapper(env, config.available_actions)
+        env = action.DiscreteActionToVectorWrapper(env, config.available_actions)
     return env
 
 
 def reward_wrappers(env: gym.Env, config: RewardConfig) -> gym.Env:
-    env = SpeedDropPunishment(
+    env = reward.SpeedDropPunishment(
         env, config.memory_length, config.speed_diff_thresh, config.speed_diff_exponent
     )
-    env = OffTrackPunishment(
+    env = reward.OffTrackPunishment(
         env,
         off_track_reward=config.off_track_reward,
         terminate=config.off_track_termination,
     )
-    env = ClipReward(env, *config.clip_range)
-    env = StandarizeReward(env, config.baseline, config.scale)
+    env = reward.ClipReward(env, *config.clip_range)
+    env = reward.StandarizeReward(env, config.baseline, config.scale)
     return env
 
 
 def observation_wrappers(
     env: gym.Env, config: ObservationConfig, video_freq, video_len
 ) -> gym.Env:
-    env = CutImageWrapper(env, config.frame)
+    env = observation.CutImageWrapper(env, config.frame)
+
     if wandb.run is not None:
-        env = WandbVideoLogger(env, video_freq, video_len)
-    if config.track_segmentation_config:
-        env = TrackSegmentationWrapper(env, config.track_segmentation_config)
+        env = observation.WandbVideoLogger(env, video_freq, video_len)
+
+    if config.vae_config:
+        vae = load_vae_from_wandb_checkpoint(
+            config.vae_config.wandb_checkpoint_ref, config.vae_config.wandb_api_key
+        )
+        env = observation.VaeObservationWrapper(env, vae=vae)
+    elif config.track_segmentation_config:
+        env = observation.TrackSegmentationWrapper(
+            env, config.track_segmentation_config
+        )
         if config.lidar_config:
-            env = LidarWrapper(env, config.lidar_config)
+            env = observation.LidarWrapper(env, config.lidar_config)
         else:
             env = ResizeObservation(env, config.shape)
     else:
         env = GrayScaleObservation(env, keep_dim=False)
         env = ResizeObservation(env, config.shape)
-        env = RescaleWrapper(env)
+        env = observation.RescaleWrapper(env)
+
     env = FrameStack(env, config.stack_size)
-    env = SqueezingWrapper(env)
+    env = observation.SqueezingWrapper(env)
     return env
-    
