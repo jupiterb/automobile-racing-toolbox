@@ -1,5 +1,5 @@
 import pytest
-from racing_toolbox.environment.wrappers.vae import load_vae_from_wandb_checkpoint 
+from racing_toolbox.observation.vae import load_vae_from_wandb_checkpoint 
 import torch as th 
 
 

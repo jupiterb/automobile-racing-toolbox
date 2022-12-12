@@ -29,8 +29,7 @@ class VaeObservationWrapper(gym.ObservationWrapper):
         img: th.Tensor = self.transform(observation)
 
         with th.no_grad():
-            mu, log_var = self.vae(img.unsqueeze(0))
-            latent_vec = self.vae.reparameterize(mu, log_var)
+            latent_vec = self.vae.to_latent(img.unsqueeze(0))
         return latent_vec.detach().squeeze(0).numpy()
 
 
