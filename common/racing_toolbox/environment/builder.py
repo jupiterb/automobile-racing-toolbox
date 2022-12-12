@@ -84,9 +84,7 @@ def observation_wrappers(
         env = observation.WandbVideoLogger(env, video_freq, video_len)
 
     if config.vae_config:
-        vae = load_vae_from_wandb_checkpoint(
-            config.vae_config.wandb_checkpoint_ref, config.vae_config.wandb_api_key
-        )
+        vae = load_vae_from_wandb_checkpoint(config.vae_config.wandb_checkpoint_ref)
         env = observation.VaeObservationWrapper(env, vae=vae)
     elif config.track_segmentation_config:
         env = observation.TrackSegmentationWrapper(

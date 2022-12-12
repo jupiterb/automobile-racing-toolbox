@@ -23,17 +23,14 @@ requirements_common = [
     "httpx-oauth==0.10.2",
     "ray[rllib]",
     "torch",
-    "torchvision"
+    "torchvision",
     "moviepy",
-    "imageio"
+    "imageio",
+    "pytorch_lightning",
 ]
 
-windows_requirements = [
-    "pywin32==304",
-    "vgamepad==0.0.8"
-
-]
-import sys 
+windows_requirements = ["pywin32==304", "vgamepad==0.0.8"]
+import sys
 
 requirements = requirements_common
 if "linux" not in sys.platform:
