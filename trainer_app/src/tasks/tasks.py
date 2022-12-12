@@ -134,18 +134,21 @@ def continue_training_task(
     wandb_api_key: str,
     run_ref: str,
     checkpoint_name: str,
+    group: str,
     host: str,
     port: int,
     workers_ref: list[RemoteWorkerRef],
 ):
     os.environ["WANDB_API_KEY"] = wandb_api_key
     with wandb.init(project="ART") as run:
+        checkpoint_ref = f"{'/'.join(run_ref.split('/')[:-1])}/{checkpoint_name}"
+        print(checkpoint_ref)
         checkpoint_artefact = run.use_artifact(
-            f"{run_ref}/{checkpoint_name}", type="checkpoint"
+            checkpoint_ref, type="checkpoint"
         )
         checkpoint_dir = checkpoint_artefact.download()
-        game_config = GameConfiguration.parse_raw(wandb.restore("game_config.json"))
-        env_config = EnvConfig.parse_raw(wandb.restore("env_config.json"))
+        game_config = GameConfiguration.parse_file(wandb.restore("game_config.json", run_path=run_ref).name)
+        env_config = EnvConfig.parse_file(wandb.restore("env_config.json", run_path=run_ref).name)
 
     trainer_params = get_training_params(
         host, port, training_config, game_config, env_config
@@ -160,6 +163,7 @@ def continue_training_task(
         wandb_api_key,
         str(uuid.uuid1()),
     )
+    print(checkpoint_dir)
     with wandb.init(project="ART", name=f"task_{self.request.id}", group=group) as run:
         self.training_loop(
             game_config,
@@ -167,7 +171,7 @@ def continue_training_task(
             training_config,
             trainer_params,
             None,
-            Path(checkpoint_dir),
+            Path(checkpoint_dir).absolute() / "checkpoint",
             workers_ref,
         )
 

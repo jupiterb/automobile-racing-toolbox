@@ -28,6 +28,7 @@ def continue_training(
         wandb_api_key=body.wandb_api_key,
         run_ref=body.wandb_run_reference,
         checkpoint_name=body.checkpoint_name,
+        group=body.wandb_group,
         host=env_vars.default_policy_host,
         port=env_vars.default_policy_port,
         workers_ref=workers
@@ -83,7 +84,7 @@ def start_training(
 @flow_router.get("/stop/{task_id}")
 def stop_training(task_id):
     """stop running training task"""
-    tasks.app.Task().AsyncResult(task_id).abort()
+    tasks.TrainingTask().AsyncResult(task_id).abort()
 
 @flow_router.post("/probe")
 def start_probe():

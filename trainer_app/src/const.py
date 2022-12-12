@@ -1,7 +1,10 @@
 from pathlib import Path
-from pydantic import BaseSettings, Field 
+from pydantic import BaseSettings, validator
 from dotenv import load_dotenv
 from racing_toolbox.logger import setup_logger
+import socket 
+import logging 
+
 
 ROOT_DIR = Path(__file__).absolute().parents[1]
 RESOURCE_DIR = ROOT_DIR / "resources"
@@ -14,6 +17,7 @@ setup_logger(RESOURCE_DIR / "logger.yml")
 class EnvVarsConfig(BaseSettings):
     celery_broker_url: str 
     celery_backend_url: str 
-    default_policy_port: int=9000 # TODO: handle multiple tasks 
-    default_policy_host: str="127.0.0.1"
+    default_policy_port: int
+    default_policy_host: str
 
+logging.warning(f"Following enviroment variables were setup: {EnvVarsConfig()}")
