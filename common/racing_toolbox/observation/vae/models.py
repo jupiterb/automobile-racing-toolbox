@@ -12,13 +12,10 @@ from pathlib import Path
 DEVICE = "cuda" if th.cuda.is_available() else "cpu"
 
 
-def load_vae_from_wandb_checkpoint(checkpoint_location: str, wandb_api_key: Optional[str]=None) -> VanillaVAE:
-    if wandb_api_key:
-        os.environ["WANDB_API_KEY"] = wandb_api_key
-    with wandb.init(project="VAE") as run:
-        # TODO: Add custom error handling eq. ArtefactMisingException
-        artifact = run.use_artifact(checkpoint_location, type="model")
-        artifact_dir = artifact.download()
+def load_vae_from_wandb_checkpoint(checkpoint_location: str) -> VanillaVAE:
+    run = wandb.run or wandb.init()
+    artifact = run.use_artifact(checkpoint_location, type="model")
+    artifact_dir = artifact.download()
     model = VAE.load_from_checkpoint(Path(artifact_dir) / "model.ckpt")
     model.vae.eval()
     return model.vae 
