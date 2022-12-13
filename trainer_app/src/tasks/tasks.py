@@ -9,7 +9,7 @@ from racing_toolbox.interface.config import GameConfiguration
 from racing_toolbox.training.config.user_defined import TrainingConfig
 from racing_toolbox.environment import builder
 from racing_toolbox.training.config.user_defined import ModelConfig
-from racing_toolbox.observation.config.vae_config import VAETrainingConfig
+from racing_toolbox.observation.config import vae_config
 from typing import Optional
 from pathlib import Path
 from celery import Celery
@@ -245,48 +245,7 @@ def sync_workers(
     logger.info(f"responses {responses}")
 
 
-import torch.utils.data as th_data
-import numpy as np
-import torch as th
-from torchvision import transforms
-import torchvision.transforms.functional as VF
-
-
-@app.task(bind=True, base=AbortableTask)
-def start_vae_training(
-    self,
-    training_params: VAETrainingConfig,
-    encoder_config: ModelConfig,
-    bucket_name: str,
-    recordings_refs: list[str],
-):
-    env_vars = EnvVarsConfig()
-    transform = transforms.Compose(
-        [
-            lambda i: training_params.observation_frame.apply(i),
-            transforms.ToTensor(),
-            transforms.Resize(training_params.input_shape),
-        ]
-    )
-    dataset = utils.tensordataset_from_bucket(
-        recordings_refs,
-        bucket_name,
-        env_vars.aws_key,
-        env_vars.aws_secret_key,
-        transform,
-    )
-
-    # build encoder / decoder based on configs
-
-    # validate model
-
-    # start training with ray
-
-    ...
-
-
 import time
-
 
 @app.task(ignore_results=True)
 def probe_task():
