@@ -10,6 +10,8 @@ from racing_toolbox.training.config.user_defined import TrainingConfig
 from racing_toolbox.environment import builder
 from racing_toolbox.training.config.user_defined import ModelConfig
 from racing_toolbox.observation.config import vae_config
+from racing_toolbox.observation.vae.models import VAE
+
 from typing import Optional
 from pathlib import Path
 from celery import Celery
@@ -29,7 +31,63 @@ logging.basicConfig(
 
 logger = get_task_logger(__name__)
 
-app = utils.make_celery(EnvVarsConfig())
+app = utils.make_celery(EnvVarsConfig(), 0, "online_tasks")
+
+import torch.utils.data as th_data
+from torchvision import transforms
+from pytorch_lightning.loggers.wandb import WandbLogger
+import pytorch_lightning as pl
+import orjson
+import logging
+import wandb
+
+@app.task(bind=True, base=AbortableTask)
+def start_vae_training(
+    self,
+    training_params: vae_config.VAETrainingConfig,
+    encoder_config: vae_config.VAEModelConfig,
+    bucket_name: str,
+    recordings_refs: list[str],
+    wandb_api_key: str
+):
+    os.environ["WANDB_API_KEY"] = wandb_api_key
+    env_vars = EnvVarsConfig()
+    transform = transforms.Compose(
+        [
+            lambda i: training_params.observation_frame.apply(i),
+            transforms.ToTensor(),
+            transforms.Resize(training_params.input_shape),
+        ]
+    )
+    dataset = utils.tensordataset_from_bucket(
+        recordings_refs,
+        bucket_name,
+        env_vars.aws_key,
+        env_vars.aws_secret_key,
+        transform,
+    )
+    val_len = int(training_params.validation_fraction * len(dataset))
+    trainset, testset = th_data.random_split(dataset, [len(dataset) - val_len, val_len])
+    trainloader = th_data.DataLoader(trainset, batch_size=training_params.batch_size)
+    testloader = th_data.DataLoader(testset, batch_size=training_params.batch_size)
+
+    # build encoder / decoder based on configs
+    params_dict = (
+        orjson.loads(training_params.json())
+        | orjson.loads(encoder_config.json())
+        | {"in_channels": 3}
+    )
+    pl_model = VAE(params_dict)
+    wandb_logger = WandbLogger(project="ART", log_model="all")
+    trainer = pl.Trainer(
+        logger=wandb_logger, max_epochs=150, log_every_n_steps=1, accelerator="gpu"
+    )
+
+    with wandb.init(project="ART") as run:
+        trainer.fit(
+            model=pl_model, train_dataloaders=trainloader, val_dataloaders=testloader
+        )
+    wandb.finish()
 
 
 @setup_logging.connect

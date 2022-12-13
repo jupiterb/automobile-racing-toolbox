@@ -13,7 +13,7 @@ services:
     environment:
       - DEFAULT_POLICY_PORT=9000
       - PYTHONPATH=/app/
-      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379
     env_file:
       - ./trainer_app/resources/.env
     depends_on:
@@ -25,15 +25,15 @@ services:
     image: redis:6.2-alpine
 
 
-  celery_worker1:
-    container_name: celery_worker1
+  online_worker:
+    container_name: online_worker1
     build:
       context: .
       dockerfile: ./trainer_app/Dockerfile
     environment:
       - PYTHONPATH=/app/
       - CELERY_BROKER_URL=redis://redis:6379/0
-    command: celery -A src.tasks.tasks worker -c 1 -P threads
+    command: celery -A src.tasks.online_tasks worker -c 1 -P threads
     env_file:
       - ./trainer_app/resources/.env
     ports:
@@ -44,3 +44,22 @@ services:
     restart: always
     mem_limit: 10G 
     shm_size: '4gb'
+
+
+  # offline_worker:
+  #   container_name: offline_worker1
+  #   build:
+  #     context: .
+  #     dockerfile: ./trainer_app/Dockerfile
+  #   environment:
+  #     - PYTHONPATH=/app/
+  #     - CELERY_BROKER_URL=redis://redis:6379/1
+  #   command: celery -A src.tasks.offline_tasks worker -c 1 -P threads
+  #   env_file:
+  #     - ./trainer_app/resources/.env
+  #   depends_on:
+  #     - redis
+  #     - trainer_app
+  #   restart: always
+  #   mem_limit: 10G 
+  #   shm_size: '4gb'

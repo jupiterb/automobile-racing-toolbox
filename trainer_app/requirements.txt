@@ -1,4 +1,4 @@
 celery[Redis]==5.2.7
 SQLAlchemy==1.4.44
 fastapi[all]==0.85.0
-grequests
+boto3

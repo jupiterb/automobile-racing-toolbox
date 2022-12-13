@@ -29,4 +29,4 @@ class ConvFilter(NamedTuple):
 
 
 class VAEModelConfig(BaseModel):
-    conv_filters: list[ConvFilter] = []
+    conv_filters: list[ConvFilter]

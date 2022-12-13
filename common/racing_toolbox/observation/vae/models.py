@@ -159,6 +159,7 @@ class VanillaVAE(th.nn.Module):
         super(VanillaVAE, self).__init__()
         self.input_shape = input_shape
         self.latent_dim = latent_dim
+        filters = [configs.ConvFilter(out_channels=t[0], kernel=t[1], stride=t[2]) for t in filters]
         self.encoder = Encoder(filters, in_channels, latent_dim, input_shape)
         self.decoder = Decoder(
             filters[::-1],
@@ -270,3 +271,5 @@ if __name__ == "__main__":
     i = th.ones((1, 3, 128, 128))
 
     print(vae.vae(i)[0].shape)
+
+    print(params.dict() | model_config.dict() | {"in_channels": 3})

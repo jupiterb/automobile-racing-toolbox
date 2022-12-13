@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from fastapi.responses import PlainTextResponse
 from src.schemas import StartTrainingRequest, ResumeTrainingRequest
-from src.tasks import tasks
+from src.tasks import online_tasks
 from src.const import EnvVarsConfig
 from src.worker_registry import (
     RemoteWorkerRegistry,
@@ -11,10 +11,10 @@ from logging import getLogger
 
 logger = getLogger(__name__)
 
-flow_router = APIRouter(prefix="/online")
+online_router = APIRouter(prefix="/online")
 
 
-@flow_router.put("/resume")
+@online_router.put("/resume")
 def continue_training(
     body: ResumeTrainingRequest,
     registry: RemoteWorkerRegistry = Depends(get_registry),
@@ -24,7 +24,7 @@ def continue_training(
     if len(workers) < body.training_config.num_rollout_workers:
         return PlainTextResponse(status_code=404, content="too many workers requested")
     workers = workers[: body.training_config.num_rollout_workers]
-    resume_task = tasks.continue_training_task.delay(
+    resume_task = online_tasks.continue_training_task.delay(
         training_config=body.training_config,
         wandb_api_key=body.wandb_api_key,
         run_ref=body.wandb_run_reference,
@@ -37,7 +37,7 @@ def continue_training(
     return resume_task.id
 
 
-@flow_router.put("/start")
+@online_router.put("/start")
 def start_training(
     body: StartTrainingRequest,
     registry: RemoteWorkerRegistry = Depends(get_registry),
@@ -50,7 +50,7 @@ def start_training(
         return PlainTextResponse(status_code=404, content="too many workers requested")
 
     workers = workers[: body.training_config.num_rollout_workers]
-    sync_task = tasks.sync_workers.s(
+    sync_task = online_tasks.sync_workers.s(
         workers=workers,
         game_config=body.game_config,
         env_config=body.env_config,
@@ -60,7 +60,7 @@ def start_training(
         wandb_api_key=body.wandb_api_key,
         wandb_group=body.wandb_group,
     )
-    start_task = tasks.start_training_task.s(
+    start_task = online_tasks.start_training_task.s(
         wandb_api_key=body.wandb_api_key,
         training_config=body.training_config,
         game_config=body.game_config,
@@ -72,7 +72,7 @@ def start_training(
     )  # .on_error(tasks.notify_workers.s(urls=[w.address for w in workers], route="/worker/stop"))
 
     if body.wandb_run_reference and body.checkpoint_name:
-        load_weights_task = tasks.load_pretrained_weights.s(
+        load_weights_task = online_tasks.load_pretrained_weights.s(
             wandb_api_ley=body.wandb_api_key,
             run_ref=body.wandb_run_reference,
             checkpoint_name=body.checkpoint_name,
@@ -84,22 +84,22 @@ def start_training(
     return result.id
 
 
-@flow_router.get("/stop/{task_id}")
+@online_router.get("/stop/{task_id}")
 def stop_training(task_id):
     """stop running training task"""
     import itertools as it
 
-    i = tasks.app.control.inspect()
+    i = online_tasks.app.control.inspect()
     active_tasks = it.chain.from_iterable(i.active().values())
     # get task info dict, with given id
     task_info = next((info for info in active_tasks if info["id"] == task_id), None)
     if task_info is None:
         return PlainTextResponse(f"Cannot find active task of id={task_id}", 404)
     task_callable_name = task_info["name"].split(".")[-1]
-    getattr(tasks, task_callable_name).AsyncResult(task_id).abort()
+    getattr(online_tasks, task_callable_name).AsyncResult(task_id).abort()
 
 
-@flow_router.post("/probe")
+@online_router.post("/probe")
 def start_probe():
-    result = tasks.probe_task.delay()
+    result = online_tasks.probe_task.delay()
     return result.id

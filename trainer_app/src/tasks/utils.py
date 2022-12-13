@@ -5,8 +5,8 @@ import wandb, os
 from pathlib import Path
 from ray.rllib.env.policy_server_input import PolicyServerInput
 import boto3
-from common.racing_toolbox.datatool.services.s3 import S3Dataset
-from common.racing_toolbox.datatool.container import DatasetContainer
+from racing_toolbox.datatool.services.s3 import S3Dataset
+from racing_toolbox.datatool.container import DatasetContainer
 from src.const import EnvVarsConfig, TMP_DIR
 from racing_toolbox.training.config.params import TrainingParams
 from racing_toolbox.environment.config.env import EnvConfig
@@ -31,16 +31,17 @@ class WorkerFailure(Exception):
         self.details = details
 
 
-def make_celery(config: EnvVarsConfig):
+def make_celery(config: EnvVarsConfig, port: int, name: str):
     class CeleryConfig:
         task_serializer = "pickle"
         result_serializer = "pickle"
         event_serializer = "json"
         accept_content = ["application/json", "application/x-python-serialize"]
         result_accept_content = ["application/json", "application/x-python-serialize"]
+    print(config.celery_broker_url + f"/{port}", name)
 
     celery = Celery(
-        "tasks", broker=config.celery_broker_url, backend=config.celery_backend_url
+        name, broker=config.celery_broker_url + f"/{port}", backend=config.celery_backend_url
     )
     celery.conf.result_extended = True
     celery.config_from_object(CeleryConfig)
