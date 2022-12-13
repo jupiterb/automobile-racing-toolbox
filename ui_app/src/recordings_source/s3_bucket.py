@@ -23,3 +23,7 @@ class S3BucketRecordingsSource(AbstractRecordingsScource):
             name = key.split("/")[-1].split(".")[0]
             recordings[name] = url
         return recordings
+
+    def upload_recording(self, name: str, recording):
+        key = f"{self._prefix}/{name}"
+        self._client.put_object(Body=recording, Bucket=self._name, Key=key)

@@ -1,21 +1,17 @@
 import streamlit as st
-import json
-from typing import Optional, get_args
+from typing import Optional
 
 from racing_toolbox.training.config import (
     TrainingConfig,
-    ModelConfig,
     DQNConfig,
     SACConfig,
     BCConfig,
     AlgorithmConfig,
     ReplayBufferConfig,
 )
-from racing_toolbox.training.config.user_defined import Activation
 
 from ui_app.src.shared import Shared
-from ui_app.src.utils import SetEncoder
-from ui_app.src.forms.common import select_recordings
+from ui_app.src.forms.common import select_recordings, configure_model
 
 
 def configure_training() -> Optional[TrainingConfig]:
@@ -106,29 +102,3 @@ def configure_algo(algo_name: str) -> AlgorithmConfig:
         config = BCConfig()
         select_recordings()
     return config
-
-
-def configure_model() -> ModelConfig:
-    st.markdown("""---""")
-    model = ModelConfig(
-        fcnet_hiddens=[100, 256],
-        fcnet_activation="relu",
-        conv_filters=[
-            (32, (8, 8), 4),
-            (64, (4, 4), 2),
-            (64, (3, 3), 1),
-            (64, (8, 8), 1),
-        ],
-    )
-    model_str = st.text_area(
-        "Configure model architecture",
-        json.dumps(model.dict(), cls=SetEncoder, indent=4),
-        height=200,
-    )
-    avtivations = get_args(Activation)
-    st.write(f"Where possible activations are {avtivations}")
-    try:
-        model = ModelConfig(**json.loads(model_str))
-    except:
-        st.warning("Oops. Your model is not valid")
-    return model

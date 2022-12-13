@@ -2,23 +2,20 @@ import streamlit as st
 import pandas as pd
 from st_aggrid import GridOptionsBuilder, AgGrid, GridUpdateMode, DataReturnMode
 
+from ui_app.src.shared import Shared
 
-def main():
-    st.markdown(
-        f'<h1 style="color:#ee6c4d;font-size:40px;">{"Automobile Training Manager"}</h1>',
-        unsafe_allow_html=True,
-    )
-    st.markdown("""---""")
 
-    # TODO get list `real` trainngs
+def review_tasks():
+    trainer = Shared().trainer_service
+    tasks = trainer.get_trainings_tasks()
+    columns = {
+        "Name": lambda task: task.task_name,
+        "Id": lambda task: task.task_id,
+        "Status": lambda task: task.status,
+        "Finish time": lambda task: task.task_finish_time,
+    }
     trainings = pd.DataFrame(
-        {
-            "Name": ["Training 1", "Training 2"],
-            "Game": ["Trackmania Nations Forever", "Forza Horizon"],
-            "Algorithm": ["DQN", "BC"],
-            "Status": ["Finished", "Running"],
-            "Iteration": ["-", "32"],
-        }
+        {col: [info(task) for task in tasks] for col, info in columns.items()}
     )
 
     gb = GridOptionsBuilder.from_dataframe(trainings)
@@ -42,18 +39,11 @@ def main():
     try:
         row = pd.DataFrame(selected[0])
         name = str(row.iloc[0]["Name"])
-
-        if st.button(f"Resume {name}"):
-            # TODO make training run agian
-            pass
-
+        id = str(row.iloc[0]["Id"])
         if st.button(f"Stop {name}"):
-            # TODO sop runnig
-            pass
+            try:
+                trainer.stop_training(id)
+            except:
+                pass
     except:
         st.write("Select one traning to rerun or stop")
-
-
-if __name__ == "__main__":
-    st.set_page_config(page_title="Automobile Training Manager", layout="wide")
-    main()

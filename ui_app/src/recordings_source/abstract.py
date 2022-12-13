@@ -6,3 +6,7 @@ class AbstractRecordingsScource:
     def get_recordings(self) -> dict[str, str]:
         """returns dict with recording name as key and url to download recording as value"""
         pass
+
+    @abstractmethod
+    def upload_recording(self, name: str, recording):
+        pass
