@@ -80,7 +80,7 @@ def start_vae_training(
     pl_model = VAE(params_dict)
     wandb_logger = WandbLogger(project="ART", log_model="all")
     trainer = pl.Trainer(
-        logger=wandb_logger, max_epochs=150, log_every_n_steps=1, accelerator="gpu"
+        logger=wandb_logger, max_epochs=150, log_every_n_steps=1, accelerator="cpu"
     )
 
     with wandb.init(project="ART") as run:
