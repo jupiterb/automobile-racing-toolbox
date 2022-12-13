@@ -1,0 +1,8 @@
+*venv
+scripts
+sandbox
+data
+config
+*db*
+artifacts
+wandb
