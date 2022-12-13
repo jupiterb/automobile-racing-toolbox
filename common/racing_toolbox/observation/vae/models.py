@@ -13,9 +13,15 @@ DEVICE = "cuda" if th.cuda.is_available() else "cpu"
 
 
 def load_vae_from_wandb_checkpoint(checkpoint_location: str) -> VanillaVAE:
-    run = wandb.run or wandb.init()
+    finish_at_end = False 
+    run = wandb.run 
+    if run is None:
+        run = wandb.init()
+        finish_at_end = True
     artifact = run.use_artifact(checkpoint_location, type="model")
     artifact_dir = artifact.download()
+    if finish_at_end:
+        wandb.finish()
     model = VAE.load_from_checkpoint(Path(artifact_dir) / "model.ckpt")
     model.vae.eval()
     return model.vae 

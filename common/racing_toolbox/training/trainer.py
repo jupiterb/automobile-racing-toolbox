@@ -33,7 +33,7 @@ class Trainer:
             self._algorithm.get_policy().set_weights(pre_trained_weights)
 
         self._checkpoint_callback = checkpoint_callback or self.make_checkpoint
-        ray.init(ignore_reinit_error=True, log_to_driver=False)
+        ray.init(ignore_reinit_error=True)
 
     @property
     def algorithm(self) -> Algorithm:

@@ -90,9 +90,8 @@ class TrainingTask(AbortableTask):
     def _get_calllback(self, run):
         chkpnt_dir = TMP_DIR / f"checkpoints_{run.id}"
         chkpnt_dir.mkdir()
-        chkpnt_artifact = wandb.Artifact(f"checkpoint-{run.id}", type="checkpoint")
         checkpoint_callback = wandb_checkpoint_callback_factory(
-            chkpnt_artifact, chkpnt_dir
+            f"checkpoint-{run.id}", chkpnt_dir
         )
         return checkpoint_callback
 
@@ -125,6 +124,7 @@ def start_training_task(
             pretrained_weights,
             None,
             workers_ref,
+            wandb_run=run
         )
 
 
@@ -174,6 +174,7 @@ def continue_training_task(
             None,
             Path(checkpoint_dir).absolute() / "checkpoint",
             workers_ref,
+            wandb_run=run
         )
 
 

@@ -18,7 +18,11 @@ class VaeObservationWrapper(gym.ObservationWrapper):
         super().__init__(env)
         self.vae = vae
         self.vae.eval()
-        self.observation_space = gym.spaces.Box(0, 1, (self.vae.latent_dim, ))
+        self.observation_space = gym.spaces.Box(
+            low=np.finfo(np.float32).min,
+            high=np.finfo(np.float32).max,
+            shape=(self.vae.latent_dim, )
+        )
         self.transform = transforms.Compose([
             transforms.ToTensor(),
             transforms.Resize(vae.input_shape)
@@ -40,7 +44,8 @@ class SqueezingWrapper(gym.ObservationWrapper):
         super().__init__(env)
         self.move_axis = lambda obs: np.moveaxis(obs, 0, -1)
         self.observation_space = gym.spaces.Box(
-            0, 1, self.move_axis(env.observation_space.sample()).shape
+            np.min(env.observation_space.low),
+            np.max(env.observation_space.high), self.move_axis(env.observation_space.sample()).shape
         )
 
     @log_observation(__name__)

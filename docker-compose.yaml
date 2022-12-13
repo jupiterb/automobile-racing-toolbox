@@ -43,3 +43,4 @@ services:
       - trainer_app
     restart: always
     mem_limit: 10G 
+    shm_size: '4gb'

@@ -10,7 +10,8 @@ from racing_toolbox.environment.mocked import MockedEnv
 from racing_toolbox.interface.config import GameConfiguration
 from racing_toolbox.training.config.user_defined import TrainingConfig
 from racing_toolbox.environment import builder
-
+import logging 
+logger = logging.getLogger(__name__)
 
 class WorkerFailure(Exception):
     def __init__(self, worker_address: str, reason: str, details: Optional[str] = None):
@@ -20,12 +21,12 @@ class WorkerFailure(Exception):
         self.details = details
 
 
-def wandb_checkpoint_callback_factory(checkpoint_artifact: wandb.Artifact, dir: Path):
+def wandb_checkpoint_callback_factory(checkpoint_name, dir: Path):
     def callback(algorithm: Algorithm):
+        checkpoint_artifact = wandb.Artifact(checkpoint_name, type="checkpoint")
         chkpnt_path = algorithm.save(str(dir))
         checkpoint_artifact.add_dir(chkpnt_path, name="checkpoint")
         wandb.log_artifact(checkpoint_artifact)
-
     return callback
 
 
@@ -48,7 +49,7 @@ def get_training_params(
         if ioctx.worker_index > 0 or ioctx.worker.num_workers == 0:
             return PolicyServerInput(
                 ioctx,
-                "0.0.0.0",
+                host,
                 port + ioctx.worker_index - (1 if ioctx.worker_index > 0 else 0),
             )
         else:
@@ -60,6 +61,7 @@ def get_training_params(
     )
     env = builder.wrapp_env(mocked_env, env_config)
     print(f"observation space: {env.observation_space.shape}")
+    logger.warning(f"observation space shape: {env.observation_space.shape}, {env.observation_space.low} - {env.observation_space.high}")
     trainer_params = TrainingParams(
         **training_config.dict(),
         observation_space=env.observation_space,
