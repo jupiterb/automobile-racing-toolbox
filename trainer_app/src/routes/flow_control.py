@@ -11,7 +11,7 @@ from logging import getLogger
 
 logger = getLogger(__name__)
 
-flow_router = APIRouter()
+flow_router = APIRouter(prefix="/online")
 
 
 @flow_router.put("/resume")
