@@ -5,16 +5,15 @@ from contextlib import contextmanager
 from typing import Generator
 import boto3
 from racing_toolbox.datatool.datasets import Dataset, DatasetModel
-from racing_toolbox.datatool.services import InMemoryDatasetService
 import uuid, shutil
 
 
 class S3Dataset(Dataset):
     def __init__(
-        self, bucket_name: str, file_ref: Path, aws_key: str, aws_secret_key: str
+        self, bucket_name: str, file_ref: str, aws_key: str, aws_secret_key: str
     ) -> None:
         session = boto3.Session(aws_key, aws_secret_key)
-        self.key = str(file_ref)
+        self.key = file_ref
         self.bucket = session.resource("s3").Bucket(bucket_name)
         self.client = session.client("s3")
 

@@ -1,11 +1,6 @@
 from src.const import EnvVarsConfig, TMP_DIR
 from src.worker_registry import RemoteWorkerRef
-from src.tasks.utils import (
-    WorkerFailure,
-    wandb_checkpoint_callback_factory,
-    log_config,
-    get_training_params,
-)
+from src.tasks import utils
 from racing_toolbox.training import Trainer
 from racing_toolbox.training.config.params import TrainingParams
 from racing_toolbox.environment.config.env import EnvConfig
@@ -13,6 +8,8 @@ from racing_toolbox.environment.mocked import MockedEnv
 from racing_toolbox.interface.config import GameConfiguration
 from racing_toolbox.training.config.user_defined import TrainingConfig
 from racing_toolbox.environment import builder
+from racing_toolbox.training.config.user_defined import ModelConfig
+from racing_toolbox.observation.config.vae_config import VAETrainingConfig
 from typing import Optional
 from pathlib import Path
 from celery import Celery
@@ -24,30 +21,16 @@ import os, uuid
 import wandb
 from ray.rllib.algorithms import Algorithm
 import requests
-import logging 
-logging.basicConfig(format='%(levelname)-8s: %(asctime)s - %(name)s.%(funcName)s() - %(message)s')
+import logging
+
+logging.basicConfig(
+    format="%(levelname)-8s: %(asctime)s - %(name)s.%(funcName)s() - %(message)s"
+)
 
 logger = get_task_logger(__name__)
 
-def make_celery(config: EnvVarsConfig):
+app = utils.make_celery(EnvVarsConfig())
 
-    class CeleryConfig:
-        task_serializer = "pickle"
-        result_serializer = "pickle"
-        event_serializer = "json"
-        accept_content = ["application/json", "application/x-python-serialize"]
-        result_accept_content = ["application/json", "application/x-python-serialize"]
-
-
-    celery = Celery(
-        "tasks", broker=config.celery_broker_url, backend=config.celery_backend_url
-    )
-    celery.conf.result_extended = True
-    celery.config_from_object(CeleryConfig)
-    return celery
-
-
-app = make_celery(EnvVarsConfig())
 
 @setup_logging.connect
 def setup_celery_logging(**kwargs):
@@ -64,13 +47,13 @@ class TrainingTask(AbortableTask):
         pretrained_weights: Optional[dict],
         checkpoint_dir: Optional[Path],
         workers_ref: list[RemoteWorkerRef],
-        wandb_run=None
+        wandb_run=None,
     ):
         run = wandb_run or wandb.run
         print("going to log configs")
-        log_config(game_config, "game_config")
-        log_config(env_config, "env_config")
-        log_config(training_config, "training_config")
+        utils.log_config(game_config, "game_config")
+        utils.log_config(env_config, "env_config")
+        utils.log_config(training_config, "training_config")
         print("going to build trainer")
         trainer = Trainer(
             trainer_params,
@@ -79,18 +62,22 @@ class TrainingTask(AbortableTask):
             checkpoint_path=checkpoint_dir,
         )
         print("going to notify workers about start")
-        notify_workers(urls=[w.address for w in workers_ref], route="/worker/start", method="post")
+        notify_workers(
+            urls=[w.address for w in workers_ref], route="/worker/start", method="post"
+        )
         for epoch in trainer.run():
             logger.info(f"epoch {epoch} done")
             if self.is_aborted():
                 logger.warning("task has been aborted")
                 break
-        notify_workers(urls=[w.address for w in workers_ref], route="/worker/stop", method="post")
+        notify_workers(
+            urls=[w.address for w in workers_ref], route="/worker/stop", method="post"
+        )
 
     def _get_calllback(self, run):
         chkpnt_dir = TMP_DIR / f"checkpoints_{run.id}"
         chkpnt_dir.mkdir()
-        checkpoint_callback = wandb_checkpoint_callback_factory(
+        checkpoint_callback = utils.wandb_checkpoint_callback_factory(
             f"checkpoint-{run.id}", chkpnt_dir
         )
         return checkpoint_callback
@@ -111,7 +98,7 @@ def start_training_task(
 ):
     print("starting")
     os.environ["WANDB_API_KEY"] = wandb_api_key
-    trainer_params = get_training_params(
+    trainer_params = utils.get_training_params(
         host, port, training_config, game_config, env_config
     )
     print("starting wandb run")
@@ -124,7 +111,7 @@ def start_training_task(
             pretrained_weights,
             None,
             workers_ref,
-            wandb_run=run
+            wandb_run=run,
         )
 
 
@@ -144,14 +131,16 @@ def continue_training_task(
     with wandb.init(project="ART") as run:
         checkpoint_ref = f"{'/'.join(run_ref.split('/')[:-1])}/{checkpoint_name}"
         print(checkpoint_ref)
-        checkpoint_artefact = run.use_artifact(
-            checkpoint_ref, type="checkpoint"
-        )
+        checkpoint_artefact = run.use_artifact(checkpoint_ref, type="checkpoint")
         checkpoint_dir = checkpoint_artefact.download()
-        game_config = GameConfiguration.parse_file(wandb.restore("game_config.json", run_path=run_ref).name)
-        env_config = EnvConfig.parse_file(wandb.restore("env_config.json", run_path=run_ref).name)
+        game_config = GameConfiguration.parse_file(
+            wandb.restore("game_config.json", run_path=run_ref).name
+        )
+        env_config = EnvConfig.parse_file(
+            wandb.restore("env_config.json", run_path=run_ref).name
+        )
 
-    trainer_params = get_training_params(
+    trainer_params = utils.get_training_params(
         host, port, training_config, game_config, env_config
     )
     sync_workers(
@@ -174,12 +163,14 @@ def continue_training_task(
             None,
             Path(checkpoint_dir).absolute() / "checkpoint",
             workers_ref,
-            wandb_run=run
+            wandb_run=run,
         )
 
 
 @app.task
-def load_pretrained_weights(*args, wandb_api_key: str, run_ref: str, checkpoint_name: str, **kwargs):
+def load_pretrained_weights(
+    *args, wandb_api_key: str, run_ref: str, checkpoint_name: str, **kwargs
+):
     import wandb
 
     os.environ["WANDB_API_KEY"] = wandb_api_key
@@ -190,7 +181,9 @@ def load_pretrained_weights(*args, wandb_api_key: str, run_ref: str, checkpoint_
         checkpoint_dir = checkpoint_artefact.download()
         game_config = GameConfiguration.parse_raw(wandb.restore("game_config.json"))
         env_config = EnvConfig.parse_raw(wandb.restore("env_config.json"))
-        training_config = TrainingConfig.parse_raw(wandb.restore("training_config.json"))
+        training_config = TrainingConfig.parse_raw(
+            wandb.restore("training_config.json")
+        )
 
     mocked_env = MockedEnv(
         game_config.discrete_actions_mapping, game_config.window_size
@@ -208,14 +201,16 @@ def load_pretrained_weights(*args, wandb_api_key: str, run_ref: str, checkpoint_
 
 
 @app.task(ignore_result=True)
-def notify_workers(*args, urls: list[str], route: str, method: str="get", **kwargs):
+def notify_workers(*args, urls: list[str], route: str, method: str = "get", **kwargs):
     responses = [getattr(requests, method)(u + route) for u in urls]
     # responses = grequests.map(rs)
     for r, addr in zip(responses, urls):
         if r.status_code != 200:
-            raise WorkerFailure(addr, str(r.content))
+            raise utils.WorkerFailure(addr, str(r.content))
 
-import orjson 
+
+import orjson
+
 
 @app.task(ignore_result=True)
 def sync_workers(
@@ -239,18 +234,60 @@ def sync_workers(
             "wandb_api_key": wandb_api_key,
             "wandb_group": wandb_group,
         }
-        
-        print(url)
+
         r = requests.post(url + "/worker/sync", json=body)
         responses.append(r)
         if r is None or r.status_code != 200:
-            logger.error(f"cannot sync with {url}. got response {r.content if r is not None else r}")
-            raise WorkerFailure(url, "Cannot sync")
-    # responses = grequests.map(rs)
+            logger.error(
+                f"cannot sync with {url}. got response {r.content if r is not None else r}"
+            )
+            raise utils.WorkerFailure(url, "Cannot sync")
     logger.info(f"responses {responses}")
-    # for r, addr in zip(responses, urls):
 
-import time 
+
+import torch.utils.data as th_data
+import numpy as np
+import torch as th
+from torchvision import transforms
+import torchvision.transforms.functional as VF
+
+
+@app.task(bind=True, base=AbortableTask)
+def start_vae_training(
+    self,
+    training_params: VAETrainingConfig,
+    encoder_config: ModelConfig,
+    bucket_name: str,
+    recordings_refs: list[str],
+):
+    env_vars = EnvVarsConfig()
+    transform = transforms.Compose(
+        [
+            lambda i: training_params.observation_frame.apply(i),
+            transforms.ToTensor(),
+            transforms.Resize(training_params.input_shape),
+        ]
+    )
+    dataset = utils.tensordataset_from_bucket(
+        recordings_refs,
+        bucket_name,
+        env_vars.aws_key,
+        env_vars.aws_secret_key,
+        transform,
+    )
+
+    # build encoder / decoder based on configs
+
+    # validate model
+
+    # start training with ray
+
+    ...
+
+
+import time
+
+
 @app.task(ignore_results=True)
 def probe_task():
     time.sleep(10)

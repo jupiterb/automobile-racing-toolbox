@@ -1,5 +1,7 @@
 from pydantic import BaseModel, validator, Field 
 from typing import Optional, Any
+from racing_toolbox.training.config.user_defined import ModelConfig
+from racing_toolbox.observation.config.vae_config import VAETrainingConfig
 from racing_toolbox.environment.config.env import EnvConfig
 from racing_toolbox.interface.config import GameConfiguration
 from racing_toolbox.training.config.user_defined import TrainingConfig
@@ -38,3 +40,11 @@ class WorkerResponse(BaseModel):
     worker_address: str
     worker_port: int
     game_id: str
+
+
+class StartVAETrainingRequest(TrainingRequet):
+    training_params: VAETrainingConfig
+    encoder_config: ModelConfig
+    bucket_name: str 
+    recordings_refs: list[str]
+    

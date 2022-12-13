@@ -19,5 +19,7 @@ class EnvVarsConfig(BaseSettings):
     celery_backend_url: str 
     default_policy_port: int
     default_policy_host: str
+    aws_key: str 
+    aws_secret_key: str 
 
 logging.warning(f"Following enviroment variables were setup: {EnvVarsConfig()}")
