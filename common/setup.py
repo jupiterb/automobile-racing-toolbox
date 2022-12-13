@@ -22,14 +22,15 @@ requirements_common = [
     "streamlit",
     "httpx-oauth==0.10.2",
     "ray[rllib]",
+    "torch",
+    "torchvision",
+    "moviepy",
+    "imageio",
+    "pytorch_lightning",
 ]
 
-windows_requirements = [
-    "pywin32==304",
-    "vgamepad==0.0.8"
-
-]
-import sys 
+windows_requirements = ["pywin32==304", "vgamepad==0.0.8"]
+import sys
 
 requirements = requirements_common
 if "linux" not in sys.platform:
@@ -37,7 +38,7 @@ if "linux" not in sys.platform:
 
 setup(
     name="Racing Toolbox",
-    version="0.1.0",
+    version="0.1.1",
     description="Racing Toolbox - module for RL with racing games",
     packages=find_packages(),
     install_requires=requirements,

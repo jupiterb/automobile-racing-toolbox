@@ -4,3 +4,5 @@ sandbox
 data
 config
 *db*
+artifacts
+wandb

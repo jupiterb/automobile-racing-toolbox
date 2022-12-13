@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import PlainTextResponse
 from src.const import EnvVarsConfig, TMP_DIR
 from src.schemas import TaskInfoResponse, WorkerResponse
-from src.tasks.tasks import app
+from src.tasks.online_tasks import app
 import itertools as it
 import sqlite3
 from logging import getLogger

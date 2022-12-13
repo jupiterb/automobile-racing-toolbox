@@ -18,7 +18,7 @@ def keep_sending_keepalive(worker_id, keepalive_url, timeout):
     with requests.Session() as session:
         adapter = HTTPAdapter(
             max_retries=Retry(
-                total=5,
+                total=2,
                 backoff_factor=1,
                 allowed_methods=None,
                 status_forcelist=[429, 500, 502, 503, 504],

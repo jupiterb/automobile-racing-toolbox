@@ -1,5 +1,4 @@
 import pytest
-import shutil
 import gym
 from gym import spaces
 from collections import namedtuple
@@ -7,8 +6,8 @@ import random
 from ray.rllib.algorithms import dqn, bc, sac
 from pathlib import Path
 from gym.spaces import Box, Discrete
-
-from tests import TEST_DIR, game_conf, env_config
+from dotenv import load_dotenv
+from tests import TEST_DIR
 
 from racing_toolbox.observation.utils.ocr.abstract import OcrTool
 from racing_toolbox.observation.utils.ocr.seven_segments import SevenSegmentsOcr
@@ -26,6 +25,8 @@ from racing_toolbox.datatool import DatasetContainer
 from racing_toolbox.datatool.datasets import FromMemoryDataset
 from racing_toolbox.datatool.preproc.rllib_ds import make_rllib_dataset
 from racing_toolbox.datatool.utils.dataset_based_env import DatasetBasedEnv
+
+load_dotenv(TEST_DIR / "assets/.env")
 
 SpaceParam = namedtuple("SpaceParam", ["observation", "action", "reward"])
 

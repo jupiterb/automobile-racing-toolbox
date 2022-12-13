@@ -40,6 +40,7 @@ def construct_cls(config: TrainingParams) -> alg.Algorithm:
         .offline_data(
             input_=config.offline_data if config.offline_data else config.input_
         )
+        .debugging(log_level=config.log_level)
     )
     if config.evaluation_config is not None:
         conf = config.evaluation_config

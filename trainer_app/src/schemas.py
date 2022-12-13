@@ -1,27 +1,31 @@
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, validator, Field 
 from typing import Optional, Any
+from racing_toolbox.training.config.user_defined import ModelConfig
+from racing_toolbox.observation.config.vae_config import VAETrainingConfig, VAEModelConfig
 from racing_toolbox.environment.config.env import EnvConfig
 from racing_toolbox.interface.config import GameConfiguration
 from racing_toolbox.training.config.user_defined import TrainingConfig
 import uuid 
 from datetime import datetime 
 
-class StartTrainingRequest(BaseModel):
+
+class TrainingRequet(BaseModel):
+    training_config: TrainingConfig
+    wandb_group: str = Field(default_factory=lambda: str(uuid.uuid1()))
+    wandb_api_key: str 
+
+
+class StartTrainingRequest(TrainingRequet):
     game_config: GameConfiguration
     env_config: EnvConfig
-    training_config: TrainingConfig
-    run_reference: Optional[str] = None 
+    wandb_run_reference: Optional[str] = None 
     checkpoint_name: Optional[str] = None 
-    wandb_api_key: str 
-    wandb_group: str = str(uuid.uuid1()) 
 
 
-class ResumeTrainingRequest(BaseModel):
+class ResumeTrainingRequest(TrainingRequet):
     wandb_run_reference: str 
-    wandb_api_key: str 
     checkpoint_name: str
     game_id: str # TODO: think about a way to extract it from wandb
-    training_config: TrainingConfig
 
 
 class TaskInfoResponse(BaseModel):
@@ -36,3 +40,12 @@ class WorkerResponse(BaseModel):
     worker_address: str
     worker_port: int
     game_id: str
+
+
+class StartVAETrainingRequest(BaseModel):
+    wandb_api_key: str 
+    training_params: VAETrainingConfig
+    encoder_config: VAEModelConfig
+    bucket_name: str 
+    recordings_refs: list[str]
+    

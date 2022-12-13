@@ -17,8 +17,8 @@ logger = getLogger(__name__)
 def synchornized(lock):
     def decorator(fun):
         def wrapper(*args, **kwargs):
-            with lock:
-                result = fun(*args, **kwargs)
+            # with lock:
+            result = fun(*args, **kwargs)
             return result
 
         return wrapper

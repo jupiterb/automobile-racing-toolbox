@@ -2,12 +2,39 @@ import gym
 import numpy as np
 import wandb
 import gym.spaces
+import torch as th 
+from torchvision import transforms 
 
 from racing_toolbox.observation.config import LidarConfig, TrackSegmentationConfig
 from racing_toolbox.observation.lidar import Lidar
 from racing_toolbox.observation.track_segmentation import TrackSegmenter
 from racing_toolbox.observation.utils import ScreenFrame
 from racing_toolbox.environment.utils.logging import log_observation
+from racing_toolbox.observation.vae import VanillaVAE
+
+
+class VaeObservationWrapper(gym.ObservationWrapper):
+    def __init__(self, env: gym.Env, vae: VanillaVAE) -> None:
+        super().__init__(env)
+        self.vae = vae
+        self.vae.eval()
+        self.observation_space = gym.spaces.Box(
+            low=np.finfo(np.float32).min,
+            high=np.finfo(np.float32).max,
+            shape=(self.vae.latent_dim, )
+        )
+        self.transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Resize(vae.input_shape)
+        ])
+
+    def observation(self, observation: np.ndarray) -> np.ndarray:
+        """given RGB compatible with vae model input, return sample from latent space"""
+        img: th.Tensor = self.transform(observation)
+
+        with th.no_grad():
+            latent_vec = self.vae.to_latent(img.unsqueeze(0))
+        return latent_vec.detach().squeeze(0).numpy()
 
 
 class SqueezingWrapper(gym.ObservationWrapper):
@@ -17,7 +44,8 @@ class SqueezingWrapper(gym.ObservationWrapper):
         super().__init__(env)
         self.move_axis = lambda obs: np.moveaxis(obs, 0, -1)
         self.observation_space = gym.spaces.Box(
-            0, 1, self.move_axis(env.observation_space.sample()).shape
+            np.min(env.observation_space.low),
+            np.max(env.observation_space.high), self.move_axis(env.observation_space.sample()).shape
         )
 
     @log_observation(__name__)
@@ -39,8 +67,13 @@ class RescaleWrapper(gym.ObservationWrapper):
 class CutImageWrapper(gym.ObservationWrapper):
     def __init__(self, env: gym.Env, frame: ScreenFrame) -> None:
         super().__init__(env)
-        self._frame = frame
-        self.observation_space = frame.apply(env.observation_space.sample()).shape
+        self._frame = frame 
+        shape = frame.apply(env.observation_space.sample()).shape
+        self.observation_space = gym.spaces.Box(
+            np.min(env.observation_space.low),
+            np.max(env.observation_space.high),
+            shape
+        )
 
     @log_observation(__name__)
     def observation(self, observation: np.ndarray) -> np.ndarray:
@@ -98,6 +131,7 @@ class WandbVideoLogger(gym.Wrapper):
             self._frames = []
 
     def _record(self, obs: np.ndarray):
-        self._frames.append(obs)
+        img = np.moveaxis(obs, -1, 0) # channel first
+        self._frames.append(img)
         if self.log_duration == len(self._frames):
             wandb.log({"recording": wandb.Video(np.stack(self._frames), fps=10)})
