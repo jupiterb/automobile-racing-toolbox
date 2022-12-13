@@ -40,6 +40,8 @@ import pytorch_lightning as pl
 import orjson
 import logging
 import wandb
+import numpy as np 
+
 
 @app.task(bind=True, base=AbortableTask)
 def start_vae_training(
@@ -54,6 +56,7 @@ def start_vae_training(
     env_vars = EnvVarsConfig()
     transform = transforms.Compose(
         [
+            lambda i: np.array(i, dtype=np.uint8),
             lambda i: training_params.observation_frame.apply(i),
             transforms.ToTensor(),
             transforms.Resize(training_params.input_shape),
@@ -70,6 +73,7 @@ def start_vae_training(
     trainset, testset = th_data.random_split(dataset, [len(dataset) - val_len, val_len])
     trainloader = th_data.DataLoader(trainset, batch_size=training_params.batch_size)
     testloader = th_data.DataLoader(testset, batch_size=training_params.batch_size)
+    print(f"dtype: {dataset[0][0].dtype}")
 
     # build encoder / decoder based on configs
     params_dict = (
@@ -78,16 +82,19 @@ def start_vae_training(
         | {"in_channels": 3}
     )
     pl_model = VAE(params_dict)
-    wandb_logger = WandbLogger(project="ART", log_model="all")
-    trainer = pl.Trainer(
-        logger=wandb_logger, max_epochs=150, log_every_n_steps=1, accelerator="cpu"
-    )
-
-    with wandb.init(project="ART") as run:
+    wandb.init(project="ART", name=f"vae_{self.request.id}")
+    try:
+        wandb_logger = WandbLogger(project="ART", log_model="all")
+        trainer = pl.Trainer(
+            logger=wandb_logger, max_epochs=training_params.epochs, log_every_n_steps=1, accelerator="cpu"
+        )
         trainer.fit(
             model=pl_model, train_dataloaders=trainloader, val_dataloaders=testloader
         )
-    wandb.finish()
+    except Exception:
+        raise 
+    finally:
+        wandb.finish()
 
 
 @setup_logging.connect
