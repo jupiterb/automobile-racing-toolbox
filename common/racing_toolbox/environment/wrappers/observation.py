@@ -11,6 +11,7 @@ from racing_toolbox.observation.track_segmentation import TrackSegmenter
 from racing_toolbox.observation.utils import ScreenFrame
 from racing_toolbox.environment.utils.logging import log_observation
 from racing_toolbox.observation.vae import VanillaVAE
+from concurrent.futures import ThreadPoolExecutor
 
 
 class VaeObservationWrapper(gym.ObservationWrapper):
@@ -103,6 +104,8 @@ class TrackSegmentationWrapper(gym.ObservationWrapper):
     def observation(self, observation: np.ndarray) -> np.ndarray:
         return self._track_segmenter.perform_segmentation(observation)
 
+def log_video(imgs: list[np.ndarray]):
+    wandb.run.log({"recording": wandb.Video(np.stack(imgs), fps=10)})
 
 class WandbVideoLogger(gym.Wrapper):
     def __init__(self, env: gym.Env, log_frequency: int, log_duration: int) -> None:
@@ -115,6 +118,9 @@ class WandbVideoLogger(gym.Wrapper):
         self._is_recording: bool = True
         self._frames: list[np.ndarray] = []
         self._step = 0
+
+        self.pool = ThreadPoolExecutor(max_workers=10)
+
 
     def step(self, action):
         obs, rew, done, info = super().step(action)
@@ -134,4 +140,6 @@ class WandbVideoLogger(gym.Wrapper):
         img = np.moveaxis(obs, -1, 0) # channel first
         self._frames.append(img)
         if self.log_duration == len(self._frames):
-            wandb.log({"recording": wandb.Video(np.stack(self._frames), fps=10)})
+            print("logging video")
+            self.pool.submit(log_video, self._frames)
+            print("logged video")

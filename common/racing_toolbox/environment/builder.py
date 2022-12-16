@@ -1,4 +1,4 @@
-from gym.wrappers import GrayScaleObservation, ResizeObservation, FrameStack, TimeLimit
+from gym.wrappers import GrayScaleObservation, ResizeObservation, FrameStack, TimeLimit, RecordVideo
 import gym
 import wandb
 from racing_toolbox.environment.wrappers import observation, stats, action, reward

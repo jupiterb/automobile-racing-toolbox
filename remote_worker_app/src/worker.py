@@ -23,7 +23,7 @@ def run_worker_process(
             game_conf=game_config,
             env_conf=env_config,
         )
-        time.sleep(15)
+        time.sleep(5)
         worker.run()
 
 
@@ -45,8 +45,10 @@ class Worker:
         rewards = 0.0
         while True:
             action = self.client.get_action(eid, obs)
+            print("applying action")
             obs, reward, done, info = self.env.step(action)
             rewards += reward
+            print("loggin returns")
             self.client.log_returns(eid, reward, info=info)
 
             if done:
