@@ -107,8 +107,8 @@ class TrackSegmentationWrapper(gym.ObservationWrapper):
     def observation(self, observation: np.ndarray) -> np.ndarray:
         return self._track_segmenter.perform_segmentation(observation)
 
-def log_video(imgs: list[np.ndarray]):
-    wandb.run.log({"recording": wandb.Video(np.stack(imgs), fps=10)})
+def log_video(imgs: list[np.ndarray], key_name: str="recording"):
+    wandb.run.log({key_name: wandb.Video(np.stack(imgs), fps=10)})
 
 class WandbVideoLogger(gym.Wrapper):
     def __init__(self, env: gym.Env, log_frequency: int, log_duration: int) -> None:
@@ -174,7 +174,7 @@ class VaeVideoLogger(WandbVideoLogger):
         self._frames.append(img)
         if self.log_duration == len(self._frames):
             logger.info("logging VAE video")
-            self.pool.submit(log_video, self._frames)
+            self.pool.submit(log_video, self._frames, key_name="vae_reconstruction")
             logger.info("logged VAE video")
     
     
