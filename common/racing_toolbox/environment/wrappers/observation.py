@@ -169,7 +169,8 @@ class VaeVideoLogger(WandbVideoLogger):
             obs_torch: th.Tensor = self.transform(obs)
             with th.no_grad():
                 decoded = self.vae.generate(obs_torch.unsqueeze(0))
-        img = decoded.detach().squeeze(0).numpy()
+        img = decoded.detach().squeeze(0).numpy() * 255
+        img = img.astype(np.uint8)
 
         self._frames.append(img)
         if self.log_duration == len(self._frames):
