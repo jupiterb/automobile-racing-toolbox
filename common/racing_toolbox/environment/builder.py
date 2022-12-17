@@ -1,4 +1,9 @@
-from gym.wrappers import GrayScaleObservation, ResizeObservation, FrameStack, TimeLimit, RecordVideo
+from gym.wrappers import (
+    GrayScaleObservation,
+    ResizeObservation,
+    FrameStack,
+    TimeLimit,
+)
 import gym
 import wandb
 from racing_toolbox.environment.wrappers import observation, stats, action, reward
@@ -86,6 +91,10 @@ def observation_wrappers(
     if config.vae_config:
         vae = load_vae_from_wandb_checkpoint(config.vae_config.wandb_checkpoint_ref)
         env = observation.VaeObservationWrapper(env, vae=vae)
+        if wandb.run is not None:
+            env = observation.VaeVideoLogger(
+                env, log_frequency=200_000, log_duration=200, vae=vae, decode_only=True
+            )
     elif config.track_segmentation_config:
         env = observation.TrackSegmentationWrapper(
             env, config.track_segmentation_config

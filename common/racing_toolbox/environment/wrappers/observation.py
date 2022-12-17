@@ -4,6 +4,7 @@ import wandb
 import gym.spaces
 import torch as th 
 from torchvision import transforms 
+import logging 
 
 from racing_toolbox.observation.config import LidarConfig, TrackSegmentationConfig
 from racing_toolbox.observation.lidar import Lidar
@@ -13,8 +14,10 @@ from racing_toolbox.environment.utils.logging import log_observation
 from racing_toolbox.observation.vae import VanillaVAE
 from concurrent.futures import ThreadPoolExecutor
 
+logger = logging.getLogger(__name__)
 
-class VaeObservationWrapper(gym.ObservationWrapper):
+
+class VaeObservationWrapper(gym.ObservationWrapper, WandbVideoLogger):
     def __init__(self, env: gym.Env, vae: VanillaVAE) -> None:
         super().__init__(env)
         self.vae = vae
@@ -140,6 +143,39 @@ class WandbVideoLogger(gym.Wrapper):
         img = np.moveaxis(obs, -1, 0) # channel first
         self._frames.append(img)
         if self.log_duration == len(self._frames):
-            print("logging video")
+            logger.info("logging video")
             self.pool.submit(log_video, self._frames)
-            print("logged video")
+            logger.info("logged video")
+
+
+class VaeVideoLogger(WandbVideoLogger):
+    def __init__(self, *args, vae: VanillaVAE, decode_only: bool=False, **kwargs) -> None:
+        """if decode_only is set, will assume that given observation is latent vector, and use only Decoder to log frame"""
+        super().__init__(self, *args, **kwargs)
+        self.vae = vae
+        self.vae.eval()
+        self.transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Resize(vae.input_shape)
+        ])
+        self.decode_only = decode_only
+
+    def _record(self, obs: np.ndarray):
+        if self.decode_only:
+            with th.no_grad():
+                obs_torch = th.Tensor(obs).unsqueeze(0)
+                decoded = self.vae.decoder(obs_torch)
+        else:
+            obs_torch: th.Tensor = self.transform(obs)
+            with th.no_grad():
+                decoded = self.vae.generate(obs_torch.unsqueeze(0))
+        img = decoded.detach().squeeze(0).numpy()
+
+        self._frames.append(img)
+        if self.log_duration == len(self._frames):
+            logger.info("logging VAE video")
+            self.pool.submit(log_video, self._frames)
+            logger.info("logged VAE video")
+    
+    
+
