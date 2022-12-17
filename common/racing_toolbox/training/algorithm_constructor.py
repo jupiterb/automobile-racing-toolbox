@@ -29,6 +29,7 @@ def construct_cls(config: TrainingParams) -> alg.Algorithm:
             num_rollout_workers=config.num_rollout_workers,
             rollout_fragment_length=config.rollout_fragment_length,
             compress_observations=config.compress_observations,
+            validate_workers_after_construction=config.validate_workers_after_construction
         )
         .training(
             gamma=config.gamma,

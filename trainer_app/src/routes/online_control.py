@@ -73,7 +73,7 @@ def start_training(
 
     if body.wandb_run_reference and body.checkpoint_name:
         load_weights_task = online_tasks.load_pretrained_weights.s(
-            wandb_api_ley=body.wandb_api_key,
+            wandb_api_key=body.wandb_api_key,
             run_ref=body.wandb_run_reference,
             checkpoint_name=body.checkpoint_name,
         )

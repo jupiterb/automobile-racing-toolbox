@@ -170,7 +170,8 @@ def start_training_task(
         host, port, training_config, game_config, env_config
     )
     print("starting wandb run")
-    with wandb.init(project="ART", name=f"task_{self.request.id}", group=group) as run:
+    with wandb.init(project="ART", name=f"start_task_{self.request.id}", group=group, config={"restored_checkpoint": None, "pretrained_weights": pretrained_weights is not None}) as run:
+
         self.training_loop(
             game_config,
             env_config,
@@ -225,7 +226,7 @@ def continue_training_task(
         group,
     )
     print(checkpoint_dir)
-    with wandb.init(project="ART", name=f"task_{self.request.id}", group=group) as run:
+    with wandb.init(project="ART", name=f"continue_task_{self.request.id}", group=group, config={"restored_checkpoint": checkpoint_name}) as run:
         self.training_loop(
             game_config,
             env_config,
@@ -243,18 +244,22 @@ def continue_training_task(
 def load_pretrained_weights(
     *args, wandb_api_key: str, run_ref: str, checkpoint_name: str, **kwargs
 ):
-    import wandb
+    wandb.finish()
 
     os.environ["WANDB_API_KEY"] = wandb_api_key
     with wandb.init(project="ART") as run:
-        checkpoint_artefact = run.use_artifact(
-            f"{run_ref}/{checkpoint_name}", type="checkpoint"
-        )
+        checkpoint_ref = f"{'/'.join(run_ref.split('/')[:-1])}/{checkpoint_name}"
+        print(checkpoint_ref)
+        checkpoint_artefact = run.use_artifact(checkpoint_ref, type="checkpoint")
         checkpoint_dir = checkpoint_artefact.download()
-        game_config = GameConfiguration.parse_raw(wandb.restore("game_config.json"))
-        env_config = EnvConfig.parse_raw(wandb.restore("env_config.json"))
-        training_config = TrainingConfig.parse_raw(
-            wandb.restore("training_config.json")
+        game_config = GameConfiguration.parse_file(
+            wandb.restore("game_config.json", run_path=run_ref).name
+        )
+        env_config = EnvConfig.parse_file(
+            wandb.restore("env_config.json", run_path=run_ref).name
+        )
+        training_config = TrainingConfig.parse_file(
+            wandb.restore("training_config.json", run_path=run_ref).name
         )
 
     mocked_env = MockedEnv(
@@ -265,11 +270,13 @@ def load_pretrained_weights(
         **training_config.dict(),
         observation_space=env.observation_space,
         action_space=env.action_space,
+        input_=lambda *args: None,
+        validate_workers_after_construction=False
     )
     algorithm: Algorithm = Trainer(
         trainer_params, checkpoint_path=Path(checkpoint_dir).absolute() / "checkpoint"
     ).algorithm
-    return algorithm.get_policy().get_weights()
+    return algorithm.get_weights()
 
 
 @app.task(ignore_result=True)
