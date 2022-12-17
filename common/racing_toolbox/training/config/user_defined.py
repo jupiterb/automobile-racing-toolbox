@@ -61,7 +61,7 @@ class TrainingConfig(BaseModel):
     train_batch_size: PositiveInt = 200
     max_iterations: PositiveInt = 100
     stop_reward: float = 1e6
-    checkpoint_frequency: PositiveInt = 10
+    checkpoint_frequency: PositiveInt = 1
 
     evaluation_config: Optional[EvalConfig] = None
 

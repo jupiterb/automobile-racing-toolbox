@@ -1,6 +1,7 @@
 from src.const import EnvVarsConfig, TMP_DIR
 from src.worker_registry import RemoteWorkerRef
 from src.tasks import utils
+from src.schemas import OverwritingConfig
 from racing_toolbox.training import Trainer
 from racing_toolbox.training.config.params import TrainingParams
 from racing_toolbox.environment.config.env import EnvConfig
@@ -113,6 +114,7 @@ class TrainingTask(AbortableTask):
         checkpoint_dir: Optional[Path],
         workers_ref: list[RemoteWorkerRef],
         wandb_run=None,
+        checkpoint_name=None
     ):
         run = wandb_run or wandb.run
         print("going to log configs")
@@ -123,7 +125,7 @@ class TrainingTask(AbortableTask):
         trainer = Trainer(
             trainer_params,
             pre_trained_weights=pretrained_weights,
-            checkpoint_callback=self._get_calllback(run),
+            checkpoint_callback=self._get_calllback(run, checkpoint_name),
             checkpoint_path=checkpoint_dir,
         )
         print("going to notify workers about start")
@@ -139,11 +141,12 @@ class TrainingTask(AbortableTask):
             urls=[w.address for w in workers_ref], route="/worker/stop", method="post"
         )
 
-    def _get_calllback(self, run):
+    def _get_calllback(self, run, checkpoint_name=None):
         chkpnt_dir = TMP_DIR / f"checkpoints_{run.id}"
         chkpnt_dir.mkdir()
+        name = checkpoint_name or f"checkpoint-{run.id}"
         checkpoint_callback = utils.wandb_checkpoint_callback_factory(
-            f"checkpoint-{run.id}", chkpnt_dir
+            name, chkpnt_dir
         )
         return checkpoint_callback
 
@@ -183,6 +186,7 @@ def start_training_task(
 @app.task(bind=True, result_extended=True, base=TrainingTask)
 def continue_training_task(
     self: TrainingTask,
+    overwriting_config: OverwritingConfig,
     training_config: TrainingConfig,
     wandb_api_key: str,
     run_ref: str,
@@ -204,6 +208,8 @@ def continue_training_task(
         env_config = EnvConfig.parse_file(
             wandb.restore("env_config.json", run_path=run_ref).name
         )
+    game_config = overwriting_config.maybe_overwrite(game_config)
+    env_config = overwriting_config.maybe_overwrite(env_config)
 
     trainer_params = utils.get_training_params(
         host, port, training_config, game_config, env_config
@@ -216,7 +222,7 @@ def continue_training_task(
         port,
         "ART",
         wandb_api_key,
-        str(uuid.uuid1()),
+        group,
     )
     print(checkpoint_dir)
     with wandb.init(project="ART", name=f"task_{self.request.id}", group=group) as run:
@@ -229,6 +235,7 @@ def continue_training_task(
             Path(checkpoint_dir).absolute() / "checkpoint",
             workers_ref,
             wandb_run=run,
+            checkpoint_name=checkpoint_name
         )
 
 
