@@ -149,9 +149,9 @@ class WandbVideoLogger(gym.Wrapper):
 
 
 class VaeVideoLogger(WandbVideoLogger):
-    def __init__(self, *args, vae: VanillaVAE, decode_only: bool=False, **kwargs) -> None:
+    def __init__(self, env: gym.Env, log_frequency: int, log_duration: int, vae: VanillaVAE, decode_only: bool=False, ) -> None:
         """if decode_only is set, will assume that given observation is latent vector, and use only Decoder to log frame"""
-        super().__init__(self, *args, **kwargs)
+        super().__init__(env, log_duration=log_duration, log_frequency=log_frequency)
         self.vae = vae
         self.vae.eval()
         self.transform = transforms.Compose([
