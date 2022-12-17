@@ -25,6 +25,7 @@ def continue_training(
         return PlainTextResponse(status_code=404, content="too many workers requested")
     workers = workers[: body.training_config.num_rollout_workers]
     resume_task = online_tasks.continue_training_task.delay(
+        overwriting_config=body.overwriting_config,
         training_config=body.training_config,
         wandb_api_key=body.wandb_api_key,
         run_ref=body.wandb_run_reference,

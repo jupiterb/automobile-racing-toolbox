@@ -56,7 +56,7 @@ class OverwritingConfig(BaseModel):
 
 
 class ResumeTrainingRequest(TrainingRequet):
-    overwriting_config: OverwritingConfig=Field(default_factory=OverwritingConfig)
+    overwriting_config: Optional[OverwritingConfig]=Field(default_factory=OverwritingConfig)
     wandb_run_reference: str 
     checkpoint_name: str
     game_id: str # TODO: think about a way to extract it from wandb
