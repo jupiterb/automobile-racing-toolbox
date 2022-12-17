@@ -93,7 +93,7 @@ def observation_wrappers(
         env = observation.VaeObservationWrapper(env, vae=vae)
         if wandb.run is not None:
             env = observation.VaeVideoLogger(
-                env, log_frequency=200_000, log_duration=200, vae=vae, decode_only=True
+                env, 200_000, 200, vae=vae, decode_only=True
             )
     elif config.track_segmentation_config:
         env = observation.TrackSegmentationWrapper(

@@ -107,8 +107,8 @@ class TrackSegmentationWrapper(gym.ObservationWrapper):
     def observation(self, observation: np.ndarray) -> np.ndarray:
         return self._track_segmenter.perform_segmentation(observation)
 
-def log_video(imgs: list[np.ndarray]):
-    wandb.run.log({"recording": wandb.Video(np.stack(imgs), fps=10)})
+def log_video(imgs: list[np.ndarray], key_name: str="recording"):
+    wandb.run.log({key_name: wandb.Video(np.stack(imgs), fps=10)})
 
 class WandbVideoLogger(gym.Wrapper):
     def __init__(self, env: gym.Env, log_frequency: int, log_duration: int) -> None:
@@ -149,9 +149,9 @@ class WandbVideoLogger(gym.Wrapper):
 
 
 class VaeVideoLogger(WandbVideoLogger):
-    def __init__(self, *args, vae: VanillaVAE, decode_only: bool=False, **kwargs) -> None:
+    def __init__(self, env: gym.Env, log_frequency: int, log_duration: int, vae: VanillaVAE, decode_only: bool=False, ) -> None:
         """if decode_only is set, will assume that given observation is latent vector, and use only Decoder to log frame"""
-        super().__init__(self, *args, **kwargs)
+        super().__init__(env, log_duration=log_duration, log_frequency=log_frequency)
         self.vae = vae
         self.vae.eval()
         self.transform = transforms.Compose([
@@ -174,7 +174,7 @@ class VaeVideoLogger(WandbVideoLogger):
         self._frames.append(img)
         if self.log_duration == len(self._frames):
             logger.info("logging VAE video")
-            self.pool.submit(log_video, self._frames)
+            self.pool.submit(log_video, self._frames, key_name="vae_reconstruction")
             logger.info("logged VAE video")
     
     
