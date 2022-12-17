@@ -17,7 +17,7 @@ from concurrent.futures import ThreadPoolExecutor
 logger = logging.getLogger(__name__)
 
 
-class VaeObservationWrapper(gym.ObservationWrapper, WandbVideoLogger):
+class VaeObservationWrapper(gym.ObservationWrapper):
     def __init__(self, env: gym.Env, vae: VanillaVAE) -> None:
         super().__init__(env)
         self.vae = vae
