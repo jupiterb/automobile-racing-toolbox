@@ -67,7 +67,7 @@ def get_cli_args():
     parser.add_argument(
         "--controller",
         type=str,
-        default="keyboard"
+        default="keyboard",
         help="Controller type. Possible options are `keyboard` and `gamepad`",
     )
     return parser.parse_args()
