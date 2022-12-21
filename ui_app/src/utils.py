@@ -10,11 +10,6 @@ class SetEncoder(json.JSONEncoder):
             return list(obj)
 
 
-class UIAppError(Exception):
-    def __init__(self, *args: object) -> None:
-        super().__init__(*args)
-
-
 class TaskInfo(BaseModel):
     task_finish_time: Optional[datetime]
     task_name: Optional[str]

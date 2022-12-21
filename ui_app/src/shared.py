@@ -117,13 +117,13 @@ class Shared:
 
 def get_app_config() -> AppConfig:
     return AppConfig(
-        trainer_url="127",
-        registry_url="128",
+        trainer_url="http://localhost:8000",
+        registry_url="http://localhost:8080",
         bucket_name="automobile-training-test",
         sources_keys=SourcesKeys(
-            game_configs="configs/games/",
-            env_configs="configs/envs/",
-            training_configs="configs/trainings/",
-            recordings="recordings/",
+            game_configs="configs/games",
+            env_configs="configs/envs",
+            training_configs="configs/trainings",
+            recordings="recordings",
         ),
     )

@@ -16,12 +16,8 @@ class S3BucketRecordingsSource(AbstractRecordingsScource):
         recordings = {}
         for objects in self._bucket.objects.filter(Prefix=self._prefix):
             key = objects.key
-            location = self._client.get_bucket_location(Bucket=self._name)[
-                "LocationConstraint"
-            ]
-            url = f"https://{self._name}.s3.{location}.amazonaws.com/{key}"
             name = key.split("/")[-1].split(".")[0]
-            recordings[name] = url
+            recordings[name] = name
         return recordings
 
     def upload_recording(self, name: str, recording):

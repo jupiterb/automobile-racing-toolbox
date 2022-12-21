@@ -21,6 +21,7 @@ requirements_common = [
     "tables==3.7.0",
     "streamlit",
     "httpx-oauth==0.10.2",
+    "ray==2.1.0",
     "ray[rllib]",
     "torch",
     "torchvision",

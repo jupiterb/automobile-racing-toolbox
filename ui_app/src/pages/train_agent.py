@@ -8,6 +8,7 @@ from ui_app.src.forms import (
     start_training,
 )
 from ui_app.src.page_layout import racing_toolbox_page_layout
+from ui_app.src.shared import Shared
 
 
 def main():
@@ -23,8 +24,8 @@ def configure_from_scratch():
         game_config, env_config, training_config = review_all(
             game_config, env_config, training_config
         )
-        # TODO get user api key
-        start_training(game_config, env_config, training_config, "USER KEY")
+        wandb_api_key = Shared().user_data.wandb_api_key
+        start_training(game_config, env_config, training_config, wandb_api_key)
 
 
 if __name__ == "__main__":

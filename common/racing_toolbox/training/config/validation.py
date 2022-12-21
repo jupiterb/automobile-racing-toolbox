@@ -81,7 +81,9 @@ def _validate_model_and_observation_space_compatibilty(
             )
 
     fake = FakeEnv()
-    fake = observation_wrappers(fake, env.observation_config)
+    fake = observation_wrappers(
+        fake, env.observation_config, env.video_freq, env.video_freq
+    )
     obs_shape = fake.observation_space.shape
 
     model = training.model

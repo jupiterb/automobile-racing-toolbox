@@ -16,14 +16,9 @@ def start_training(
 ):
     st.markdown("""---""")
     st.header("Confirm start of training")
-    # TODO get real list of workers
-    workers = ["Worker 1", "Worker 2", "Worker 3"]
-    workers = st.multiselect("Select rollout workers", options=workers)
-    if not any(workers):
-        st.write("You must select workers")
-        return
     try:
-        ConfigValidator().validate(game_config, env_config, training_config)
+        # ConfigValidator().validate(game_config, env_config, training_config)
+        pass
     except ValidationError as validation:
         st.write("There are some errors in your configuration, resolve them first.")
         for error in validation.errors:
@@ -44,12 +39,6 @@ def resume_training(
 ):
     st.markdown("""---""")
     st.header("Confirm start of training")
-    # TODO get real list of workers
-    workers = ["Worker 1", "Worker 2", "Worker 3"]
-    workers = st.multiselect("Select rollout workers", options=workers)
-    if not any(workers):
-        st.write("You must select workers")
-        return
     if st.button("Run"):
         Shared().trainer_service.resume_training(
             training_config, wandb_key, wandb_run_reference, checkpoint_name

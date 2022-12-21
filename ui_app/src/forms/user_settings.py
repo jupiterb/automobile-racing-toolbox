@@ -1,20 +1,19 @@
 import streamlit as st
+from streamlit.runtime.legacy_caching import clear_cache
 from typing import Optional
 
 from ui_app.src.config import UserData
+from ui_app.src.services.registry_service import RegistryServiceException
 from ui_app.src.shared import Shared
 
 
 def review_account_settings() -> bool:
     """retuens True if user has account / is logged, else False"""
     shared = Shared()
-
     user_data = shared.user_data
+    username = user_data.username
 
-    user_name = user_data.username
-    password = user_data.password
-
-    st.header(f"Hello {user_name}")
+    st.header(f"Hello {username}")
     st.write("Here you can manage your account")
 
     change_wandb_api_key()
@@ -25,52 +24,60 @@ def review_account_settings() -> bool:
 
 def change_password():
     shared = Shared()
-    current_user_data = shared.user_data
-    new_password = ask_for_new_credential("password", current_user_data.password, True)
-    if new_password:
-        new_user_data = current_user_data.copy()
-        new_user_data.password = new_password
-        modify_user_data(current_user_data, new_user_data)
+    user_data = shared.user_data
+    new_data = ask_for_new_data("password", True)
+    if new_data:
+        new_user_data = user_data.copy()
+        new_user_data.password, password_provided = new_data
+        modify_user_data(user_data.username, password_provided, new_user_data)
 
 
 def change_wandb_api_key():
     shared = Shared()
-    current_user_data = shared.user_data
+    user_data = shared.user_data
     with st.expander("Check your Weight and Biases API key"):
-        st.write(current_user_data.wandb_api_key)
-    new_wandb_api_key = ask_for_new_credential(
-        "Weight and Biases API key", current_user_data.password, False
-    )
-    if new_wandb_api_key:
-        new_user_data = current_user_data.copy()
-        new_user_data.wandb_api_key = new_wandb_api_key
-        modify_user_data(current_user_data, new_user_data)
+        st.write(user_data.wandb_api_key)
+    new_data = ask_for_new_data("Weight and Biases API key")
+    if new_data:
+        new_user_data = user_data.copy()
+        new_user_data.wandb_api_key, password_provided = new_data
+        modify_user_data(user_data.username, password_provided, new_user_data)
 
 
-def modify_user_data(current: UserData, new: UserData):
-    result = Shared().registry_service.modify_user(current, new)
-    if result is None:
-        return
-    st.warning(f"Cannot modify user data: {result}")
+def modify_user_data(username: str, password: str, new: UserData):
+    shared = Shared()
+    try:
+        shared.registry_service.modify_user(username, password, new)
+        clear_cache()
+        shared.user_data = new
+        st.experimental_rerun()
+    except RegistryServiceException as e:
+        st.warning(f"Cannot modify user data: {e.message}")
 
 
-def ask_for_new_credential(
-    credential_name: str, current_password: str, hide_typing: bool
-) -> Optional[str]:
-    """returns new value if user provide valid password"""
+def ask_for_new_data(
+    data_nama: str,
+    hide_typing: bool = False,
+) -> Optional[tuple[str, str]]:
+    """returns new value and password"""
     _type = "default" if not hide_typing else "password"
-    with st.expander(f"Change your {credential_name}"):
-        new_value = st.text_input(f"Provide new {credential_name}", type=_type)
+    with st.expander(f"Change your {data_nama}"):
+        new_value = st.text_input(f"Provide new {data_nama}", type=_type)
+        repeated_new_value = (
+            st.text_input(f"Confirm new {data_nama}", type=_type)
+            if hide_typing
+            else new_value
+        )
         st.markdown("""---""")
         password = st.text_input(
-            f"Provide your current password to change {credential_name}",
+            f"Provide your current password to change {data_nama}",
             type="password",
         )
-        if st.button(f"Change {credential_name}"):
+        if new_value != repeated_new_value:
+            st.warning(f"Provided values do not match")
+            return
+        if st.button(f"Change {data_nama}"):
             if not len(password):
                 st.warning("Empty value")
                 return
-            if password != current_password:
-                st.warning("Wrong password!")
-                return
-            return new_value
+            return new_value, password

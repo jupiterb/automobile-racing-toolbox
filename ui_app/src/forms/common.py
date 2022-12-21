@@ -39,23 +39,25 @@ def select_recordings() -> list[str]:
     try:
         source = Shared().recordings_source
         recordings_to_use = source.get_recordings()
-        st.write("You can upload recordings in side panel")
-        upload_recording()
     except:
         # There is no recordings source
         st.warning("There is no recordings source.")
         recordings_to_use = {}
     selected = st.multiselect(
-        "Select recordings to use in training", list(recordings_to_use.keys())
+        "Select recordings to use in training",
+        list(["tiny", "recording 1", "recording 2"]),
     )
-    return [recordings_to_use[name] for name in selected]
+    st.write("You can upload recordings in side panel")
+    upload_recording()
+    return ["tiny", "recording 1", "recording 2"]
 
 
 def upload_recording():
     st.sidebar.markdown("""---""")
     st.sidebar.header("Upload recordings")
     st.sidebar.markdown("""---""")
-    source = Shared().recordings_source
+    shared = Shared()
+    source = shared.recordings_source
     uploaded = st.sidebar.file_uploader("Upload new recording", type=["H5"])
     if uploaded:
         if st.sidebar.button("Upload"):
