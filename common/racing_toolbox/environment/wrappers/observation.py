@@ -27,10 +27,14 @@ class VaeObservationWrapper(gym.ObservationWrapper):
             high=np.finfo(np.float32).max,
             shape=(self.vae.latent_dim, )
         )
-        self.transform = transforms.Compose([
+        transform_list = [
             transforms.ToTensor(),
             transforms.Resize(vae.input_shape)
-        ])
+        ]
+        if vae.in_channels == 1: 
+            transform_list.append(transforms.Grayscale())
+        self.transform = transforms.Compose(transform_list) # TODO: transforms stuff should be passed in constructor, or be implemented in vae class to avoid duplication 
+
 
     def observation(self, observation: np.ndarray) -> np.ndarray:
         """given RGB compatible with vae model input, return sample from latent space"""
@@ -154,10 +158,13 @@ class VaeVideoLogger(WandbVideoLogger):
         super().__init__(env, log_duration=log_duration, log_frequency=log_frequency)
         self.vae = vae
         self.vae.eval()
-        self.transform = transforms.Compose([
+        transform_list = [
             transforms.ToTensor(),
             transforms.Resize(vae.input_shape)
-        ])
+        ]
+        if vae.in_channels == 1: 
+            transform_list.append(transforms.Grayscale())
+        self.transform = transforms.Compose(transform_list)
         self.decode_only = decode_only
 
     def _record(self, obs: np.ndarray):

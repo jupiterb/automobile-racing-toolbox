@@ -1,6 +1,6 @@
 from pydantic import BaseModel, PositiveFloat, PositiveInt, validator 
 from racing_toolbox.observation.utils import ScreenFrame
-from typing import NamedTuple
+from typing import NamedTuple, Optional
 
 class VAEConfig(BaseModel):
     wandb_checkpoint_ref: str
@@ -16,6 +16,10 @@ class VAETrainingConfig(BaseModel):
     validation_fraction: PositiveFloat
     batch_size: PositiveInt
 
+    kld_max: Optional[float]=None
+    kld_max_duration: Optional[float]=None 
+    kld_aneal_duration: Optional[float]=None 
+
     @validator("input_shape")
     def square_shape(cls, val):
         assert isinstance(val, tuple) and len(val) == 2
@@ -29,4 +33,5 @@ class ConvFilter(NamedTuple):
 
 
 class VAEModelConfig(BaseModel):
+    grayscale: bool = False 
     conv_filters: list[ConvFilter]

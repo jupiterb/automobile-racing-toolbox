@@ -72,7 +72,7 @@ class Encoder(th.nn.Module):
             block = DownamplingBlock(
                 in_channels=channels_in,
                 n_dims=filter.out_channels,
-                stride=filter.stride
+                stride=filter.stride,
             )
             modules.append(block)
             channels_in = filter.out_channels
@@ -111,7 +111,7 @@ class Decoder(th.nn.Module):
         filters: list[configs.ConvFilter],
         out_channels: int,
         latent_dim: int,
-        after_flat_shape: tuple[int, int, int], 
+        after_flat_shape: tuple[int, int, int],
     ):
         super(Decoder, self).__init__()
         self.c, self.w, self.h = after_flat_shape
@@ -129,16 +129,13 @@ class Decoder(th.nn.Module):
             block = UpsamplingBlock(
                 in_channels=channels_in,
                 n_dims=filter.out_channels,
-                stride=filter.stride
+                stride=filter.stride,
             )
             modules.append(block)
             channels_in = filter.out_channels
         last_block = th.nn.Conv2d(channels_in, out_channels, 1, 1)
 
-        self.decoder = th.nn.Sequential(
-            *modules,
-            last_block
-        )
+        self.decoder = th.nn.Sequential(*modules, last_block)
 
     def forward(self, Z: th.Tensor) -> th.Tensor:
         X = self.decoder_fc(Z)
@@ -157,9 +154,13 @@ class VanillaVAE(th.nn.Module):
         input_shape: tuple[int, int] = (128, 128),
     ) -> None:
         super(VanillaVAE, self).__init__()
+        self.in_channels = in_channels
         self.input_shape = input_shape
         self.latent_dim = latent_dim
-        filters = [configs.ConvFilter(out_channels=t[0], kernel=t[1], stride=t[2]) for t in filters]
+        filters = [
+            configs.ConvFilter(out_channels=t[0], kernel=t[1], stride=t[2])
+            for t in filters
+        ]
         self.encoder = Encoder(filters, in_channels, latent_dim, input_shape)
         self.decoder = Decoder(
             filters[::-1],
@@ -212,18 +213,34 @@ class VAE(pl.LightningModule):
             params["conv_filters"],
             params["in_channels"],
             params["latent_dim"],
-            params["input_shape"]
+            params["input_shape"],
         ).to(
             DEVICE
         )  # TODO: add input shape
+        self._val_batches = 0
+        self.is_kld_anealing = {
+            "kld_max_duration",
+            "kld_max",
+            "kld_aneal_duration",
+        }.issubset(set(params.keys()))
+        if self.is_kld_anealing:
+            self.kld_scheduler = KLDScheduler(
+                params["kld_coeff"],
+                params["kld_max"],
+                params["kld_max_duration"],
+                params["kld_aneal_duration"],
+            )
 
     def training_step(self, batch, batch_idx) -> dict[str, th.Tensor]:
+        if batch_idx == 0 and self.is_kld_anealing:
+            self.params["kld_coeff"] = self.kld_scheduler.get()
+
         X = batch[0]
         X_hat, X, mu, log_var = self.vae(X)
         info = self.vae.loss_function(
             X_hat, X, mu, log_var, kld_weight=self.params["kld_coeff"]
         )
-        self.log_dict(info)
+        self.log_dict(info | {"kld_coeff": self.params["kld_coeff"]})
         return info["loss"]
 
     def validation_step(self, batch, batch_idx) -> dict[str, th.Tensor]:
@@ -233,19 +250,45 @@ class VAE(pl.LightningModule):
             X_hat, X, mu, log_var, kld_weight=self.params["kld_coeff"]
         )
         self.log_dict({name + "_val": value for name, value in info.items()})
+
         if batch_idx == 0:
-            X_grid = make_grid(X, 8)
-            X_hat_grid = make_grid(X_hat, 8)
-            self.logger.log_image(
-                key="validation_batch",
-                images=[X_grid, X_hat_grid],
-                caption=["original", "reconstructed"],
-            )
+            self._val_batches += 1
+            if self._val_batches % 10 == 0:
+                print(self._val_batches)
+                X_grid = make_grid(X, 8)
+                X_hat_grid = make_grid(X_hat, 8)
+                self.logger.log_image(
+                    key="validation_batch",
+                    images=[X_grid, X_hat_grid],
+                    caption=["original", "reconstructed"],
+                )
         return info["loss"]
 
     def configure_optimizers(self):
         optimizer = th.optim.Adam(self.parameters(), lr=self.params["lr"])
         return optimizer
+
+
+class KLDScheduler:
+    def __init__(self, start_val, max_val, duration_before_reset, aneal_duration):
+        self.start_val = start_val
+        self.max_val = max_val
+        self.decay = (max_val - start_val) / aneal_duration
+        self.duration_before_reset = duration_before_reset
+
+        self.current_val = self.start_val
+        self.steps_in_max = 0
+
+    def get(self) -> float:
+        if self.current_val >= self.max_val:
+            if self.steps_in_max >= self.duration_before_reset:
+                self.steps_in_max = 0
+                self.current_val = self.start_val
+            else:
+                self.steps_in_max += 1
+        else:
+            self.current_val += self.decay
+        return self.current_val
 
 
 if __name__ == "__main__":
@@ -257,7 +300,7 @@ if __name__ == "__main__":
         input_shape=(128, 128),
         validation_fraction=0.1,
         batch_size=64,
-        observation_frame=configs.ScreenFrame()
+        observation_frame=configs.ScreenFrame(),
     )
     filters = [
         (16, [3, 3], 2),
@@ -267,8 +310,8 @@ if __name__ == "__main__":
         (128, [3, 3], 2),
     ]
     model_config = configs.VAEModelConfig(conv_filters=filters)
-    vae = VAE(params.dict() | model_config.dict() | {"in_channels": 3})
-    i = th.ones((1, 3, 128, 128))
+    vae = VAE(params.dict() | model_config.dict() | {"in_channels": 1})
+    i = th.ones((1, 1, 128, 128))
 
     print(vae.vae(i)[0].shape)
 

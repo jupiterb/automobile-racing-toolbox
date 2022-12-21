@@ -28,3 +28,19 @@ class FromMemoryDataset(Dataset):
                 observations=file.root.observations,
                 actions=file.root.actions,
             )
+
+
+class LocalDataset(Dataset):
+    def __init__(self, path: str):
+        self._path = path 
+
+    @contextmanager
+    def get(self) -> Generator[DatasetModel, None, None]:
+        if not os.path.exists(self._path):
+            raise ValueError(f"{self._path} not found!")
+        with tb.File(self._path, driver="H5FD_CORE") as file:
+            yield DatasetModel(
+                fps=int(file.root.fps[0]),
+                observations=file.root.observations,
+                actions=file.root.actions,
+            )
