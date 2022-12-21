@@ -51,7 +51,7 @@ def load_configs(body: SyncRequest):
         body.wandb_group,
     )
     __LOCK.release()
-    Timer(60, __unsync).start()
+    Timer(120, __unsync).start()
 
 
 @router.post("/start")
