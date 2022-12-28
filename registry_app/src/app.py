@@ -2,8 +2,9 @@ import http
 from fastapi import FastAPI, Request, Response
 import logging
 
-from src.exceptions import RegistryAppException
+from src.utils.exceptions import RegistryAppException
 from src.route import router
+from src.dependences import access_manager
 
 logger = logging.getLogger(__name__)
 
@@ -24,3 +25,15 @@ def general_exception_handler(request: Request, e: Exception):
         status_code=http.HTTPStatus.INTERNAL_SERVER_ERROR,
         content=f"Something went wrong: {e}",
     )
+
+
+@app.on_event("startup")
+def startup_event():
+    logger.info("startup event")
+    access_manager.start_give_access()
+
+
+@app.on_event("shutdown")
+def shutdown_event():
+    logger.info("shutdown event")
+    access_manager.remove_access_everyone()

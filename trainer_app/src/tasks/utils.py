@@ -17,8 +17,8 @@ from racing_toolbox.environment import builder
 import logging
 from celery import Celery
 import torch.utils.data as th_data
-import numpy as np 
-import torch as th 
+import numpy as np
+import torch as th
 
 logger = logging.getLogger(__name__)
 
@@ -38,10 +38,13 @@ def make_celery(config: EnvVarsConfig, port: int, name: str):
         event_serializer = "json"
         accept_content = ["application/json", "application/x-python-serialize"]
         result_accept_content = ["application/json", "application/x-python-serialize"]
+
     print(config.celery_broker_url + f"/{port}", name)
 
     celery = Celery(
-        name, broker=config.celery_broker_url + f"/{port}", backend=config.celery_backend_url
+        name,
+        broker=config.celery_broker_url + f"/{port}",
+        backend=config.celery_backend_url,
     )
     celery.conf.result_extended = True
     celery.config_from_object(CeleryConfig)
@@ -77,7 +80,7 @@ def get_training_params(
         if ioctx.worker_index > 0 or ioctx.worker.num_workers == 0:
             return PolicyServerInput(
                 ioctx,
-                host,
+                "0.0.0.0",
                 port + ioctx.worker_index - (1 if ioctx.worker_index > 0 else 0),
             )
         else:
@@ -118,5 +121,5 @@ def tensordataset_from_bucket(
     observations: list[th.Tensor] = []
     for observation, _ in container.get_all():
         observations.append(transforms(observation))
-    
+
     return th_data.TensorDataset(th.stack(observations))

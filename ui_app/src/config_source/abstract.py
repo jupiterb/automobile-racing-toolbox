@@ -4,6 +4,10 @@ from typing import Generic, TypeVar
 from racing_toolbox.interface.config import GameConfiguration
 from racing_toolbox.environment.config import EnvConfig
 from racing_toolbox.training.config import TrainingConfig, ModelConfig
+from racing_toolbox.observation.config.vae_config import (
+    VAETrainingConfig,
+    VAEModelConfig,
+)
 
 
 RacingToolboxConfiguration = TypeVar(
@@ -12,6 +16,8 @@ RacingToolboxConfiguration = TypeVar(
     EnvConfig,
     TrainingConfig,
     ModelConfig,
+    VAETrainingConfig,
+    VAEModelConfig,
 )
 
 

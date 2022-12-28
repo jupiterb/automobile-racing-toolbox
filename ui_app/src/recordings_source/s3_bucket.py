@@ -17,7 +17,7 @@ class S3BucketRecordingsSource(AbstractRecordingsScource):
         for objects in self._bucket.objects.filter(Prefix=self._prefix):
             key = objects.key
             name = key.split("/")[-1].split(".")[0]
-            recordings[name] = name
+            recordings[name] = key
         return recordings
 
     def upload_recording(self, name: str, recording):

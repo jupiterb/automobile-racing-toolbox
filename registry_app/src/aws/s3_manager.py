@@ -2,8 +2,8 @@ import boto3
 
 
 class S3BucketManager:
-    def __init__(self, session: boto3.Session) -> None:
-        self._bucket_name = "automobile-training-test"
+    def __init__(self, session: boto3.Session, bucket_name: str) -> None:
+        self._bucket_name = bucket_name
         self._s3 = session.resource("s3").Bucket(self._bucket_name)
 
     def create_user_folder(self, username: str):

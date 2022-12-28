@@ -1,13 +1,22 @@
 import streamlit as st
 from typing import Optional
+import asyncio
+from httpx_oauth.clients.google import GoogleOAuth2
 
-from ui_app.src.config import UserData
+from httpx_oauth.oauth2 import OAuth2Token
 from ui_app.src.shared import Shared
 from ui_app.src.services.registry_service import RegistryServiceException
 
 
-def log_in() -> Optional[UserData]:
+def log_in() -> Optional[OAuth2Token]:
     st.header("Welcome to Automobile Training Application")
+
+    shared = Shared()
+
+    token = log_in_with_google_oauth()
+    if token:
+        shared.just_logged = True
+        return token
 
     create_account()
 
@@ -15,15 +24,14 @@ def log_in() -> Optional[UserData]:
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
 
-    shared = Shared()
     if st.button("Log in"):
         try:
-            user_data = shared.registry_service.get_access(username, password)
+            token = shared.registry_service.get_access(username, password)
         except RegistryServiceException as e:
             st.warning(f"{e} \nTry again")
             return
         shared.just_logged = True
-        return user_data
+        return token
 
 
 def create_account():
@@ -55,3 +63,34 @@ def create_account():
                 st.write("Great, now you have your account!")
             except RegistryServiceException as e:
                 st.warning(f"Cannot create user: {e.message}")
+
+
+def log_in_with_google_oauth():
+    with st.expander("Continue with google account"):
+        client = GoogleOAuth2(
+            "1035298897397-kgm7bmv0upcpssmi0g97epsfu6g6hdim.apps.googleusercontent.com",
+            "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",
+        )
+        client.access_token_endpoint
+        authorization_url = asyncio.run(
+            write_authorization_url(client=client, redirect_uri="http://localhost:8080")
+        )
+        if (code := st.experimental_get_query_params().get("code")) is None:
+            st.markdown(
+                f"###### [![this is an image link](https://i.imgur.com/mQAQwvt.png)]({authorization_url})"
+            )
+        else:
+            token = Shared().registry_service.get_google_access(code[0])
+            if token.is_expired():
+                pass
+            else:
+                return token
+
+
+async def write_authorization_url(client: GoogleOAuth2, redirect_uri: str):
+    authorization_url = await client.get_authorization_url(
+        redirect_uri,
+        scope=["profile", "email"],
+        extras_params={"access_type": "offline"},
+    )
+    return authorization_url

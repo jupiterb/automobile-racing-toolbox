@@ -1,9 +1,10 @@
 import streamlit as st
 from streamlit.runtime.legacy_caching import clear_cache
 from typing import Optional, Callable
+from httpx_oauth.oauth2 import OAuth2Token
+from ui_app.src.config import UserData
 
 from ui_app.src.shared import Shared
-from ui_app.src.config import UserData
 from ui_app.src.forms import log_in
 
 
@@ -12,14 +13,17 @@ def racing_toolbox_page_layout(title: str, content: Callable):
 
     shared = Shared()
     shared.just_logged = False
+    shared.is_google_user = False
 
-    auth_result = authorize()
+    token = authorize()
 
-    if auth_result:
+    if token and not token.is_expired():
         if shared.just_logged:
             shared.just_logged = False
             st.experimental_rerun()
-        Shared().user_data = auth_result
+        shared.token = token
+        shared.user_data = get_user_data(token)
+        shared.is_google_user = not any(shared.user_data.password)
         content()
     else:
         clear_cache()
@@ -42,11 +46,16 @@ def stylish(title: str):
 
 
 @st.cache(suppress_st_warning=True)
-def authorize() -> Optional[UserData]:
+def authorize() -> Optional[OAuth2Token]:
     shared = Shared()
     try:
-        return shared.user_data
+        return shared.token
     except:
-        data = log_in()
-        if data:
-            return data
+        token = log_in()
+        if token:
+            return token
+
+
+@st.cache(suppress_st_warning=True)
+def get_user_data(token: OAuth2Token) -> UserData:
+    return Shared().registry_service.get_data(token)

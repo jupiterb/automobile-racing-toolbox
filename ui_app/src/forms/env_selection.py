@@ -9,8 +9,11 @@ from racing_toolbox.environment.config import (
     ObservationConfig,
     RewardConfig,
 )
-from racing_toolbox.observation.utils.screen_frame import ScreenFrame
-from racing_toolbox.observation.config import LidarConfig, TrackSegmentationConfig
+from racing_toolbox.observation.config import (
+    LidarConfig,
+    TrackSegmentationConfig,
+    VAEConfig,
+)
 
 from ui_app.src.shared import Shared
 from ui_app.src.forms.common import configure_screen_frame
@@ -130,14 +133,10 @@ def configure_track_segmentation() -> TrackSegmentationConfig:
     )
 
 
-def configure_autoencoders() -> ScreenFrame:
-    # It's now placeholder only and returns ScreenFrame
-    vaes = {"VAE 1": ScreenFrame(), "VAE 2": ScreenFrame(top=0.5)}
-    if len(vaes) == 0:
-        st.write("There are currently no autoencoders. Train one!")
-        # TODO form for VAE train
-    selected = st.selectbox("Select autencoder", options=list(vaes.keys()))
-    return vaes[selected]
+def configure_autoencoders() -> VAEConfig:
+    st.write("Provide autoencoder checkpoint reference from Weights and Biases")
+    wandb_reference = st.text_input("vae_checkpoint")
+    return VAEConfig(wandb_checkpoint_ref=wandb_reference)
 
 
 def configure_observation(feature_extraction_type: str) -> ObservationConfig:
@@ -145,6 +144,7 @@ def configure_observation(feature_extraction_type: str) -> ObservationConfig:
     stack_size = st.number_input("Stack size", min_value=1, max_value=10, value=4)
     shape = (84, 84)
     lidar_config = None
+    vae_config = None
     segmentation_config = None
     st.write(f"Configure {feature_extraction_type}")
     if feature_extraction_type == "Reshape":
@@ -158,13 +158,15 @@ def configure_observation(feature_extraction_type: str) -> ObservationConfig:
         segmentation_config = configure_track_segmentation()
         frame = configure_screen_frame()
     else:
-        frame = configure_autoencoders()
+        frame = configure_screen_frame()
+        vae_config = configure_autoencoders()
     observation_config = ObservationConfig(
         frame=frame,
         shape=shape,
         stack_size=stack_size,
         lidar_config=lidar_config,
         track_segmentation_config=segmentation_config,
+        vae_config=vae_config,
     )
     return observation_config
 

@@ -1,53 +1,66 @@
 import boto3
-from src.schemas import UserDefinedData, UserData, Credentials
-from src.exceptions import RegistryAppException, UserExistsException
+from src.utils.schemas import UserDefinedData, UserFullData, Credentials
+from src.utils.exceptions import RegistryAppException, UserExistsException
 
 
 class IAMManager:
-    def __init__(self, session: boto3.Session) -> None:
+    def __init__(self, session: boto3.Session, access_group_name: str) -> None:
         self._iam_client = session.client("iam")
+        self._access_group_name = access_group_name
 
     def add_user(self, user_data: UserDefinedData):
-        if self._user_exists(user_data.username):
+        if self.user_exists(user_data.username):
             raise UserExistsException(f"User {user_data.username} already exists.")
         self._create_user(user_data.username)
         try:
             self._tag_user(user_data)
             key_id, secret_key = self._create_access_key(user_data.username)
             self._tag_user_access_key(user_data.username, key_id, secret_key)
-            self._add_user_to_group(user_data.username)
         except Exception as e:
             self.remove_user(user_data.username)
             raise e
 
-    def get_access(self, credentials: Credentials) -> UserData:
-        if not self._user_exists(credentials.username):
-            raise RegistryAppException(f"User {credentials.username} does not exist.")
-        user_data = self._get_user_data(credentials.username)
-        if user_data.password != credentials.password:
-            raise RegistryAppException(f"Wrong password.")
-        return user_data
+    def get_data(self, username: str) -> UserFullData:
+        if not self.user_exists(username):
+            raise RegistryAppException(f"User {username} does not exist.")
+        return self._get_user_data(username)
 
-    def modify_user(self, credentials: Credentials, new: UserDefinedData):
-        if not self._user_exists(credentials.username):
-            raise RegistryAppException(f"User {credentials.username} does not exist.")
-        current = self._get_user_data(credentials.username)
+    def modify_user(
+        self,
+        username: str,
+        new: UserDefinedData,
+    ):
+        if not self.user_exists(username):
+            raise RegistryAppException(f"User {username} does not exist.")
+        current = self._get_user_data(username)
         if not self._can_modify_user(current, new):
             raise RegistryAppException("Cannot change username or email.")
-        if current.password != credentials.password:
-            raise RegistryAppException(f"Wrong password.")
         self._tag_user(new)
 
     def remove_user(self, username: str):
-        if self._user_exists(username):
+        if self.user_exists(username):
             self._iam_client.delete_user(UserName=username)
 
-    def _user_exists(self, username: str) -> bool:
+    def user_exists(self, username: str) -> bool:
         try:
             self._iam_client.get_user(UserName=username)
             return True
         except:
             return False
+
+    def add_user_to_access_group(self, username: str):
+        self._iam_client.add_user_to_group(
+            GroupName=self._access_group_name, UserName=username
+        )
+
+    def remove_user_from_access_group(self, username: str):
+        self._iam_client.remove_user_from_group(
+            GroupName=self._access_group_name, UserName=username
+        )
+
+    def validate_credentials(self, credentials: Credentials) -> bool:
+        user_data = self._get_user_data(credentials.username)
+        return user_data.password == credentials.password
 
     def _create_user(self, username: str):
         self._iam_client.create_user(UserName=username)
@@ -78,13 +91,8 @@ class IAMManager:
             ],
         )
 
-    def _add_user_to_group(self, username: str):
-        self._iam_client.add_user_to_group(
-            GroupName="AutombileTrainingsUsers", UserName=username
-        )
-
-    def _get_user_data(self, username: str) -> UserData:
-        data = UserData(
+    def _get_user_data(self, username: str) -> UserFullData:
+        data = UserFullData(
             username=username,
             password="",
             wandb_api_key="",

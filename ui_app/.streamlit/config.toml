@@ -6,3 +6,4 @@ textColor="#E0FCFC"
 font="sans serif"
 [server]
 maxUploadSize = 5000
+port = 8080

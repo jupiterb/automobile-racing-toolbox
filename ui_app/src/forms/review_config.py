@@ -1,9 +1,14 @@
 import streamlit as st
 import json
+from typing import Optional
 
 from racing_toolbox.interface.config import GameConfiguration
 from racing_toolbox.environment.config import EnvConfig
 from racing_toolbox.training.config import TrainingConfig
+from racing_toolbox.observation.config.vae_config import (
+    VAETrainingConfig,
+    VAEModelConfig,
+)
 
 from ui_app.src.config_source.abstract import (
     AbstractConfigSource,
@@ -13,29 +18,11 @@ from ui_app.src.shared import Shared
 from ui_app.src.utils import SetEncoder
 
 
-def review_all(
-    game_config: GameConfiguration,
-    env_config: EnvConfig,
-    training_config: TrainingConfig,
-) -> tuple[GameConfiguration, EnvConfig, TrainingConfig]:
-    with st.sidebar.header("Review configuration"):
-        shared = Shared()
-        return (
-            review_config(game_config, "Game configuration", shared.games_source),
-            review_config(env_config, "Environment configuration", shared.envs_source),
-            review_config(
-                training_config,
-                "Training configuration",
-                shared.training_configs_source,
-            ),
-        )
-
-
 def review_config(
     config: RacingToolboxConfiguration,
     config_label: str,
     config_source: AbstractConfigSource,
-) -> RacingToolboxConfiguration:
+):
     st.sidebar.markdown("""---""")
     config_cls = type(config)
     selected = st.sidebar.selectbox(config_label, options=["Review", "Edit", "Upload"])

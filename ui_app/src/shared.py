@@ -1,9 +1,14 @@
 import streamlit as st
 from boto3 import Session
+from httpx_oauth.oauth2 import OAuth2Token
 
 from racing_toolbox.interface.config import GameConfiguration
 from racing_toolbox.environment.config import EnvConfig
 from racing_toolbox.training.config import TrainingConfig
+from racing_toolbox.observation.config.vae_config import (
+    VAETrainingConfig,
+    VAEModelConfig,
+)
 
 from ui_app.src.config import (
     UserData,
@@ -20,12 +25,16 @@ from ui_app.src.services import TrainerService, RegistryService
 class Shared:
 
     JUST_LOGGED = "logged"
+    TOKEN = "token"
     USER_DATA = "user_data"
+    IS_GOOGLE_USER = "is_google_user"
     TRAINER_SERVICE = "trainer_server"
     REGISTRY_SERVICE = "registry_service"
     GAME_CONFIGS = "game_configs"
     ENV_CONFIGS = "env_configs"
     TRAINING_CONFIGS = "training_configs"
+    VAE_TRAINING_CONFIGS = "vae_training_configs"
+    VAE_MODELS = "vae_models"
     S3_SESSION = "s3_session"
     RECORDINGS = "recordings"
 
@@ -48,6 +57,14 @@ class Shared:
         st.session_state[Shared.JUST_LOGGED] = logged
 
     @property
+    def token(self) -> OAuth2Token:
+        return st.session_state[Shared.TOKEN]
+
+    @token.setter
+    def token(self, token: OAuth2Token):
+        st.session_state[Shared.TOKEN] = token
+
+    @property
     def user_data(self) -> UserData:
         return st.session_state[Shared.USER_DATA]
 
@@ -65,6 +82,14 @@ class Shared:
             app_conifg.bucket_name,
             app_conifg.sources_keys,
         )
+
+    @property
+    def is_google_user(self) -> bool:
+        return st.session_state[Shared.IS_GOOGLE_USER]
+
+    @is_google_user.setter
+    def is_google_user(self, value: bool):
+        st.session_state[Shared.IS_GOOGLE_USER] = value
 
     @property
     def trainer_service(self) -> TrainerService:
@@ -85,6 +110,14 @@ class Shared:
     @property
     def training_configs_source(self) -> AbstractConfigSource[TrainingConfig]:
         return st.session_state[Shared.TRAINING_CONFIGS]
+
+    @property
+    def vae_models_source(self) -> AbstractConfigSource[VAEModelConfig]:
+        return st.session_state[Shared.VAE_MODELS]
+
+    @property
+    def vae_training_configs_source(self) -> AbstractConfigSource[VAETrainingConfig]:
+        return st.session_state[Shared.VAE_TRAINING_CONFIGS]
 
     @property
     def recordings_source(self) -> AbstractRecordingsScource:
@@ -109,6 +142,12 @@ class Shared:
         st.session_state[Shared.TRAINING_CONFIGS] = S3BucketConfigSource[
             TrainingConfig
         ](session, bucket_name, f"users/{username}/{key_prefixes.training_configs}")
+        st.session_state[Shared.VAE_MODELS] = S3BucketConfigSource[VAEModelConfig](
+            session, bucket_name, f"users/{username}/{key_prefixes.vae_model_configs}"
+        )
+        st.session_state[Shared.VAE_TRAINING_CONFIGS] = S3BucketConfigSource[
+            VAETrainingConfig
+        ](session, bucket_name, f"users/{username}/{key_prefixes.vae_training_configs}")
 
         st.session_state[Shared.RECORDINGS] = S3BucketRecordingsSource(
             session, bucket_name, f"users/{username}/{key_prefixes.recordings}"
@@ -118,12 +157,14 @@ class Shared:
 def get_app_config() -> AppConfig:
     return AppConfig(
         trainer_url="http://localhost:8000",
-        registry_url="http://localhost:8080",
+        registry_url="http://localhost:8090",
         bucket_name="automobile-training-test",
         sources_keys=SourcesKeys(
             game_configs="configs/games",
             env_configs="configs/envs",
             training_configs="configs/trainings",
+            vae_model_configs="configs/vae_models",
+            vae_training_configs="configs/vae_trainings",
             recordings="recordings",
         ),
     )

@@ -15,6 +15,8 @@ class SourcesKeys(BaseModel):
     game_configs: str
     env_configs: str
     training_configs: str
+    vae_training_configs: str
+    vae_model_configs: str
     recordings: str
 
 

@@ -6,9 +6,9 @@ from ui_app.src.forms.training_briefing import (
     resume_training,
     train_autoencoder,
 )
-from ui_app.src.forms.review_config import review_all, review_config
+from ui_app.src.forms.review_config import review_config
 from ui_app.src.forms.review_training_tasks import review_tasks
 from ui_app.src.forms.wandb_checkpoint_selection import configure_training_resuming
 from ui_app.src.forms.user_settings import review_account_settings
-from ui_app.src.forms.vae_selection import configure_vae
+from ui_app.src.forms.vae_selection import configure_encoder, configure_vae_training
 from ui_app.src.forms.authorization import log_in

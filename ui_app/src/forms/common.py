@@ -35,7 +35,7 @@ def configure_screen_frame(of_what: str = "screen") -> ScreenFrame:
 
 
 def select_recordings() -> list[str]:
-    """returns urls to selected recordings"""
+    """returns references of selected recordings"""
     try:
         source = Shared().recordings_source
         recordings_to_use = source.get_recordings()
@@ -45,11 +45,11 @@ def select_recordings() -> list[str]:
         recordings_to_use = {}
     selected = st.multiselect(
         "Select recordings to use in training",
-        list(["tiny", "recording 1", "recording 2"]),
+        list(recordings_to_use.keys()),
     )
     st.write("You can upload recordings in side panel")
     upload_recording()
-    return ["tiny", "recording 1", "recording 2"]
+    return [recordings_to_use[name] for name in selected]
 
 
 def upload_recording():
