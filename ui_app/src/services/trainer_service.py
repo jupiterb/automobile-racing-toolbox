@@ -43,7 +43,7 @@ class TrainerService:
         data = {
             "wandb_run_reference": wandb_run_reference,
             "wandb_api_key": wandb_key,
-            "training_config": training_config,
+            "training_config": orjson.loads(training_config.json()),
             "checkpoint_name": checkpoint_name,
         }
         encoded_data = json.dumps(data).encode("utf-8")

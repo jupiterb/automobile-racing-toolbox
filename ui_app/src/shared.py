@@ -10,11 +10,7 @@ from racing_toolbox.observation.config.vae_config import (
     VAEModelConfig,
 )
 
-from ui_app.src.config import (
-    UserData,
-    AppConfig,
-    SourcesKeys,
-)
+from ui_app.src.config import UserData, AppConfig
 from ui_app.src.config_source.abstract import AbstractConfigSource
 from ui_app.src.config_source.s3_bucket import S3BucketConfigSource
 from ui_app.src.recordings_source.abstract import AbstractRecordingsScource
@@ -39,7 +35,7 @@ class Shared:
     RECORDINGS = "recordings"
 
     def __init__(self) -> None:
-        app_conifg = get_app_config()
+        app_conifg = AppConfig()
 
         st.session_state[Shared.TRAINER_SERVICE] = TrainerService(
             app_conifg.trainer_url
@@ -74,13 +70,12 @@ class Shared:
         st.session_state[Shared.USER_DATA] = data
         if initialized:
             return
-        app_conifg = get_app_config()
+        app_conifg = AppConfig()
         self._init_s3_bucket_sources(
             data.username,
             data.user_key_id,
             data.user_secret_key,
             app_conifg.bucket_name,
-            app_conifg.sources_keys,
         )
 
     @property
@@ -124,47 +119,26 @@ class Shared:
         return st.session_state[Shared.RECORDINGS]
 
     def _init_s3_bucket_sources(
-        self,
-        username: str,
-        user_key_id: str,
-        user_secret_key: str,
-        bucket_name: str,
-        key_prefixes: SourcesKeys,
+        self, username: str, user_key_id: str, user_secret_key: str, bucket_name: str
     ):
         session = Session(user_key_id, user_secret_key)
 
         st.session_state[Shared.GAME_CONFIGS] = S3BucketConfigSource[GameConfiguration](
-            session, bucket_name, f"users/{username}/{key_prefixes.game_configs}"
+            session, bucket_name, f"users/{username}/configs/games"
         )
         st.session_state[Shared.ENV_CONFIGS] = S3BucketConfigSource[EnvConfig](
-            session, bucket_name, f"users/{username}/{key_prefixes.env_configs}"
+            session, bucket_name, f"users/{username}/configs/envs"
         )
         st.session_state[Shared.TRAINING_CONFIGS] = S3BucketConfigSource[
             TrainingConfig
-        ](session, bucket_name, f"users/{username}/{key_prefixes.training_configs}")
+        ](session, bucket_name, f"users/{username}/configs/trainings")
         st.session_state[Shared.VAE_MODELS] = S3BucketConfigSource[VAEModelConfig](
-            session, bucket_name, f"users/{username}/{key_prefixes.vae_model_configs}"
+            session, bucket_name, f"users/{username}/configs/vae_models"
         )
         st.session_state[Shared.VAE_TRAINING_CONFIGS] = S3BucketConfigSource[
             VAETrainingConfig
-        ](session, bucket_name, f"users/{username}/{key_prefixes.vae_training_configs}")
+        ](session, bucket_name, f"users/{username}/configs/vae_trainings")
 
         st.session_state[Shared.RECORDINGS] = S3BucketRecordingsSource(
-            session, bucket_name, f"users/{username}/{key_prefixes.recordings}"
+            session, bucket_name, f"users/{username}/recordings"
         )
-
-
-def get_app_config() -> AppConfig:
-    return AppConfig(
-        trainer_url="http://localhost:8000",
-        registry_url="http://localhost:8090",
-        bucket_name="automobile-training-test",
-        sources_keys=SourcesKeys(
-            game_configs="configs/games",
-            env_configs="configs/envs",
-            training_configs="configs/trainings",
-            vae_model_configs="configs/vae_models",
-            vae_training_configs="configs/vae_trainings",
-            recordings="recordings",
-        ),
-    )

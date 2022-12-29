@@ -8,32 +8,33 @@ from racing_toolbox.training.config import TrainingConfig
 from racing_toolbox.environment.builder import observation_wrappers
 
 
-class ValidationError(Exception):
-    def __init__(self, errors: list[str], *args: object) -> None:
-        super().__init__(*args)
-        self._errors = errors
+class ConfigValidator:
+    def __init__(self) -> None:
+        self._errors: list[str] = []
+
+    def validate_discrete_actions_compatibilty(
+        self, game: GameConfiguration, env: EnvConfig
+    ):
+        self._catch_errors(_validate_discrete_actions_compatibilty)(game, env)
+
+    def validate_continous_actions_compatibilty(
+        self, game: GameConfiguration, env: EnvConfig
+    ):
+        self._catch_errors(_validate_continous_actions_compatibilty)(game, env)
+
+    def validate_model_and_observation_space_compatibilty(
+        self, game: GameConfiguration, env: EnvConfig, training: TrainingConfig
+    ):
+        self._catch_errors(_validate_model_and_observation_space_compatibilty)(
+            game, env, training
+        )
 
     @property
     def errors(self) -> list[str]:
         return self._errors
 
-
-class ConfigValidator:
-    def __init__(self) -> None:
-        self._errors: list[str] = []
-
-    def validate(
-        self, game: GameConfiguration, env: EnvConfig, training: TrainingConfig
-    ):
+    def reset_errors(self):
         self._errors = []
-        self._catch_errors(_validate_discrete_actions_compatibilty)(game, env)
-        self._catch_errors(_validate_continous_actions_compatibilty)(game, env)
-        self._catch_errors(_validate_model_and_observation_space_compatibilty)(
-            game, env, training
-        )
-
-        if any(self._errors):
-            raise ValidationError(errors=self._errors)
 
     def _catch_errors(self, func):
         def inner(*args, **kwargs):
@@ -117,4 +118,3 @@ def _validate_model_and_observation_space_compatibilty(
             optput_size(y, kernel_y, stride),
             channels,
         )
-    # TODO final shape should be

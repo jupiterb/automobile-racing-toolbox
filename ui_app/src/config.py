@@ -1,5 +1,10 @@
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, BaseSettings
+from dotenv import load_dotenv
+from pathlib import Path
+
+ROOT_DIR = Path(__file__).absolute().parents[1]
+RESOURCE_DIR = ROOT_DIR / "resources"
+load_dotenv(RESOURCE_DIR / ".env")
 
 
 class UserData(BaseModel):
@@ -11,17 +16,10 @@ class UserData(BaseModel):
     wandb_api_key: str
 
 
-class SourcesKeys(BaseModel):
-    game_configs: str
-    env_configs: str
-    training_configs: str
-    vae_training_configs: str
-    vae_model_configs: str
-    recordings: str
-
-
-class AppConfig(BaseModel):
+class AppConfig(BaseSettings):
     trainer_url: str
     registry_url: str
+    redirect_url: str
     bucket_name: str
-    sources_keys: SourcesKeys
+    google_client_id: str
+    google_client_secret: str
