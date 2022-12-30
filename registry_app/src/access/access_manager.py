@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from httpx_oauth.oauth2 import OAuth2Token
 import time
 from threading import Thread
+import copy
 
 from src.utils.schemas import Token
 from src.utils.exceptions import RegistryAppException
@@ -56,7 +57,7 @@ class AccessManager:
 
     def _removing_expired_tokens(self):
         while self._removing_expired_running:
-            expired_tokens = self._active_tokens.copy()
+            expired_tokens = copy.deepcopy(self._active_tokens)
             for acceess_token, token in expired_tokens.items():
                 if token.token.is_expired():
                     self._iam.remove_user_from_access_group(token.owner)
