@@ -51,9 +51,13 @@ def make_celery(config: EnvVarsConfig, port: int, name: str):
     return celery
 
 
-def wandb_checkpoint_callback_factory(checkpoint_name, dir: Path):
+def wandb_checkpoint_callback_factory(checkpoint_name: str, dir: Path):
     def callback(algorithm: Algorithm):
-        checkpoint_artifact = wandb.Artifact(checkpoint_name, type="checkpoint")
+        nonlocal checkpoint_name
+
+        name = checkpoint_name.split(":")[0]
+        print(f"checkpoint name: {name}")
+        checkpoint_artifact = wandb.Artifact(name, type="checkpoint")
         chkpnt_path = algorithm.save(str(dir))
         checkpoint_artifact.add_dir(chkpnt_path, name="checkpoint")
         wandb.log_artifact(checkpoint_artifact)

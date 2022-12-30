@@ -1,6 +1,7 @@
 from src.const import EnvVarsConfig, TMP_DIR
 from src.worker_registry import RemoteWorkerRef
 from src.tasks import utils
+from src.schemas import OverwritingConfig
 from racing_toolbox.training import Trainer
 from racing_toolbox.training.config.params import TrainingParams
 from racing_toolbox.environment.config.env import EnvConfig
@@ -40,7 +41,7 @@ import pytorch_lightning as pl
 import orjson
 import logging
 import wandb
-import numpy as np 
+import numpy as np
 
 
 @app.task(bind=True, base=AbortableTask)
@@ -50,18 +51,21 @@ def start_vae_training(
     encoder_config: vae_config.VAEModelConfig,
     bucket_name: str,
     recordings_refs: list[str],
-    wandb_api_key: str
+    wandb_api_key: str,
 ):
     os.environ["WANDB_API_KEY"] = wandb_api_key
     env_vars = EnvVarsConfig()
-    transform = transforms.Compose(
-        [
-            lambda i: np.array(i, dtype=np.uint8),
-            lambda i: training_params.observation_frame.apply(i),
-            transforms.ToTensor(),
-            transforms.Resize(training_params.input_shape),
-        ]
-    )
+    in_channels = 1 if encoder_config.grayscale else 3
+    transform_list = [
+        lambda i: np.array(i, dtype=np.uint8),
+        lambda i: training_params.observation_frame.apply(i),
+        transforms.ToTensor(),
+        transforms.Resize(training_params.input_shape),
+    ]
+    if encoder_config.grayscale:
+        transform_list.append(transforms.Grayscale())
+
+    transform = transforms.Compose(transform_list)
     dataset = utils.tensordataset_from_bucket(
         recordings_refs,
         bucket_name,
@@ -79,20 +83,23 @@ def start_vae_training(
     params_dict = (
         orjson.loads(training_params.json())
         | orjson.loads(encoder_config.json())
-        | {"in_channels": 3}
+        | {"in_channels": in_channels}
     )
     pl_model = VAE(params_dict)
     wandb.init(project="ART", name=f"vae_{self.request.id}")
     try:
         wandb_logger = WandbLogger(project="ART", log_model="all")
         trainer = pl.Trainer(
-            logger=wandb_logger, max_epochs=training_params.epochs, log_every_n_steps=1, accelerator="cpu"
+            logger=wandb_logger,
+            max_epochs=training_params.epochs,
+            log_every_n_steps=1,
+            accelerator="cpu",
         )
         trainer.fit(
             model=pl_model, train_dataloaders=trainloader, val_dataloaders=testloader
         )
     except Exception:
-        raise 
+        raise
     finally:
         wandb.finish()
 
@@ -113,6 +120,7 @@ class TrainingTask(AbortableTask):
         checkpoint_dir: Optional[Path],
         workers_ref: list[RemoteWorkerRef],
         wandb_run=None,
+        checkpoint_name=None,
     ):
         run = wandb_run or wandb.run
         print("going to log configs")
@@ -123,7 +131,7 @@ class TrainingTask(AbortableTask):
         trainer = Trainer(
             trainer_params,
             pre_trained_weights=pretrained_weights,
-            checkpoint_callback=self._get_calllback(run),
+            checkpoint_callback=self._get_calllback(run, checkpoint_name),
             checkpoint_path=checkpoint_dir,
         )
         print("going to notify workers about start")
@@ -139,12 +147,11 @@ class TrainingTask(AbortableTask):
             urls=[w.address for w in workers_ref], route="/worker/stop", method="post"
         )
 
-    def _get_calllback(self, run):
+    def _get_calllback(self, run, checkpoint_name=None):
         chkpnt_dir = TMP_DIR / f"checkpoints_{run.id}"
         chkpnt_dir.mkdir()
-        checkpoint_callback = utils.wandb_checkpoint_callback_factory(
-            f"checkpoint-{run.id}", chkpnt_dir
-        )
+        name = checkpoint_name or f"checkpoint-{run.id}"
+        checkpoint_callback = utils.wandb_checkpoint_callback_factory(name, chkpnt_dir)
         return checkpoint_callback
 
 
@@ -167,7 +174,16 @@ def start_training_task(
         host, port, training_config, game_config, env_config
     )
     print("starting wandb run")
-    with wandb.init(project="ART", name=f"task_{self.request.id}", group=group) as run:
+    with wandb.init(
+        project="ART",
+        name=f"start_task_{self.request.id}",
+        group=group,
+        config={
+            "restored_checkpoint": None,
+            "pretrained_weights": pretrained_weights is not None,
+        },
+    ) as run:
+
         self.training_loop(
             game_config,
             env_config,
@@ -183,6 +199,7 @@ def start_training_task(
 @app.task(bind=True, result_extended=True, base=TrainingTask)
 def continue_training_task(
     self: TrainingTask,
+    overwriting_config: OverwritingConfig,
     training_config: TrainingConfig,
     wandb_api_key: str,
     run_ref: str,
@@ -204,6 +221,8 @@ def continue_training_task(
         env_config = EnvConfig.parse_file(
             wandb.restore("env_config.json", run_path=run_ref).name
         )
+    game_config = overwriting_config.maybe_overwrite(game_config)
+    env_config = overwriting_config.maybe_overwrite(env_config)
 
     trainer_params = utils.get_training_params(
         host, port, training_config, game_config, env_config
@@ -216,10 +235,15 @@ def continue_training_task(
         port,
         "ART",
         wandb_api_key,
-        str(uuid.uuid1()),
+        group,
     )
     print(checkpoint_dir)
-    with wandb.init(project="ART", name=f"task_{self.request.id}", group=group) as run:
+    with wandb.init(
+        project="ART",
+        name=f"continue_task_{self.request.id}",
+        group=group,
+        config={"restored_checkpoint": checkpoint_name},
+    ) as run:
         self.training_loop(
             game_config,
             env_config,
@@ -229,6 +253,7 @@ def continue_training_task(
             Path(checkpoint_dir).absolute() / "checkpoint",
             workers_ref,
             wandb_run=run,
+            checkpoint_name=checkpoint_name,
         )
 
 
@@ -236,18 +261,22 @@ def continue_training_task(
 def load_pretrained_weights(
     *args, wandb_api_key: str, run_ref: str, checkpoint_name: str, **kwargs
 ):
-    import wandb
+    wandb.finish()
 
     os.environ["WANDB_API_KEY"] = wandb_api_key
     with wandb.init(project="ART") as run:
-        checkpoint_artefact = run.use_artifact(
-            f"{run_ref}/{checkpoint_name}", type="checkpoint"
-        )
+        checkpoint_ref = f"{'/'.join(run_ref.split('/')[:-1])}/{checkpoint_name}"
+        print(checkpoint_ref)
+        checkpoint_artefact = run.use_artifact(checkpoint_ref, type="checkpoint")
         checkpoint_dir = checkpoint_artefact.download()
-        game_config = GameConfiguration.parse_raw(wandb.restore("game_config.json"))
-        env_config = EnvConfig.parse_raw(wandb.restore("env_config.json"))
-        training_config = TrainingConfig.parse_raw(
-            wandb.restore("training_config.json")
+        game_config = GameConfiguration.parse_file(
+            wandb.restore("game_config.json", run_path=run_ref).name
+        )
+        env_config = EnvConfig.parse_file(
+            wandb.restore("env_config.json", run_path=run_ref).name
+        )
+        training_config = TrainingConfig.parse_file(
+            wandb.restore("training_config.json", run_path=run_ref).name
         )
 
     mocked_env = MockedEnv(
@@ -258,11 +287,13 @@ def load_pretrained_weights(
         **training_config.dict(),
         observation_space=env.observation_space,
         action_space=env.action_space,
+        input_=lambda *args: None,
+        validate_workers_after_construction=False,
     )
     algorithm: Algorithm = Trainer(
         trainer_params, checkpoint_path=Path(checkpoint_dir).absolute() / "checkpoint"
     ).algorithm
-    return algorithm.get_policy().get_weights()
+    return algorithm.get_weights()
 
 
 @app.task(ignore_result=True)
@@ -311,6 +342,7 @@ def sync_workers(
 
 
 import time
+
 
 @app.task(ignore_results=True)
 def probe_task():

@@ -11,6 +11,10 @@ class KeyboardController(GameActionController[KeyAction]):
         self._controller = Controller()
 
     def reset_game(self) -> None:
+        for action in set(self._action_mapping):
+            key_action = self._action_mapping[action]
+            key = self.action2key(key_action)
+            self._controller.release(key)
         for key in self._reset_sequence:
             key = self.action2key(key)
             self._controller.press(key)

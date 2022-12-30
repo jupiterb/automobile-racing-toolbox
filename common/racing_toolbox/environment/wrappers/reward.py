@@ -27,7 +27,7 @@ class OffTrackPunishment(gym.RewardWrapper):
     def _is_off_track(self, observation) -> bool:
         """If car is off track, std of green channel is lower than 30"""
         # when thsis will be properly implemented, it will be configurable also
-        return np.std(observation[:, :, 1]) < 35
+        return np.std(observation[:, :, 1]) < 37
 
 
 class SpeedDropPunishment(gym.RewardWrapper):

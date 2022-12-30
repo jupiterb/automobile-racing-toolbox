@@ -30,7 +30,7 @@ class Trainer:
             logger.info(f"restoring from checkpoint {checkpoint_path}")
             self._algorithm.restore(str(checkpoint_path), fallback_to_latest=True)
         if pre_trained_weights:
-            self._algorithm.get_policy().set_weights(pre_trained_weights)
+            self._algorithm.set_weights(pre_trained_weights)
 
         self._checkpoint_callback = checkpoint_callback or self.make_checkpoint
         ray.init(ignore_reinit_error=True)
