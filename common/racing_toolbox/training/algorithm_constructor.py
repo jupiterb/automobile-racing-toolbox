@@ -17,6 +17,8 @@ __config_to_cls_map: dict[type[AlgorithmConfig], type[alg.AlgorithmConfig]] = {
 
 def construct_cls(config: TrainingParams) -> alg.Algorithm:
     conf_cls = __config_to_cls_map[type(config.algorithm)]
+    # model_type is used to to distinguish class types by pydantic, but RLlib does not tolerate this attribute
+    delattr(config.algorithm, "model_type")
     algo_conf = (
         conf_cls()
         .environment(

@@ -2,8 +2,8 @@ from typing import Type, Optional
 
 from racing_toolbox.interface.interface import GameInterface
 from racing_toolbox.interface.config import GameConfiguration
-import racing_toolbox.interface.capturing as capturing 
-import racing_toolbox.interface.controllers as controllers 
+import racing_toolbox.interface.capturing as capturing
+import racing_toolbox.interface.controllers as controllers
 import racing_toolbox.interface.screen as screen
 
 
@@ -40,5 +40,9 @@ def from_config(
         selected_capturing = capturing.GamepadCapturing(gamepad_to_action_mapping)
 
     return GameInterface(
-        config.game_id, config.reset_seconds, selected_screen, selected_controller, selected_capturing
+        config.game_id,
+        config.reset_seconds,
+        selected_screen,
+        selected_controller,
+        selected_capturing,
     )

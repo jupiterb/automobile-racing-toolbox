@@ -25,12 +25,12 @@ class GamepadCapturing(GameActionCapturing):
     }
 
     _pygame_to_gamepad_control = {
-        pygame.CONTROLLER_AXIS_LEFTX: GamepadControl.LEFT_JOYSTICK_X,
-        pygame.CONTROLLER_AXIS_LEFTY: GamepadControl.LEFT_JOYSTICK_Y,
-        pygame.CONTROLLER_AXIS_RIGHTX: GamepadControl.RIGHT_JOYSTICK_X,
-        pygame.CONTROLLER_AXIS_RIGHTY: GamepadControl.RIGHT_JOYSTICK_Y,
-        pygame.CONTROLLER_AXIS_TRIGGERLEFT: GamepadControl.LEFT_TRIGGER,
-        pygame.CONTROLLER_AXIS_TRIGGERRIGHT: GamepadControl.RIGHT_TRIGGER,
+        pygame.CONTROLLER_AXIS_LEFTX: GamepadControl.AXIS_X_LEFT,
+        pygame.CONTROLLER_AXIS_LEFTY: GamepadControl.AXIS_Y_LEFT,
+        pygame.CONTROLLER_AXIS_RIGHTX: GamepadControl.AXIS_X_RIGHT,
+        pygame.CONTROLLER_AXIS_RIGHTY: GamepadControl.AXIS_Y_RIGHT,
+        pygame.CONTROLLER_AXIS_TRIGGERLEFT: GamepadControl.AXIS_Z,
+        pygame.CONTROLLER_AXIS_TRIGGERRIGHT: GamepadControl.AXIS_Z,
     }
 
     def __init__(self, gamepad_action_mapping: dict[GamepadAction, str]) -> None:

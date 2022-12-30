@@ -27,6 +27,7 @@ class AlgorithmConfig(BaseModel):
 
 
 class DQNConfig(AlgorithmConfig):
+    model_type: Literal["dqn"] = "dqn"
     v_min: float = -10
     v_max: float = 10
     dueling: bool = True
@@ -39,6 +40,7 @@ class DQNConfig(AlgorithmConfig):
 
 
 class SACConfig(AlgorithmConfig):
+    model_type: Literal["sac"] = "sac"
     twin_q: bool = True
     tau: float = 5e-3
     initial_alpha: float = 1.0
@@ -51,7 +53,7 @@ class SACConfig(AlgorithmConfig):
 
 
 class BCConfig(AlgorithmConfig):
-    pass
+    model_type: Literal["bc"] = "bc"
 
 
 class EvalConfig(BaseModel):
@@ -81,5 +83,7 @@ class TrainingConfig(BaseModel):
     model: ModelConfig
 
     # in rllib algorithm config is flatten on this level, but for readability made it nested
-    algorithm: Union[DQNConfig, SACConfig, BCConfig]
+    algorithm: Union[DQNConfig, SACConfig, BCConfig] = Field(
+        ..., discriminator="model_type"
+    )
     offline_data: Optional[list[Path]] = None
