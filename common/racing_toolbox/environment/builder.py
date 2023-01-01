@@ -23,7 +23,11 @@ from racing_toolbox.observation.vae import load_vae_from_wandb_checkpoint
 
 
 def setup_env(game_config: GameConfiguration, env_config: EnvConfig) -> gym.Env:
-    interface = from_config(game_config, controllers.KeyboardController)
+    interface = (
+        from_config(game_config, controllers.KeyboardController)
+        if env_config.action_config.available_actions
+        else from_config(game_config, controllers.GamepadController)
+    )
 
     ocr_tool = OcrTool(game_config.ocrs, SevenSegmentsOcr)
 
@@ -89,7 +93,9 @@ def observation_wrappers(
             env = observation.WandbVideoLogger(env, video_freq, video_len)
 
     if config.vae_config:
-        vae, frame = load_vae_from_wandb_checkpoint(config.vae_config.wandb_checkpoint_ref, return_frame=True)
+        vae, frame = load_vae_from_wandb_checkpoint(
+            config.vae_config.wandb_checkpoint_ref, return_frame=True
+        )
         env = observation.CutImageWrapper(env, frame)
         if wandb.run is not None:
             env = observation.WandbVideoLogger(env, video_freq, video_len)
