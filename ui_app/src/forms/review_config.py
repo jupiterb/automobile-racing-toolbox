@@ -1,14 +1,5 @@
 import streamlit as st
 import json
-from typing import Optional
-
-from racing_toolbox.interface.config import GameConfiguration
-from racing_toolbox.environment.config import EnvConfig
-from racing_toolbox.training.config import TrainingConfig
-from racing_toolbox.observation.config.vae_config import (
-    VAETrainingConfig,
-    VAEModelConfig,
-)
 
 from ui_app.src.config_source.abstract import (
     AbstractConfigSource,

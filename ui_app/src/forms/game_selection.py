@@ -1,11 +1,14 @@
 import streamlit as st
 from typing import Optional, Union
 from racing_toolbox.interface.models.keyboard_action import KeyAction
-from vgamepad import XUSB_BUTTON
 import string
 
 from racing_toolbox.interface.config import GameConfiguration
-from racing_toolbox.interface.models.gamepad_action import GamepadAction, GamepadControl
+from racing_toolbox.interface.models.gamepad_action import (
+    GamepadButton,
+    GamepadControl,
+    GamepadAction,
+)
 from racing_toolbox.observation.utils.ocr import OcrConfiguration, OcrToolConfiguration
 from racing_toolbox.observation.utils import ScreenFrame
 
@@ -77,7 +80,7 @@ def get_possible_key_actions() -> list[str]:
 
 
 def get_possible_gamepad_actions() -> list[GamepadAction]:
-    return [action for _set in [XUSB_BUTTON, GamepadControl] for action in _set]
+    return [action for _set in [GamepadButton, GamepadControl] for action in _set]
 
 
 def configure_discrete_actions() -> dict[str, str]:

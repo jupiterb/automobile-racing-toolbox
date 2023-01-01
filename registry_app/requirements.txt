@@ -1,4 +1,2 @@
-streamlit
-wandb
 boto3
 httpx-oauth==0.10.2
