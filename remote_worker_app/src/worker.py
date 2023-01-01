@@ -4,14 +4,20 @@ from ray.rllib.env.policy_client import PolicyClient
 from racing_toolbox.environment.builder import setup_env
 from racing_toolbox.environment.config.env import EnvConfig
 from racing_toolbox.interface.config import GameConfiguration
-import wandb 
-import time 
-import os 
+from racing_toolbox.interface.controllers.gamepad import GamepadController
+import vgamepad as vg
+import wandb
+import time
+import os
 
 logger = logging.getLogger(__name__)
 
 
 Address = namedtuple("Address", ["host", "port"])
+
+
+GamepadController.global_gamepad = vg.VX360Gamepad()
+
 
 def run_worker_process(
     policy_address, game_config, env_config, wandb_api_key, wandb_project, wandb_group
