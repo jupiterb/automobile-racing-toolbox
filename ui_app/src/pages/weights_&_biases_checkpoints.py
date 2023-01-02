@@ -4,11 +4,7 @@ import os
 
 from racing_toolbox.training.config import TrainingConfig
 
-from ui_app.src.forms import (
-    configure_training_resuming,
-    configure_training,
-    review_config,
-)
+from ui_app.src.forms import configure_training, review_config
 from ui_app.src.shared import Shared
 from ui_app.src.page_layout import racing_toolbox_page_layout
 

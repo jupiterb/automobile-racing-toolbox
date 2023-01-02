@@ -18,7 +18,11 @@ def run_worker_process(
     policy_address, game_config, env_config, wandb_api_key, wandb_project, wandb_group
 ):
     os.environ["WANDB_API_KEY"] = wandb_api_key
-    with wandb.init(project=wandb_project, group=wandb_group) as run:
+    with wandb.init(
+        project=wandb_project,
+        group=wandb_group,
+        settings=wandb.Settings(start_method="spawn"),
+    ) as run:
         worker = Worker(
             policy_address=policy_address,
             game_conf=game_config,
