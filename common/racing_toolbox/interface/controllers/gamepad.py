@@ -7,20 +7,13 @@ from racing_toolbox.interface.models.gamepad_action import GamepadControl
 
 
 class GamepadController(GameActionController[GamepadAction]):
-
-    global_gamepad: Optional[vg.VX360Gamepad] = None
-
     def __init__(
         self,
         action_mapping: dict[str, GamepadAction],
         reset_sequence: list[GamepadAction],
     ) -> None:
         super().__init__(action_mapping=action_mapping, reset_sequence=reset_sequence)
-        self._gamepad = (
-            GamepadController.global_gamepad
-            if GamepadController.global_gamepad
-            else vg.VX360Gamepad()
-        )
+        self._gamepad = vg.VX360Gamepad()
 
     def reset_game(self) -> None:
         gamepad_actions = {action: 1.0 for action in self._reset_sequence}

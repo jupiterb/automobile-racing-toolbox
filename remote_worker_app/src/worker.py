@@ -4,8 +4,6 @@ from ray.rllib.env.policy_client import PolicyClient
 from racing_toolbox.environment.builder import setup_env
 from racing_toolbox.environment.config.env import EnvConfig
 from racing_toolbox.interface.config import GameConfiguration
-from racing_toolbox.interface.controllers.gamepad import GamepadController
-import vgamepad as vg
 import wandb
 import time
 import os
@@ -14,9 +12,6 @@ logger = logging.getLogger(__name__)
 
 
 Address = namedtuple("Address", ["host", "port"])
-
-
-GamepadController.global_gamepad = vg.VX360Gamepad()
 
 
 def run_worker_process(
@@ -38,6 +33,11 @@ class Worker:
         self, policy_address: Address, game_conf: GameConfiguration, env_conf: EnvConfig
     ):
         self.env = setup_env(game_conf, env_conf)
+
+        # continous actions spce -> vgamepad should be run before game
+        if not env_conf.action_config.available_actions:
+            self._wait_until_game_ready()
+
         self.client = PolicyClient(
             address=f"http://{policy_address.host}:{policy_address.port}",
             inference_mode="remote",
@@ -64,3 +64,11 @@ class Worker:
 
                 obs = self.env.reset()
                 eid = self.client.start_episode(training_enabled=True)
+
+    def _wait_until_game_ready(self):
+        logger.info(
+            "Make sure your game is running. If you are using virtual gamepad, restart game"
+        )
+        for time_left in range(180, -10, -10):
+            logger.info(f"Game should be ready in {time_left} seconds")
+            time.sleep(10)

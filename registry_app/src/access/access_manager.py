@@ -57,16 +57,15 @@ class AccessManager:
 
     def _removing_expired_tokens(self):
         while self._removing_expired_running:
-            expired_tokens = copy.deepcopy(self._active_tokens)
+            expired_tokens = {
+                acceess_token: token
+                for acceess_token, token in copy.deepcopy(self._active_tokens).items()
+                if token.token.is_expired()
+            }
             for acceess_token, token in expired_tokens.items():
-                if token.token.is_expired():
-                    self._iam.remove_user_from_access_group(token.owner)
-                else:
-                    del expired_tokens[acceess_token]
-            expired_owners = []
-            for acceess_token, token in expired_tokens.items():
+                self._iam.remove_user_from_access_group(token.owner)
                 del self._active_tokens[acceess_token]
-                expired_owners.append(token.owner)
+            expired_owners = list([token.owner for _, token in expired_tokens.items()])
             if any(expired_owners):
                 logger.info(f"Tokens expired for users: {expired_owners}")
             time.sleep(10)
