@@ -3,7 +3,8 @@ import gym
 import math
 import numpy as np
 from collections import deque
-from typing import Callable
+
+from racing_toolbox.environment.config.reward import SpeedDropPunishmentConfig
 from racing_toolbox.environment.utils.logging import log_reward
 
 
@@ -36,15 +37,13 @@ class SpeedDropPunishment(gym.RewardWrapper):
     def __init__(
         self,
         env,
-        memory_length: int,
-        diff_thresh: float,
-        exponent: float,
+        config: SpeedDropPunishmentConfig,
         only_diff: bool = False,
     ) -> None:
         super().__init__(env)
-        self.reward_history = deque([0], maxlen=memory_length)
-        self.threshold = diff_thresh
-        self.metric = lambda x: x**exponent
+        self.reward_history = deque([0], maxlen=config.memory_length)
+        self.threshold = config.speed_diff_thresh
+        self.metric = lambda x: x**config.speed_diff_exponent
 
         if only_diff:
             self.get_base_reward = lambda r: 0

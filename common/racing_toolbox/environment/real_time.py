@@ -1,10 +1,11 @@
 import gym
-import gym.spaces 
+import gym.spaces
 import numpy as np
 from typing import Optional
 
 from racing_toolbox.interface import GameInterface
 from racing_toolbox.environment.final_state import FinalStateDetector
+from racing_toolbox.environment.safety import SafetyDeterminer
 from racing_toolbox.observation.utils.ocr import OcrTool
 from logging import getLogger
 
@@ -22,6 +23,7 @@ class RealTimeEnviroment(gym.Env):
         game_interface: GameInterface,
         ocr_tool: OcrTool,
         final_state_detector: FinalStateDetector,
+        safety_determiner: Optional[SafetyDeterminer],
     ) -> None:
         super().__init__()
 
@@ -44,6 +46,7 @@ class RealTimeEnviroment(gym.Env):
         self._game_interface = game_interface
         self._ocr = ocr_tool
         self._final_state_detector = final_state_detector
+        self._safety_dterminer = safety_determiner
         self._last_frame: Frame = None
 
     def reset(self) -> Frame:
@@ -54,8 +57,14 @@ class RealTimeEnviroment(gym.Env):
         self._apply_action(actions)
 
         state, features = self._fetch_state()
+
         reward = features["speed"]
         logger.debug(f"current speed: {reward}")
+
+        if self._safety_dterminer:
+            safety = self._safety_dterminer.safety(state)
+            logger.debug(f"current safety: {safety}")
+            reward *= safety
 
         is_final = self._final_state_detector.is_final(new_features=features)
         self._last_frame = state

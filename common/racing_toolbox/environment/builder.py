@@ -15,7 +15,9 @@ from racing_toolbox.environment.config import (
 )
 from racing_toolbox.interface import controllers
 from racing_toolbox.interface.config import GameConfiguration
+from racing_toolbox.observation.config import LidarConfig, TrackSegmentationConfig
 from racing_toolbox.environment.final_state.detector import FinalStateDetector
+from racing_toolbox.environment.safety.determiner import SafetyDeterminer
 from racing_toolbox.environment.config.env import EnvConfig
 from racing_toolbox.interface import from_config
 from racing_toolbox.observation.utils.ocr import OcrTool, SevenSegmentsOcr
@@ -43,11 +45,20 @@ def setup_env(game_config: GameConfiguration, env_config: EnvConfig) -> gym.Env:
         ]
     )
 
+    safety_determiner = None
+    if env_config.reward_config.safety_config:
+        safety_determiner = SafetyDeterminer(
+            env_config.lidar_config,
+            env_config.track_segmentation_config,
+            env_config.reward_config.safety_config.shortest_rays_number,
+        )
+
     env = gym.make(
         "custom/real-time-v0",
         game_interface=interface,
         ocr_tool=ocr_tool,
         final_state_detector=final_st_det,
+        safety_determiner=safety_determiner,
     )
 
     env = wrapp_env(env, env_config)
@@ -59,7 +70,12 @@ def wrapp_env(env: gym.Env, env_config: EnvConfig) -> gym.Env:
     env = action_wrappers(env, env_config.action_config)
     env = reward_wrappers(env, env_config.reward_config)
     env = observation_wrappers(
-        env, env_config.observation_config, env_config.video_freq, env_config.video_len
+        env,
+        env_config.observation_config,
+        env_config.lidar_config,
+        env_config.track_segmentation_config,
+        env_config.video_freq,
+        env_config.video_len,
     )
     return env
 
@@ -71,9 +87,8 @@ def action_wrappers(env: gym.Env, config: ActionConfig) -> gym.Env:
 
 
 def reward_wrappers(env: gym.Env, config: RewardConfig) -> gym.Env:
-    env = reward.SpeedDropPunishment(
-        env, config.memory_length, config.speed_diff_thresh, config.speed_diff_exponent
-    )
+    if config.speed_drop_punishment_config:
+        env = reward.SpeedDropPunishment(env, config.speed_drop_punishment_config)
     env = reward.OffTrackPunishment(
         env,
         off_track_reward=config.off_track_reward,
@@ -85,7 +100,12 @@ def reward_wrappers(env: gym.Env, config: RewardConfig) -> gym.Env:
 
 
 def observation_wrappers(
-    env: gym.Env, config: ObservationConfig, video_freq, video_len
+    env: gym.Env,
+    config: ObservationConfig,
+    lidar_config: LidarConfig,
+    track_segmentation_config: TrackSegmentationConfig,
+    video_freq,
+    video_len,
 ) -> gym.Env:
     if not config.vae_config:
         env = observation.CutImageWrapper(env, config.frame)
@@ -104,14 +124,9 @@ def observation_wrappers(
             env = observation.VaeVideoLogger(
                 env, 200_000, 200, vae=vae, decode_only=True
             )
-    elif config.track_segmentation_config:
-        env = observation.TrackSegmentationWrapper(
-            env, config.track_segmentation_config
-        )
-        if config.lidar_config:
-            env = observation.LidarWrapper(env, config.lidar_config)
-        else:
-            env = ResizeObservation(env, config.shape)
+    elif config.use_lidar:
+        env = observation.TrackSegmentationWrapper(env, track_segmentation_config)
+        env = observation.LidarWrapper(env, lidar_config)
     else:
         env = GrayScaleObservation(env, keep_dim=False)
         env = ResizeObservation(env, config.shape)

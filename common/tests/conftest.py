@@ -18,7 +18,7 @@ from racing_toolbox.environment.config import (
 )
 import copy
 from racing_toolbox.interface.config import GameConfiguration
-from racing_toolbox.environment.config import RewardConfig, ObservationConfig, EnvConfig
+from racing_toolbox.environment.config.reward import SpeedDropPunishmentConfig
 from racing_toolbox.observation.config import TrackSegmentationConfig, LidarConfig
 from racing_toolbox.training.config import (
     TrainingConfig,
@@ -77,9 +77,11 @@ DEFAULT_CONFIGS: dict[type[BaseModel], BaseModel] = {
     ),
     EnvConfig: EnvConfig(
         reward_config=RewardConfig(
-            speed_diff_thresh=3,
-            memory_length=2,
-            speed_diff_exponent=1.2,
+            speed_drop_punishment_config=SpeedDropPunishmentConfig(
+                speed_diff_thresh=3,
+                memory_length=2,
+                speed_diff_exponent=1.2,
+            ),
             off_track_reward=-100,
             clip_range=(-300, 300),
             baseline=20,
@@ -89,16 +91,18 @@ DEFAULT_CONFIGS: dict[type[BaseModel], BaseModel] = {
             frame=ScreenFrame(top=0.475, bottom=0.9125, left=0.01, right=0.99),
             shape=(84, 84),
             stack_size=4,
-            lidar_config=LidarConfig(
-                depth=3,
-                angles_range=(-90, 90, 10),
-                lidar_start=(0.9, 0.5),
-            ),
-            track_segmentation_config=TrackSegmentationConfig(
-                track_color=(200, 200, 200),
-                tolerance=80,
-                noise_reduction=5,
-            ),
+            use_lidar=True,
+            vae_config=None,
+        ),
+        lidar_config=LidarConfig(
+            depth=3,
+            angles_range=(-90, 90, 10),
+            lidar_start=(0.9, 0.5),
+        ),
+        track_segmentation_config=TrackSegmentationConfig(
+            track_color=(200, 200, 200),
+            tolerance=80,
+            noise_reduction=5,
         ),
         max_episode_length=1_000,
         action_config=ActionConfig(
@@ -152,9 +156,11 @@ def env_config():
     )
 
     reward_conf = RewardConfig(
-        speed_diff_thresh=3,
-        memory_length=2,
-        speed_diff_exponent=1.2,
+        speed_drop_punishment_config=SpeedDropPunishmentConfig(
+            speed_diff_thresh=3,
+            memory_length=2,
+            speed_diff_exponent=1.2,
+        ),
         off_track_reward=-100,
         clip_range=(-300, 300),
         baseline=20,
@@ -165,14 +171,28 @@ def env_config():
         frame=ScreenFrame(top=0.475, bottom=0.9125, left=0.01, right=0.99),
         shape=(84, 84),
         stack_size=4,
-        lidar_config=None,
-        track_segmentation_config=None,
+        use_lidar=False,
+        vae_config=None,
+    )
+
+    lidar_config = LidarConfig(
+        depth=3,
+        angles_range=(-90, 90, 10),
+        lidar_start=(0.9, 0.5),
+    )
+
+    track_segmentation_config = TrackSegmentationConfig(
+        track_color=(200, 200, 200),
+        tolerance=80,
+        noise_reduction=5,
     )
 
     return EnvConfig(
         action_config=action_config,
         reward_config=reward_conf,
         observation_config=observation_conf,
+        lidar_config=lidar_config,
+        track_segmentation_config=track_segmentation_config,
         max_episode_length=1_000,
     )
 
