@@ -83,13 +83,16 @@ def reward_wrappers(env: gym.Env, config: RewardConfig) -> gym.Env:
 def observation_wrappers(
     env: gym.Env, config: ObservationConfig, video_freq, video_len
 ) -> gym.Env:
-    env = observation.CutImageWrapper(env, config.frame)
-
-    if wandb.run is not None:
-        env = observation.WandbVideoLogger(env, video_freq, video_len)
+    if not config.vae_config:
+        env = observation.CutImageWrapper(env, config.frame)
+        if wandb.run is not None:
+            env = observation.WandbVideoLogger(env, video_freq, video_len)
 
     if config.vae_config:
-        vae = load_vae_from_wandb_checkpoint(config.vae_config.wandb_checkpoint_ref)
+        vae, frame = load_vae_from_wandb_checkpoint(config.vae_config.wandb_checkpoint_ref, return_frame=True)
+        env = observation.CutImageWrapper(env, frame)
+        if wandb.run is not None:
+            env = observation.WandbVideoLogger(env, video_freq, video_len)
         env = observation.VaeObservationWrapper(env, vae=vae)
         if wandb.run is not None:
             env = observation.VaeVideoLogger(

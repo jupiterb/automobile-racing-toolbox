@@ -14,7 +14,7 @@ import racing_toolbox.observation.config.vae_config as configs
 DEVICE = "cuda" if th.cuda.is_available() else "cpu"
 
 
-def load_vae_from_wandb_checkpoint(checkpoint_location: str) -> VanillaVAE:
+def load_vae_from_wandb_checkpoint(checkpoint_location: str, return_frame: bool=False) -> VanillaVAE:
     finish_at_end = False
     run = wandb.run
     if run is None:
@@ -26,6 +26,8 @@ def load_vae_from_wandb_checkpoint(checkpoint_location: str) -> VanillaVAE:
         wandb.finish()
     model = VAE.load_from_checkpoint(Path(artifact_dir) / "model.ckpt")
     model.vae.eval()
+    if return_frame:
+        return model.vae, configs.ScreenFrame(**model.params["observation_frame"])
     return model.vae
 
 
