@@ -10,8 +10,10 @@ from logging import getLogger
 logger = getLogger(__name__)
 health_router = APIRouter()
 
+
 def get_connection():
     return sqlite3.connect(EnvVarsConfig().celery_backend_url.split("/")[-1])
+
 
 @health_router.get("/tasks/{task_id}", response_model=TaskInfoResponse)
 def get_task_info(task_id: str):
@@ -22,7 +24,7 @@ def get_task_info(task_id: str):
         task_name=task.name,
         task_id=str(task.id),
         status=task.status,
-        result=None
+        result=None,
     )
 
 
@@ -34,28 +36,32 @@ def get_tasks_infos(connection=Depends(get_connection)):
     for meth in methods:
         result = meth.__call__()
         if not result:
-            continue 
+            continue
         logger.info(result)
         for t in it.chain.from_iterable(list(result.values())):
             task_info = TaskInfoResponse(
                 task_finish_time=None,
                 task_name=t["name"],
                 task_id=t["id"],
-                status=meth.__name__,
+                status="active",
                 result=None,
             )
             info_list.append(task_info)
-    cursor = connection.cursor()
-    rows = cursor.execute("SELECT task_id, name, status, date_done FROM celery_taskmeta")
-    for task_id, name, status, date_done in rows:
-        task_info = TaskInfoResponse(
-            task_finish_time=date_done,
-            task_name=name,
-            task_id=task_id,
-            status=status,
-            result=None,
-        )
-        info_list.append(task_info)
+
+    # cursor = connection.cursor()
+    # rows = cursor.execute(
+    #    "SELECT task_id, name, status, date_done FROM celery_taskmeta"
+    # )
+    # for task_id, name, status, date_done in rows:
+    #    task_info = TaskInfoResponse(
+    #        task_finish_time=date_done,
+    #        task_name=name,
+    #        task_id=task_id,
+    #        status=status,
+    #        result=None,
+    #    )
+    #    info_list.append(task_info)
+
     return info_list
 
 
