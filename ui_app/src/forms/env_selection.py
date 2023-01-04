@@ -9,6 +9,10 @@ from racing_toolbox.environment.config import (
     ObservationConfig,
     RewardConfig,
 )
+from racing_toolbox.environment.config.reward import (
+    SpeedDropPunishmentConfig,
+    SafetyConfig,
+)
 from racing_toolbox.observation.config import (
     LidarConfig,
     TrackSegmentationConfig,
@@ -52,8 +56,11 @@ def create_new_env(
 ) -> EnvConfig:
     action_config = configure_actions(game_config, discrete_action_space)
     observation_config = configure_observation(feature_extraction_type)
-    st.markdown("""---""")
     reward_config = configure_reward()
+    st.markdown("""---""")
+    lidar_config = configure_lidar()
+    st.markdown("""---""")
+    track_segmentation_config = configure_track_segmentation()
     st.markdown("""---""")
     max_episode_length = st.number_input(
         "Maximal episode length", min_value=100, max_value=10_000, value=1_000
@@ -62,6 +69,8 @@ def create_new_env(
         action_config=action_config,
         observation_config=observation_config,
         reward_config=reward_config,
+        lidar_config=lidar_config,
+        track_segmentation_config=track_segmentation_config,
         max_episode_length=max_episode_length,
     )
 
@@ -116,6 +125,7 @@ def configure_lidar() -> LidarConfig:
 
 
 def configure_track_segmentation() -> TrackSegmentationConfig:
+    st.write("Track segemntation")
     st.write("Provide expected color of track")
     track_color = (
         st.number_input("Red", min_value=0, max_value=256, value=200),
@@ -143,9 +153,8 @@ def configure_observation(feature_extraction_type: str) -> ObservationConfig:
     st.write("Observation config")
     stack_size = st.number_input("Stack size", min_value=1, max_value=10, value=4)
     shape = (84, 84)
-    lidar_config = None
     vae_config = None
-    segmentation_config = None
+    use_lidar = False
     st.write(f"Configure {feature_extraction_type}")
     if feature_extraction_type == "Reshape":
         shape = (
@@ -154,8 +163,7 @@ def configure_observation(feature_extraction_type: str) -> ObservationConfig:
         )
         frame = configure_screen_frame()
     elif feature_extraction_type == "LIDAR":
-        lidar_config = configure_lidar()
-        segmentation_config = configure_track_segmentation()
+        use_lidar = True
         frame = configure_screen_frame()
     else:
         frame = configure_screen_frame()
@@ -164,14 +172,14 @@ def configure_observation(feature_extraction_type: str) -> ObservationConfig:
         frame=frame,
         shape=shape,
         stack_size=stack_size,
-        lidar_config=lidar_config,
-        track_segmentation_config=segmentation_config,
+        use_lidar=use_lidar,
         vae_config=vae_config,
     )
     return observation_config
 
 
 def configure_reward() -> RewardConfig:
+    st.markdown("""---""")
     st.write("Reward config")
     speed_diff_thresh = st.number_input(
         "Sppeed difference threshold", min_value=0, max_value=40, value=10
@@ -187,8 +195,9 @@ def configure_reward() -> RewardConfig:
     clip_range = (-scale, scale)
     st.write("Where reward = (reward - baseline) / scale")
     return RewardConfig(
-        speed_diff_thresh=speed_diff_thresh,
-        memory_length=memory_length,
+        speed_drop_punishment_config=SpeedDropPunishmentConfig(
+            speed_diff_thresh=speed_diff_thresh, memory_length=memory_length
+        ),
         baseline=baseline,
         scale=scale,
         clip_range=clip_range,
