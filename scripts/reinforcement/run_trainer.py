@@ -40,6 +40,7 @@ def main():
     game_config = get_game_config(args.game_config)
     env_config = get_env_config()
     algo_config = get_algorithm_config(args.run)
+
     model_config = config.ModelConfig(
         fcnet_hiddens=[100, 256],
         fcnet_activation="relu",
@@ -66,6 +67,7 @@ def main():
         action_space=env.action_space,
         input_=input_,
     )
+    trainer_params.algorithm = algo_config
 
     weights = None
     if args.checkpoint_path is not None:
@@ -90,6 +92,8 @@ def get_env_config() -> EnvConfig:
             "LEFT": {2, 4},
         }
     )
+
+    action_config.available_actions = None
 
     reward_conf = RewardConfig(
         speed_diff_thresh=3,
@@ -128,11 +132,31 @@ def get_env_config() -> EnvConfig:
     )
 
 
+def get_model_config():
+    return config.ModelConfig(
+        fcnet_hiddens=[100, 256],
+        fcnet_activation="relu",
+        conv_filters=[
+            (32, (8, 8), 4),
+            (64, (4, 4), 2),
+            (64, (3, 3), 1),
+            (64, (8, 8), 1),
+        ],
+    )
+
+
 def get_algorithm_config(algo: str = "DQN"):
     if algo == "DQN":
         buffer_config = config.ReplayBufferConfig(capacity=1_000)
         return config.DQNConfig(
             v_min=-100, v_max=100, replay_buffer_config=buffer_config
+        )
+    elif algo == "SAC":
+        buffer_config = config.ReplayBufferConfig(capacity=1_000)
+        return config.SACConfig(
+            q_model_config=get_model_config(),
+            policy_model_config=get_model_config(),
+            replay_buffer_config=buffer_config,
         )
     else:
         raise NotImplementedError
@@ -178,7 +202,7 @@ def get_cli_args():
     parser.add_argument(
         "--run",
         default="DQN",
-        choices=["DQN"],
+        choices=["DQN", "SAC"],
         help="The RLlib-registered algorithm to use.",
     )
     parser.add_argument(

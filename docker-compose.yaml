@@ -38,6 +38,8 @@ services:
       - ./trainer_app/resources/.env
     ports:
       - 9000:9000
+      - 9001:9001
+      - 9002:9002
     depends_on:
       - redis
       - trainer_app

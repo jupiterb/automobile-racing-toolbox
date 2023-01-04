@@ -24,7 +24,15 @@ def main():
         game_conf=game_config,
         env_conf=env_config,
     )
+    wait_until_user_confirm_start()
     client.run()
+
+
+def wait_until_user_confirm_start():
+    print("Type `r` to run this trainee")
+    while True:
+        if input() == "r":
+            break
 
 
 def get_game_config(config_path):
@@ -41,6 +49,8 @@ def get_env_config() -> EnvConfig:
             "LEFT": {2, 4},
         }
     )
+
+    action_config.available_actions = None
 
     reward_conf = RewardConfig(
         speed_diff_thresh=3,

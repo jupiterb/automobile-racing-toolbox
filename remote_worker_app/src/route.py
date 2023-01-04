@@ -20,15 +20,18 @@ __LOCK = (
 )  # TODO: probably better idea is to handle lock via middleware, or custom router
 
 router = APIRouter(prefix="/worker")
+
+
 def is_available() -> bool:
     with __LOCK:
         return __WORKER_ARGS is None
+
 
 def __unsync():
     global __WORKER_ARGS, __WORKER_PROCESS, __LOCK
     with __LOCK:
         if __WORKER_PROCESS is None:
-            __WORKER_ARGS = None 
+            __WORKER_ARGS = None
 
 
 @router.post("/sync")
@@ -51,7 +54,7 @@ def load_configs(body: SyncRequest):
         body.wandb_group,
     )
     __LOCK.release()
-    Timer(60, __unsync).start()
+    Timer(180, __unsync).start()
 
 
 @router.post("/start")

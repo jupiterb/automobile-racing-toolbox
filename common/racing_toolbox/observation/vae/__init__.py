@@ -1,1 +1,1 @@
-from racing_toolbox.observation.vae.models import VanillaVAE, load_vae_from_wandb_checkpoint
+from racing_toolbox.observation.vae.models import VanillaVAE, load_vae_from_wandb_checkpoint, Decoder

@@ -1,0 +1,54 @@
+{
+    "action_config": {
+        "available_actions": {
+            "FORWARD": [
+                0,
+                1,
+                2
+            ],
+            "BREAK": [],
+            "RIGHT": [
+                1,
+                3
+            ],
+            "LEFT": [
+                2,
+                4
+            ]
+        }
+    },
+    "reward_config": {
+        "speed_diff_thresh": 30,
+        "memory_length": 5,
+        "speed_diff_exponent": 1.2,
+        "off_track_reward": -1.0,
+        "off_track_termination": true,
+        "clip_range": [
+            -300.0,
+            300.0
+        ],
+        "baseline": 40.0,
+        "scale": 300.0
+    },
+    "observation_config": {
+        "frame": {
+            "top": 0.475,
+            "bottom": 0.9125,
+            "left": 0.01,
+            "right": 0.99
+        },
+        "shape": [
+            128,
+            128
+        ],
+        "stack_size": 4,
+        "lidar_config": null,
+        "track_segmentation_config": null,
+        "vae_config": {
+            "wandb_checkpoint_ref": "automobile-racing-toolbox/ART/model-2w4cxqmk:v299"
+        }
+    },
+    "max_episode_length": 1000,
+    "video_freq": 150000,
+    "video_len": 200
+}

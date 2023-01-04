@@ -9,11 +9,11 @@ class GameConfiguration(BaseModel):
     game_id: str
     process_name: str
     window_size: tuple[int, int]
-    discrete_actions_mapping: dict[str, KeyAction]
+    discrete_actions_mapping: dict[str, str]
     continous_actions_mapping: dict[str, GamepadAction]
     ocrs: OcrToolConfiguration
     reset_seconds: int
-    reset_keys_sequence: list[KeyAction]
+    reset_keys_sequence: list[str]
     reset_gamepad_sequence: list[GamepadAction]
     frequency_per_second: int
 

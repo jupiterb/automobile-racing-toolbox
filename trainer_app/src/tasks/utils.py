@@ -17,8 +17,8 @@ from racing_toolbox.environment import builder
 import logging
 from celery import Celery
 import torch.utils.data as th_data
-import numpy as np 
-import torch as th 
+import numpy as np
+import torch as th
 
 logger = logging.getLogger(__name__)
 
@@ -38,19 +38,26 @@ def make_celery(config: EnvVarsConfig, port: int, name: str):
         event_serializer = "json"
         accept_content = ["application/json", "application/x-python-serialize"]
         result_accept_content = ["application/json", "application/x-python-serialize"]
+
     print(config.celery_broker_url + f"/{port}", name)
 
     celery = Celery(
-        name, broker=config.celery_broker_url + f"/{port}", backend=config.celery_backend_url
+        name,
+        broker=config.celery_broker_url + f"/{port}",
+        backend=config.celery_backend_url,
     )
     celery.conf.result_extended = True
     celery.config_from_object(CeleryConfig)
     return celery
 
 
-def wandb_checkpoint_callback_factory(checkpoint_name, dir: Path):
+def wandb_checkpoint_callback_factory(checkpoint_name: str, dir: Path):
     def callback(algorithm: Algorithm):
-        checkpoint_artifact = wandb.Artifact(checkpoint_name, type="checkpoint")
+        nonlocal checkpoint_name
+
+        name = checkpoint_name.split(":")[0]
+        print(f"checkpoint name: {name}")
+        checkpoint_artifact = wandb.Artifact(name, type="checkpoint")
         chkpnt_path = algorithm.save(str(dir))
         checkpoint_artifact.add_dir(chkpnt_path, name="checkpoint")
         wandb.log_artifact(checkpoint_artifact)
@@ -77,16 +84,18 @@ def get_training_params(
         if ioctx.worker_index > 0 or ioctx.worker.num_workers == 0:
             return PolicyServerInput(
                 ioctx,
-                host,
+                "0.0.0.0",
                 port + ioctx.worker_index - (1 if ioctx.worker_index > 0 else 0),
             )
         else:
             return None
 
-    # TODO: How to choose correct interface action mapping based only on game config?
-    mocked_env = MockedEnv(
-        game_config.discrete_actions_mapping, game_config.window_size
+    actions = (
+        game_config.discrete_actions_mapping
+        if env_config.action_config.available_actions
+        else game_config.continous_actions_mapping
     )
+    mocked_env = MockedEnv(actions, game_config.window_size)
     env = builder.wrapp_env(mocked_env, env_config)
     print(f"observation space: {env.observation_space.shape}")
     logger.warning(
@@ -118,5 +127,5 @@ def tensordataset_from_bucket(
     observations: list[th.Tensor] = []
     for observation, _ in container.get_all():
         observations.append(transforms(observation))
-    
+
     return th_data.TensorDataset(th.stack(observations))

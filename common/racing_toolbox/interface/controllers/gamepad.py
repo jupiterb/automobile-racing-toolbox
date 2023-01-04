@@ -1,4 +1,5 @@
 import vgamepad as vg
+from typing import Optional
 
 from racing_toolbox.interface.controllers.abstract import GameActionController
 from racing_toolbox.interface.models import GamepadAction, GamepadControl, GamepadButton
@@ -22,8 +23,7 @@ class GamepadController(GameActionController[GamepadAction]):
 
     def apply_actions(self, actions: dict[str, float]) -> None:
         gamepad_actions = {
-            self._action_mapping[action]: value
-            for action, value in actions.items()
+            self._action_mapping[action]: value for action, value in actions.items()
         }
         self._apply_gamepad_actions(gamepad_actions)
 
@@ -45,7 +45,7 @@ class GamepadController(GameActionController[GamepadAction]):
         self._gamepad.update()
 
     def _apply_gamepad_discrete_actions(self, buttons: set[GamepadButton]) -> None:
-        vg_buttons = {vg.XUSB_BUTTON[b.value] for b in buttons} 
+        vg_buttons = {vg.XUSB_BUTTON[b.value] for b in buttons}
         for action in vg_buttons:
             self._gamepad.press_button(button=action)
         for action in set(vg.XUSB_BUTTON) - vg_buttons:
@@ -54,26 +54,28 @@ class GamepadController(GameActionController[GamepadAction]):
     def _apply_gamepad_continous_actions(
         self, controls: dict[GamepadControl, float]
     ) -> None:
-        self._apply_triggers_actions(controls)
-        self._apply_joystick_actions(controls)
+        for axis, value in controls.items():
+            self._apply_gamepad_axis_action(axis, value)
 
-    def _apply_triggers_actions(self, controls: dict[GamepadControl, float]) -> None:
-        triggers = [GamepadControl.LEFT_TRIGGER, GamepadControl.RIGHT_TRIGGER]
-        actions = [
-            self._gamepad.left_trigger_float,
-            self._gamepad.right_trigger_float,
-        ]
-        for trigger, action in zip(triggers, actions):
-            if trigger in controls:
-                action(controls[trigger])
+    def _apply_gamepad_axis_action(self, axis: GamepadControl, value: float) -> None:
+        if axis == GamepadControl.AXIS_X_LEFT:
+            y_value = GamepadController._normalize_axis(self._gamepad.report.sThumbLY)
+            self._gamepad.left_joystick_float(value, y_value)
+        elif axis == GamepadControl.AXIS_Y_LEFT:
+            x_value = GamepadController._normalize_axis(self._gamepad.report.sThumbLX)
+            self._gamepad.left_joystick_float(x_value, value)
+        elif axis == GamepadControl.AXIS_X_RIGHT:
+            y_value = GamepadController._normalize_axis(self._gamepad.report.sThumbRY)
+            self._gamepad.right_joystick_float(value, y_value)
+        elif axis == GamepadControl.AXIS_Y_RIGHT:
+            x_value = GamepadController._normalize_axis(self._gamepad.report.sThumbRX)
+            self._gamepad.right_joystick_float(x_value, value)
+        elif axis == GamepadControl.AXIS_Z:
+            right_value = value if value >= 0 else 0
+            left_value = -value if value < 0 else 0
+            self._gamepad.left_trigger_float(left_value)
+            self._gamepad.right_trigger_float(right_value)
 
-    def _apply_joystick_actions(self, controls: dict[GamepadControl, float]) -> None:
-        joysticks_x = [GamepadControl.LEFT_JOYSTICK_X, GamepadControl.RIGHT_JOYSTICK_X]
-        joysticks_y = [GamepadControl.LEFT_JOYSTICK_Y, GamepadControl.RIGHT_JOYSTICK_Y]
-        actions = [
-            self._gamepad.left_joystick_float,
-            self._gamepad.right_joystick_float,
-        ]
-        for joystick_x, joystick_y, action in zip(joysticks_x, joysticks_y, actions):
-            if joystick_x in controls and joystick_y in controls:
-                action(controls[joystick_x], controls[joystick_y])
+    @staticmethod
+    def _normalize_axis(value: int) -> float:
+        return value / 32767

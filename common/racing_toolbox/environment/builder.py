@@ -1,4 +1,9 @@
-from gym.wrappers import GrayScaleObservation, ResizeObservation, FrameStack, TimeLimit
+from gym.wrappers import (
+    GrayScaleObservation,
+    ResizeObservation,
+    FrameStack,
+    TimeLimit,
+)
 import gym
 import wandb
 from racing_toolbox.environment.wrappers import observation, stats, action, reward
@@ -18,7 +23,11 @@ from racing_toolbox.observation.vae import load_vae_from_wandb_checkpoint
 
 
 def setup_env(game_config: GameConfiguration, env_config: EnvConfig) -> gym.Env:
-    interface = from_config(game_config, controllers.KeyboardController)
+    interface = (
+        from_config(game_config, controllers.KeyboardController)
+        if env_config.action_config.available_actions
+        else from_config(game_config, controllers.GamepadController)
+    )
 
     ocr_tool = OcrTool(game_config.ocrs, SevenSegmentsOcr)
 
@@ -78,14 +87,23 @@ def reward_wrappers(env: gym.Env, config: RewardConfig) -> gym.Env:
 def observation_wrappers(
     env: gym.Env, config: ObservationConfig, video_freq, video_len
 ) -> gym.Env:
-    env = observation.CutImageWrapper(env, config.frame)
-
-    if wandb.run is not None:
-        env = observation.WandbVideoLogger(env, video_freq, video_len)
+    if not config.vae_config:
+        env = observation.CutImageWrapper(env, config.frame)
+        if wandb.run is not None:
+            env = observation.WandbVideoLogger(env, video_freq, video_len)
 
     if config.vae_config:
-        vae = load_vae_from_wandb_checkpoint(config.vae_config.wandb_checkpoint_ref)
+        vae, frame = load_vae_from_wandb_checkpoint(
+            config.vae_config.wandb_checkpoint_ref, return_frame=True
+        )
+        env = observation.CutImageWrapper(env, frame)
+        if wandb.run is not None:
+            env = observation.WandbVideoLogger(env, video_freq, video_len)
         env = observation.VaeObservationWrapper(env, vae=vae)
+        if wandb.run is not None:
+            env = observation.VaeVideoLogger(
+                env, 200_000, 200, vae=vae, decode_only=True
+            )
     elif config.track_segmentation_config:
         env = observation.TrackSegmentationWrapper(
             env, config.track_segmentation_config

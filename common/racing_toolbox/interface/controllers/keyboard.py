@@ -2,6 +2,7 @@ from pynput.keyboard import Controller, Key
 from racing_toolbox.interface.controllers.abstract import GameActionController
 from racing_toolbox.interface.models import KeyAction
 
+
 class KeyboardController(GameActionController[KeyAction]):
     def __init__(
         self, action_mapping: dict[str, KeyAction], reset_sequence: list[KeyAction]
@@ -10,6 +11,10 @@ class KeyboardController(GameActionController[KeyAction]):
         self._controller = Controller()
 
     def reset_game(self) -> None:
+        for action in set(self._action_mapping):
+            key_action = self._action_mapping[action]
+            key = self.action2key(key_action)
+            self._controller.release(key)
         for key in self._reset_sequence:
             key = self.action2key(key)
             self._controller.press(key)
@@ -32,4 +37,4 @@ class KeyboardController(GameActionController[KeyAction]):
 
     @staticmethod
     def action2key(action: KeyAction) -> Key:
-        return Key[action.name]
+        return Key[action]

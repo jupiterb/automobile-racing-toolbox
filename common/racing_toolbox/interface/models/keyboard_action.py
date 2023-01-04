@@ -1,4 +1,5 @@
-from enum import Enum 
+from enum import Enum
+
 
 class KeyAction(str, Enum):
     up = "up"
@@ -7,4 +8,3 @@ class KeyAction(str, Enum):
     right = "right"
     space = "space"
     enter = "enter"
-    

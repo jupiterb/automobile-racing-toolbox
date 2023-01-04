@@ -15,6 +15,7 @@ class TrainingParams(TrainingConfig):
     action_space: spaces.Space
     env_name: Optional[str] = None
     input_: Optional[Union[Callable[[Any], Optional[InputReader]], list[str]]] = None
+    validate_workers_after_construction: bool=True
 
     # @validator("env", allow_reuse=True)
     # def check_env(cls, v):

@@ -4,6 +4,7 @@ import wandb
 import gym.spaces
 import torch as th 
 from torchvision import transforms 
+import logging 
 
 from racing_toolbox.observation.config import LidarConfig, TrackSegmentationConfig
 from racing_toolbox.observation.lidar import Lidar
@@ -11,6 +12,9 @@ from racing_toolbox.observation.track_segmentation import TrackSegmenter
 from racing_toolbox.observation.utils import ScreenFrame
 from racing_toolbox.environment.utils.logging import log_observation
 from racing_toolbox.observation.vae import VanillaVAE
+from concurrent.futures import ThreadPoolExecutor
+
+logger = logging.getLogger(__name__)
 
 
 class VaeObservationWrapper(gym.ObservationWrapper):
@@ -23,10 +27,14 @@ class VaeObservationWrapper(gym.ObservationWrapper):
             high=np.finfo(np.float32).max,
             shape=(self.vae.latent_dim, )
         )
-        self.transform = transforms.Compose([
+        transform_list = [
             transforms.ToTensor(),
             transforms.Resize(vae.input_shape)
-        ])
+        ]
+        if vae.in_channels == 1: 
+            transform_list.append(transforms.Grayscale())
+        self.transform = transforms.Compose(transform_list) # TODO: transforms stuff should be passed in constructor, or be implemented in vae class to avoid duplication 
+
 
     def observation(self, observation: np.ndarray) -> np.ndarray:
         """given RGB compatible with vae model input, return sample from latent space"""
@@ -103,6 +111,8 @@ class TrackSegmentationWrapper(gym.ObservationWrapper):
     def observation(self, observation: np.ndarray) -> np.ndarray:
         return self._track_segmenter.perform_segmentation(observation)
 
+def log_video(imgs: list[np.ndarray], key_name: str="recording"):
+    wandb.run.log({key_name: wandb.Video(np.stack(imgs), fps=10)})
 
 class WandbVideoLogger(gym.Wrapper):
     def __init__(self, env: gym.Env, log_frequency: int, log_duration: int) -> None:
@@ -115,6 +125,9 @@ class WandbVideoLogger(gym.Wrapper):
         self._is_recording: bool = True
         self._frames: list[np.ndarray] = []
         self._step = 0
+
+        self.pool = ThreadPoolExecutor(max_workers=10)
+
 
     def step(self, action):
         obs, rew, done, info = super().step(action)
@@ -134,4 +147,43 @@ class WandbVideoLogger(gym.Wrapper):
         img = np.moveaxis(obs, -1, 0) # channel first
         self._frames.append(img)
         if self.log_duration == len(self._frames):
-            wandb.log({"recording": wandb.Video(np.stack(self._frames), fps=10)})
+            logger.info("logging video")
+            self.pool.submit(log_video, self._frames)
+            logger.info("logged video")
+
+
+class VaeVideoLogger(WandbVideoLogger):
+    def __init__(self, env: gym.Env, log_frequency: int, log_duration: int, vae: VanillaVAE, decode_only: bool=False, ) -> None:
+        """if decode_only is set, will assume that given observation is latent vector, and use only Decoder to log frame"""
+        super().__init__(env, log_duration=log_duration, log_frequency=log_frequency)
+        self.vae = vae
+        self.vae.eval()
+        transform_list = [
+            transforms.ToTensor(),
+            transforms.Resize(vae.input_shape)
+        ]
+        if vae.in_channels == 1: 
+            transform_list.append(transforms.Grayscale())
+        self.transform = transforms.Compose(transform_list)
+        self.decode_only = decode_only
+
+    def _record(self, obs: np.ndarray):
+        if self.decode_only:
+            with th.no_grad():
+                obs_torch = th.Tensor(obs).unsqueeze(0)
+                decoded = self.vae.decoder(obs_torch)
+        else:
+            obs_torch: th.Tensor = self.transform(obs)
+            with th.no_grad():
+                decoded = self.vae.generate(obs_torch.unsqueeze(0))
+        img = decoded.detach().squeeze(0).numpy() * 255
+        img = img.astype(np.uint8)
+
+        self._frames.append(img)
+        if self.log_duration == len(self._frames):
+            logger.info("logging VAE video")
+            self.pool.submit(log_video, self._frames, key_name="vae_reconstruction")
+            logger.info("logged VAE video")
+    
+    
+

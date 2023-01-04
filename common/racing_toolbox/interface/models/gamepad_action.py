@@ -7,12 +7,11 @@ from typing import Union
 
 
 class GamepadControl(str, Enum):
-    LEFT_TRIGGER = "LEFT_TRIGGER"
-    RIGHT_TRIGGER = "RIGHT_TRIGGER"
-    LEFT_JOYSTICK_X = "LEFT_JOYSTICK_X"
-    LEFT_JOYSTICK_Y = "LEFT_JOYSTICK_Y"
-    RIGHT_JOYSTICK_X = "RIGHT_JOYSTICK_X"
-    RIGHT_JOYSTICK_Y = "RIGHT_JOYSTICK_Y"
+    AXIS_X_LEFT = "AXIS_X_LEFT"
+    AXIS_Y_LEFT = "AXIS_Y_LEFT"
+    AXIS_X_RIGHT = "AXIS_X_RIGHT"
+    AXIS_Y_RIGHT = "AXIS_Y_RIGHT"
+    AXIS_Z = "AXIS_Z"
 
 
 class GamepadButton(str, Enum):
