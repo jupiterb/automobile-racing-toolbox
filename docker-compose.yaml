@@ -44,7 +44,7 @@ services:
       - redis
       - trainer_app
     restart: always
-    mem_limit: 10G 
+    mem_limit: 12G 
     shm_size: '4gb'
 
 

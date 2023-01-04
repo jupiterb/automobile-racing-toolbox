@@ -23,7 +23,7 @@ class ModelConfig(BaseModel):
 
 
 class AlgorithmConfig(BaseModel):
-    pass
+    store_buffer_in_checkpoints: bool = True
 
 
 class DQNConfig(AlgorithmConfig):
