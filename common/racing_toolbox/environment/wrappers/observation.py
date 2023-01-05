@@ -28,8 +28,8 @@ class SpeedAppendingWrapper(gym.Wrapper):
 
     def step(self, action):
         obs, rew, done, info = super().step(action)
-        new_obs = np.concatenate([obs, np.array([info["speed"] / self.scale])])
-        return obs, rew, done, info 
+        new_obs = np.concatenate([obs, np.array([info["speed"] / self.scale])], dtype=np.float32)
+        return new_obs, rew, done, info 
 
 
 class VaeObservationWrapper(gym.ObservationWrapper):

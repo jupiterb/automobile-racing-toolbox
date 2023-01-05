@@ -121,6 +121,6 @@ def observation_wrappers(
     if config.observe_speed:
         env = observation.SpeedAppendingWrapper(env, 260)
     
-    if config.stack_size >= 1:
+    if config.stack_size > 1:
         env = FrameStack(env, config.stack_size)
     return env
