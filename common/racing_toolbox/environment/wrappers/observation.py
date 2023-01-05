@@ -16,6 +16,21 @@ from concurrent.futures import ThreadPoolExecutor
 
 logger = logging.getLogger(__name__)
 
+class SpeedAppendingWrapper(gym.Wrapper):
+    def __init__(self, env: gym.Env, scale: int):
+        super().__init__(env)
+        self.scale = scale 
+        assert len(env.observation_space.shape) == 1, f"{type(self)} works only on vector spaces"
+        low = min(self.observation_space.low.min(), 0)
+        high = max(self.observation_space.high.max(), 1) 
+        size = self.observation_space.shape[0] + 1
+        self.observation_space = gym.spaces.Box(low, high, (size, ))
+
+    def step(self, action):
+        obs, rew, done, info = super().step(action)
+        new_obs = np.concatenate([obs, np.array([info["speed"] / self.scale])])
+        return obs, rew, done, info 
+
 
 class VaeObservationWrapper(gym.ObservationWrapper):
     def __init__(self, env: gym.Env, vae: VanillaVAE) -> None:

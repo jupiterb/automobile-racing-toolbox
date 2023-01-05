@@ -116,7 +116,11 @@ def observation_wrappers(
         env = GrayScaleObservation(env, keep_dim=False)
         env = ResizeObservation(env, config.shape)
         env = observation.RescaleWrapper(env)
+        env = observation.SqueezingWrapper(env)
 
-    env = FrameStack(env, config.stack_size)
-    env = observation.SqueezingWrapper(env)
+    if config.observe_speed:
+        env = observation.SpeedAppendingWrapper(env, 260)
+    
+    if config.stack_size >= 1:
+        env = FrameStack(env, config.stack_size)
     return env
