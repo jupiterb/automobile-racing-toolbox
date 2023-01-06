@@ -51,6 +51,7 @@ def setup_env(game_config: GameConfiguration, env_config: EnvConfig) -> gym.Env:
             env_config.lidar_config,
             env_config.track_segmentation_config,
             env_config.reward_config.safety_config.shortest_rays_number,
+            env_config.reward_config.safety_config.weight,
         )
 
     env = gym.make(

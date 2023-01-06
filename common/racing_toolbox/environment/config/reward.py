@@ -14,8 +14,11 @@ class SpeedDropPunishmentConfig(BaseModel):
 
 
 class SafetyConfig(BaseModel):
-    # safety = mean( sorted( rays_len )[0:shortest_rays_number] )
+    # safety_base = mean( sorted( rays_len )[0:shortest_rays_number] )
     shortest_rays_number: PositiveInt
+
+    # safety = safety_base * weight
+    weight: PositiveFloat = 0.5
 
 
 class RewardConfig(BaseModel):
