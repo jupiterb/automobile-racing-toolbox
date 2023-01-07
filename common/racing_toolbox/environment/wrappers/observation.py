@@ -31,6 +31,11 @@ class SpeedAppendingWrapper(gym.Wrapper):
         new_obs = np.concatenate([obs, np.array([info["speed"] / self.scale])], dtype=np.float32)
         return new_obs, rew, done, info 
 
+    def reset(self):
+        obs = super().reset()
+        new_obs = np.concatenate([obs, np.array([0])], dtype=np.float32)
+        return new_obs
+
 
 class VaeObservationWrapper(gym.ObservationWrapper):
     def __init__(self, env: gym.Env, vae: VanillaVAE) -> None:
