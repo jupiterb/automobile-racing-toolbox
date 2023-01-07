@@ -64,7 +64,7 @@ class RealTimeEnviroment(gym.Env):
         if self._safety_dterminer:
             safety = self._safety_dterminer.safety(state)
             logger.debug(f"current safety: {safety}")
-            reward *= safety
+            reward *= 1 + safety
 
         is_final = self._final_state_detector.is_final(new_features=features)
         self._last_frame = state
