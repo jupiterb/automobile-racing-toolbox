@@ -14,10 +14,15 @@ class SpeedDropPunishmentConfig(BaseModel):
 
 
 class SafetyConfig(BaseModel):
+    lidar_depth: PositiveInt = 0
+
     # safety_base = mean( sorted( rays_len )[0:shortest_rays_number] )
     shortest_rays_number: PositiveInt
 
-    # safety = safety_base * weight
+    # savety_centr = safety_base ^ centralization
+    centralization: PositiveFloat = 1.3
+
+    # safety = savety_centr * weight
     weight: PositiveFloat = 0.5
 
 
