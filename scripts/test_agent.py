@@ -9,6 +9,7 @@ from racing_toolbox.environment import builder
 from racing_toolbox.environment.builder import setup_env
 from racing_toolbox.training import Trainer
 from pathlib import Path
+import racing_toolbox.training.algorithm_constructor as algo
 
 
 def get_cli_args():
@@ -66,11 +67,14 @@ class WandbWorker:
                 wandb.restore("training_config.json", run_path=run_ref).name
             )
         trainer_params = get_training_params(game_config, env_config, training_config)
+
+        trainer_params.num_rollout_workers = 0
         self.algorithm = Trainer(
             trainer_params,
             Path(checkpoint_dir).absolute() / "checkpoint",
         ).algorithm
-        env_config.max_episode_length = int(1e10)
+
+        # env_config.max_episode_length = int(1e10)
         self.env = setup_env(game_config, env_config)
 
     def run(self) -> None:
@@ -91,3 +95,6 @@ def main():
     args = get_cli_args()
     worker = WandbWorker(args.run, args.checkpoint)
     worker.run()
+
+if __name__ == "__main__":
+    main()
