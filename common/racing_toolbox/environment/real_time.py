@@ -64,7 +64,7 @@ class RealTimeEnviroment(gym.Env):
             self._final_state_detector.reset()
             print("FINAL!")
 
-        return state, reward, is_final, {}
+        return state, reward, is_final, {"speed": reward}
 
     def render(self, *args, **kwargs) -> Frame:
         return self._last_frame

@@ -25,6 +25,7 @@ class LocalScreen(ScreenProvider):
         window = win32gui.FindWindow(None, self._source)
         if window == 0:
             raise WindowNotFound(self._source)
+        win32gui.SetForegroundWindow(window)
         left, top, _, _ = win32gui.GetWindowRect(window)
         win32gui.MoveWindow(
             window, left, top, self._screen_size[0], self._screen_size[1], True

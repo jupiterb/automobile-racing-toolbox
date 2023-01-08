@@ -15,3 +15,4 @@ class ObservationConfig(BaseModel):
     lidar_config: Optional[LidarConfig] = None
     track_segmentation_config: Optional[TrackSegmentationConfig] = None
     vae_config: Optional[VAEConfig]
+    observe_speed: bool = False

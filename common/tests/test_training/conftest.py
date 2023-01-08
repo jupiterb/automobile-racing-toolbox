@@ -60,7 +60,7 @@ class RandomEnv(gym.Env):
         if self._curr_episode_len >= self.max_episode_len:
             self._curr_episode_len = 0
             done = True
-        info = {}
+        info = {"speed": 255}
         return obs, rew, done, info
 
     def reset(self):
