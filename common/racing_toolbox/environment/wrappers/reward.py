@@ -64,6 +64,16 @@ class SpeedDropPunishment(gym.RewardWrapper):
         return r
 
 
+class SafetyDrivingWrapper(gym.RewardWrapper):
+    def __init__(self, env) -> None:
+        super().__init__(env)
+
+    def step(self, action):
+        obs, reward, done, info = super().step(action)
+        new_reward = reward * (1 + info["safety"])
+        return obs, new_reward, done, info
+
+
 class ClipReward(gym.RewardWrapper):
     def __init__(self, env, min_value: float, max_value: float) -> None:
         super().__init__(env)

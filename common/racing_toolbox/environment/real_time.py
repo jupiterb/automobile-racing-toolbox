@@ -61,10 +61,7 @@ class RealTimeEnviroment(gym.Env):
         reward = features["speed"]
         logger.debug(f"current speed: {reward}")
 
-        if self._safety_dterminer:
-            safety = self._safety_dterminer.safety(state)
-            logger.debug(f"current safety: {safety}")
-            reward *= 1 + safety
+        safety = self._safety_dterminer.safety(state) if self._safety_dterminer else 0
 
         is_final = self._final_state_detector.is_final(new_features=features)
         self._last_frame = state
@@ -73,7 +70,7 @@ class RealTimeEnviroment(gym.Env):
             self._final_state_detector.reset()
             print("FINAL!")
 
-        return state, reward, is_final, {"speed": reward}
+        return state, reward, is_final, {"speed": reward, "safety": safety}
 
     def render(self, *args, **kwargs) -> Frame:
         return self._last_frame

@@ -92,6 +92,7 @@ def action_wrappers(env: gym.Env, config: ActionConfig) -> gym.Env:
 def reward_wrappers(env: gym.Env, config: RewardConfig) -> gym.Env:
     if config.speed_drop_punishment_config:
         env = reward.SpeedDropPunishment(env, config.speed_drop_punishment_config)
+    env = reward.SafetyDrivingWrapper(env)
     env = reward.OffTrackPunishment(
         env,
         off_track_reward=config.off_track_reward,
@@ -138,7 +139,7 @@ def observation_wrappers(
 
     if config.observe_speed:
         env = observation.SpeedAppendingWrapper(env, 260)
-    
+
     if config.stack_size > 1:
         env = FrameStack(env, config.stack_size)
     return env
