@@ -23,7 +23,9 @@ class ModelConfig(BaseModel):
 
 
 class AlgorithmConfig(BaseModel):
-    pass
+    store_buffer_in_checkpoints: bool = True
+    target_network_update_freq: PositiveInt = 500
+    tau: float = 1
 
 
 class DQNConfig(AlgorithmConfig):
@@ -42,7 +44,6 @@ class DQNConfig(AlgorithmConfig):
 class SACConfig(AlgorithmConfig):
     model_type: Literal["sac"] = "sac"
     twin_q: bool = True
-    tau: float = 5e-3
     initial_alpha: float = 1.0
     q_model_config: Optional[ModelConfig] = None
     policy_model_config: Optional[ModelConfig] = None

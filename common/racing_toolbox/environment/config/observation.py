@@ -11,3 +11,4 @@ class ObservationConfig(BaseModel):
     stack_size: PositiveInt
     use_lidar: bool = False
     vae_config: Optional[VAEConfig]
+    observe_speed: bool = False
