@@ -10,11 +10,12 @@ Sample agent trained with this system:
 
 ### Advanced feature extraction (variational autoencoders)
 
-![alt text](./images/validation_batch_vae.png "Input batch of gray-scaled images of track")
+Input batch of gray-scaled images of track | Their reconstruction
+:-------------------------:|:-------------------------:
+![alt text](./images/validation_batch_vae.png "Input batch of gray-scaled images of track")  |  ![alt text](./images/validation_batch_vae_reco.png "Their reconstruction")
 
-![alt text](./images/validation_batch_vae_reco.png "Their reconstruction")
 
-Using variational autoencoders, we can significantly compress information about the image from the simulator, e.g. an image with a size of several hundred by several hundred pixels can be successfully cloned using a 16-element vector. Thanks to this, the neural network to be trained is much smaller, moreover, you can have a much larger reply buffer.
+Using variational autoencoders, we can significantly compress information about the image from the simulator, e.g. an image with a size of several hundred by several hundred pixels can be successfully compressed in a 16-element vector. Thanks to this, the neural network to be trained is much smaller, moreover, you can have a much larger reply buffer.
 
 ### Pararrell training enviroments
 
