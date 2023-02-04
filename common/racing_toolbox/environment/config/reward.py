@@ -1,8 +1,8 @@
-from typing import Callable
-from pydantic import BaseModel, PositiveFloat, PositiveInt, Field
+from pydantic import BaseModel, PositiveFloat, PositiveInt
+from typing import Optional
 
 
-class RewardConfig(BaseModel):
+class SpeedDropPunishmentConfig(BaseModel):
     # minimal threshold of speed drop/increase to apply additional punsihment or reward
     speed_diff_thresh: PositiveInt
 
@@ -12,6 +12,21 @@ class RewardConfig(BaseModel):
     # function to be applied to the speed difference, to create reward boost/punishment
     speed_diff_exponent: float = 1.2
 
+
+class SafetyConfig(BaseModel):
+    lidar_depth: PositiveInt = 0
+
+    # safety_base = mean( sorted( rays_len )[0:shortest_rays_number] )
+    shortest_rays_number: PositiveInt
+
+    # savety_centr = safety_base ^ centralization
+    centralization: PositiveFloat = 1.3
+
+    # safety = savety_centr * weight
+    weight: PositiveFloat = 0.5
+
+
+class RewardConfig(BaseModel):
     # function to be applied to the reward when off-track
     off_track_reward: float = -1
 
@@ -20,6 +35,11 @@ class RewardConfig(BaseModel):
 
     # range to which reward will be clipped
     clip_range: tuple[float, float]
+
+    speed_drop_punishment_config: Optional[SpeedDropPunishmentConfig] = None
+
+    # if None, afety = 1
+    safety_config: Optional[SafetyConfig] = None
 
     # reward = (reward - baseline) / scale
     baseline: float

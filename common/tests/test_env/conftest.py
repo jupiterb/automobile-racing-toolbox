@@ -49,5 +49,5 @@ def my_env(my_interface, game_conf) -> gym.Env:
         ]
     )
 
-    env = RealTimeEnviroment(my_interface, ocr_tool, detector)
+    env = RealTimeEnviroment(my_interface, ocr_tool, detector, None)
     return env
