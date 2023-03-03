@@ -23,17 +23,19 @@ class KeyboardCapturing(InputCapturing):
 
     def get_inputs(self) -> dict[str, float]:
         return {
-            input: 1 if key.name in self._pressed else 0
+            input: 1 if key in self._pressed else 0
             for key, input in self._key_to_input_mapping.items()
         }
 
     def _on_press(self, key):
+        key = key.name
         if key in self._key_to_input_mapping:
-            self._pressed.add(key.name)
+            self._pressed.add(key)
 
     def _on_release(self, key):
-        try:
-            if key in self._key_to_input_mapping:
-                self._pressed.remove(key.name)
-        except KeyError:
-            pass
+        key = key.name
+        if key in self._key_to_input_mapping:
+            try:
+                self._pressed.remove(key)
+            except KeyError:
+                pass

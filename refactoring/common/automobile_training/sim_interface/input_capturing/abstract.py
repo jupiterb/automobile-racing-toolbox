@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 class InputCapturing(ABC):
     @abstractmethod
     def stop(self) -> None:
-        """When capturing is stopped, get_inputs returns empty dict (default state)"""
+        """When capturing is stopped, get_inputs returns dict with values set to 0.0"""
         pass
 
     @abstractmethod

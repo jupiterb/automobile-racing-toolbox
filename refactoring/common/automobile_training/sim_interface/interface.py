@@ -1,9 +1,9 @@
 import numpy as np
 import time
 
-from automobile_training.sim_interface.vision_capturing.abstract import VisionCapturing
-from automobile_training.sim_interface.input_controller.abstract import InputController
-from automobile_training.sim_interface.input_capturing.abstract import InputCapturing
+from automobile_training.sim_interface.vision_capturing import VisionCapturing
+from automobile_training.sim_interface.input_controller import InputController
+from automobile_training.sim_interface.input_capturing import InputCapturing
 
 
 class BaseVisionOnlySimInterface:
@@ -50,12 +50,7 @@ class CaptureSimInterface(BaseVisionOnlySimInterface):
     def get_inputs(self) -> dict[str, float]:
         return self._inputs_capturing.get_inputs()
 
-    @property
-    def capturing(self) -> bool:
-        return any(self._inputs_capturing.get_inputs())
-
-    @capturing.setter
-    def capturing(self, capture: bool):
+    def set_capturing(self, capture: bool):
         if capture:
             self._inputs_capturing.start()
         else:
