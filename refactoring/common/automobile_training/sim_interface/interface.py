@@ -2,8 +2,8 @@ import numpy as np
 import time
 
 from automobile_training.sim_interface.vision_capturing import VisionCapturing
-from automobile_training.sim_interface.input_controller import InputController
-from automobile_training.sim_interface.input_capturing import InputCapturing
+from automobile_training.sim_interface.action_controller import ActionController
+from automobile_training.sim_interface.action_capturing import ActionCapturing
 
 
 class BaseVisionOnlySimInterface:
@@ -20,18 +20,21 @@ class InteractiveSimInterface(BaseVisionOnlySimInterface):
     """Type of interface used by agent to interact with simulation"""
 
     def __init__(
-        self, sim_vision: VisionCapturing, controller: InputController, reset_delay: int
+        self,
+        sim_vision: VisionCapturing,
+        controller: ActionController,
+        reset_delay: int,
     ) -> None:
         super().__init__(sim_vision)
         self._controller = controller
         self._reset_delay = reset_delay
 
     @property
-    def possible_inputs(self) -> set[str]:
-        return self._controller.possible_inputs
+    def possible_actions(self) -> set[str]:
+        return self._controller.possible_actions
 
-    def apply_inputs(self, inputs: dict[str, float]):
-        self._controller.apply(inputs)
+    def apply_actions(self, actions: dict[str, float]):
+        self._controller.apply(actions)
 
     def reset(self):
         self._controller.reset()
@@ -42,16 +45,16 @@ class CaptureSimInterface(BaseVisionOnlySimInterface):
     """Type of interface used in recording of expert behavior"""
 
     def __init__(
-        self, sim_vision: VisionCapturing, inputs_capturing: InputCapturing
+        self, sim_vision: VisionCapturing, actions_capturing: ActionCapturing
     ) -> None:
         super().__init__(sim_vision)
-        self._inputs_capturing = inputs_capturing
+        self._actions_capturing = actions_capturing
 
-    def get_inputs(self) -> dict[str, float]:
-        return self._inputs_capturing.get_inputs()
+    def get_actions(self) -> dict[str, float]:
+        return self._actions_capturing.get_actions()
 
     def set_capturing(self, capture: bool):
         if capture:
-            self._inputs_capturing.start()
+            self._actions_capturing.start()
         else:
-            self._inputs_capturing.stop()
+            self._actions_capturing.stop()

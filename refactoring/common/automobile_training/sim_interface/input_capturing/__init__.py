@@ -1,2 +1,0 @@
-from automobile_training.sim_interface.input_capturing.abstract import InputCapturing
-from automobile_training.sim_interface.input_capturing.keyboard import KeyboardCapturing

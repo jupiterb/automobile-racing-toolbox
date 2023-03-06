@@ -1,11 +1,11 @@
 from pynput.keyboard import Listener
 
-from automobile_training.sim_interface.input_capturing.abstract import InputCapturing
+from automobile_training.sim_interface.action_capturing.abstract import ActionCapturing
 
 
-class KeyboardCapturing(InputCapturing):
-    def __init__(self, key_to_input_mapping: dict[str, str]) -> None:
-        self._key_to_input_mapping = key_to_input_mapping
+class KeyboardCapturing(ActionCapturing):
+    def __init__(self, key_to_action_mapping: dict[str, str]) -> None:
+        self._key_to_action_mapping = key_to_action_mapping
         self._pressed: set[str] = set()
         self._listener: Listener = Listener(
             on_press=self._on_press, on_release=self._on_release
@@ -21,20 +21,20 @@ class KeyboardCapturing(InputCapturing):
     def start(self):
         self._listener.start()
 
-    def get_inputs(self) -> dict[str, float]:
+    def get_actions(self) -> dict[str, float]:
         return {
-            input: 1 if key in self._pressed else 0
-            for key, input in self._key_to_input_mapping.items()
+            a: 1 if k in self._pressed else 0
+            for k, a in self._key_to_action_mapping.items()
         }
 
     def _on_press(self, key):
         key = key.name
-        if key in self._key_to_input_mapping:
+        if key in self._key_to_action_mapping:
             self._pressed.add(key)
 
     def _on_release(self, key):
         key = key.name
-        if key in self._key_to_input_mapping:
+        if key in self._key_to_action_mapping:
             try:
                 self._pressed.remove(key)
             except KeyError:

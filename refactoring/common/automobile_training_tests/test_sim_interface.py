@@ -1,41 +1,41 @@
 import pytest
 import time
 
-from automobile_training.sim_interface.input_capturing import (
-    InputCapturing,
+from automobile_training.sim_interface.action_capturing import (
+    ActionCapturing,
     KeyboardCapturing,
 )
-from automobile_training.sim_interface.input_controller import (
-    InputController,
+from automobile_training.sim_interface.action_controller import (
+    ActionController,
     KeyboardController,
 )
 
 
-def input_to_key() -> dict[str, str]:
+def action_to_key() -> dict[str, str]:
     return {"forward": "up", "break": "down", "left": "left", "right": "right"}
 
 
-def key_to_input() -> dict[str, str]:
-    return {k: i for i, k in input_to_key().items()}
+def key_to_action() -> dict[str, str]:
+    return {k: a for a, k in action_to_key().items()}
 
 
 @pytest.mark.parametrize(
-    "inputs_capturing,controller",
-    [(KeyboardCapturing(key_to_input()), KeyboardController(input_to_key(), []))],
+    "capturing,controller",
+    [(KeyboardCapturing(key_to_action()), KeyboardController(action_to_key(), []))],
 )
-def test_controller_inputs_are_captured(
-    inputs_capturing: InputCapturing, controller: InputController
+def test_controller_actions_are_captured(
+    capturing: ActionCapturing, controller: ActionController
 ):
-    inputs_capturing.start()
+    capturing.start()
     time.sleep(0.1)
 
-    inputs = {i: 0.0 for i in controller.possible_inputs}
-    controller.apply(inputs)
-    assert inputs_capturing.get_inputs() == inputs
+    actions = {i: 0.0 for i in controller.possible_actions}
+    controller.apply(actions)
+    assert capturing.get_actions() == actions
 
-    inputs[list(controller.possible_inputs)[0]] = 1.0
-    controller.apply(inputs)
-    assert inputs_capturing.get_inputs() == inputs
+    actions[list(controller.possible_actions)[0]] = 1.0
+    controller.apply(actions)
+    assert capturing.get_actions() == actions
 
-    inputs_capturing.stop()
-    assert set(inputs_capturing.get_inputs()) == controller.possible_inputs
+    capturing.stop()
+    assert set(capturing.get_actions()) == controller.possible_actions

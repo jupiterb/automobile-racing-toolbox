@@ -1,6 +1,14 @@
 from setuptools import setup, find_packages
 
-requirements_common = ["pytest", "numpy", "Pillow", "pynput"]
+requirements_common = [
+    "pytest",
+    "numpy",
+    "Pillow",
+    "pynput",
+    "tables",
+    "pydantic",
+    "boto3",
+]
 
 windows_requirements = ["pywin32"]
 
