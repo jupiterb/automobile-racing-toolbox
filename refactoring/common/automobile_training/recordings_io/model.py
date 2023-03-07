@@ -8,6 +8,8 @@ class RecordingModel(BaseModel):
     """Structured representation of a recording"""
 
     fps: int
-    shape: Union[np.ndarray, tb.Array]
     frames: Union[np.ndarray, tb.Array]
     actions: Union[np.ndarray, tb.Array]
+
+    class Config:
+        arbitrary_types_allowed = True

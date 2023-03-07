@@ -3,6 +3,11 @@ from contextlib import AbstractContextManager
 import numpy as np
 
 
+class RecordingExistsException(Exception):
+    def __init__(self, description: str) -> None:
+        super().__init__(description)
+
+
 class RecordingWriter(AbstractContextManager, ABC):
     def __init__(self, recording_name: str, fps: int) -> None:
         self._recording_name = recording_name
